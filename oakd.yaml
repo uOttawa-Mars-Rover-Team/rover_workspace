@@ -1,0 +1,9 @@
+# oakd.yaml
+/camera/camera:
+  ros__parameters:
+    camera:
+      i_pipeline_type: 'ToF'  # or 'StereoToF' for OAK-D-SR-POE
+      i_nn_type: 'none'
+      i_enable_imu: false
+    tof:
+      i_enable_optical_correction: true

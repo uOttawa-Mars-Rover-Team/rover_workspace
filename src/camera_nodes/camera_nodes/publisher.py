@@ -25,6 +25,9 @@ class CameraPublisherNode(CameraNode):
             self.get_logger().info(
                 f"Overriding use of compression_quality to {self.compression_quality}."
             )
+        self.codec = self.get_param("codec", rclpy.Parameter.Type.STRING, "MJPG")
+        if len(self.codec) != 4:
+            raise ValueError("The codec must have a length of 4.")
 
         # Create a publisher for compressed image
         self.publisher = self.create_publisher(
@@ -33,6 +36,7 @@ class CameraPublisherNode(CameraNode):
 
         # Initialize OpenCV capture
         self.cap = cv2.VideoCapture(self.video_device)
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*self.codec))
         if not self.cap.isOpened():
             self.get_logger().error("Failed to open camera!")
             raise RuntimeError("Failed to open camera!")

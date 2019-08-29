@@ -1,0 +1,8 @@
+build/
+devel/
+src/CMakeLists.txt
+
+**/.vscode/
+**/.vs/
+**.pyc
+**.pyi

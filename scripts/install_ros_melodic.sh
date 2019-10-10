@@ -30,6 +30,7 @@ echo "Complete";
 echo "";
 
 echo "Environment setup - sourcing bashrc";
+echo "source /opt/ros/melodic/setup.bash";
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc;
 echo "source ~/rover_workspace/devel/setup.bash" >> ~/.bashrc;
 source ~/.bashrc;

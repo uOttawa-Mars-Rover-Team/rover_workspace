@@ -12,6 +12,8 @@ __Prerequisite:__ This node must connect to an Arduino running the GPS\_IMU\_No\
 
 __Extra Info:__
 
+__Hardware Setup:__ See Pinout comment in GPS\_IMU\_No\_ROSserial.ino sketch.
+
 ## Description
 
 gps\_node is a ROS node that runs both the GPS and IMU publishers. It connects to an arduino via the serial port that is running the GPS\_IMU\_No\_ROSserial.ino sketch in the arduino\_sketches folder. The other sketches (rover\_both, Rover\_GPS, Rover\_IMU) in the arduino\_sketches folder are previous versions of the arduino sketch to be used with this node and are left in case they will be useful in the future.   

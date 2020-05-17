@@ -22,8 +22,8 @@ The imu.msg contains the three 32-bit floats for roll, pitch and yaw, calculated
 
 ## Helpful Resources:
 
-The wiki page for GPS on GitLab: https://gitlab.com/uorover/rover_workspace/-/wikis/GPS-Research-for-Rover/
-The adafruit pages on the GPS module: https://learn.adafruit.com/adafruit-ultimate-gps/
-The sparkfun pages on the IMU module: https://leanr.sparkfun.com/tutorials/lsm9ds1-breakout-hookup-guide/all
+The wiki page for GPS on GitLab: https://gitlab.com/uorover/rover_workspace/-/wikis/GPS-Research-for-Rover/   
+The adafruit pages on the GPS module: https://learn.adafruit.com/adafruit-ultimate-gps/   
+The sparkfun pages on the IMU module: https://learn.sparkfun.com/tutorials/lsm9ds1-breakout-hookup-guide/all   
 
 

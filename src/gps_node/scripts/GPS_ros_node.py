@@ -4,21 +4,23 @@ from std_msgs.msg import String
 from gps_node.msg import gps
 from gps_node.msg import imu
 import serial
+import sys
 
-#The serial port the Arduino is connected to
-SERIAL_PORT = "/dev/ttyACM0"
+#The default serial port the Arduino is connected to
+DEFAULT_PORT = "/dev/ttyACM0"
 
 """This script is responsable for parsing the incoming data that the Arduino sends via serial
 port with all the values read from the sensors. This script puts that data into messages and 
 sends them. The GPS data is put in the gps.msg message and published under the GPS topic. The
 IMU data is put in the imu.msg message and published under the IMU topic."""
 
-def talker():
-	"""(None) -> (None)
+def talker(serial_port):
+	"""(string) -> (None)
+	serial_port - the port the Arduino is connected to
 	Function that runs the Pulbishsers and parses the info from the serial port.
 	"""
 	#setup the serial port connection to the Arduino (always close the serial port)
-	with serial.Serial(SERIAL_PORT, 115200, timeout=1) as ser:
+	with serial.Serial(serial_port, 115200, timeout=1) as ser:
 
 		#set up the publishers for the GPS and IMU
 		gps_pub = rospy.Publisher("GPS", gps, queue_size=10)
@@ -97,7 +99,19 @@ def talker():
 
 
 if __name__ == "__main__":
+	if len(sys.argv) > 2:
+		print("Error: Too many arguments. This script takes either one argument (the serial port of the Arduino) "
+			"or no arguments to use the default port '/dev/tty/ACM0'")
+		sys.exit()
+	#if passed with one command line argument the argument is used as the port
+	if len(sys.argv) == 2:
+		serial_port = sys.argv[1]
+	else:
+		serial_port = DEFAULT_PORT
+
+	print("Using port: " + serial_port)
+
 	try:
-		talker()
+		talker(serial_port)
 	except rospy.ROSInterruptException:
 		pass

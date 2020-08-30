@@ -8,11 +8,10 @@ __Scripts:__ GPS\_ros\_node.py
 
 __Maintainers:__ Angelica
 
-__Prerequisite:__ This node must connect to an Arduino running the GPS\_IMU\_No\_ROSserial.ino sketch in the arduino_sketches folder.
+__Prerequisites & Hardware Setup:__ This node must connect to an Arduino running the GPS\_IMU\_No\_ROSserial.ino sketch in the arduino_sketches folder. See Pinout comment in GPS\_IMU\_No\_ROSserial.ino sketch.
 
-__Extra Info:__
-
-__Hardware Setup:__ See Pinout comment in GPS\_IMU\_No\_ROSserial.ino sketch.
+__Extra Info:__ The script, GPS\_ros\_node.py, takes one optional parameter for the serial port the Arduino Uno is connected to. If 
+omitted the script uses the default port: /dev/ttyACM0
 
 ## Description
 

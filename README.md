@@ -1,4 +1,8 @@
-# rover_workspace
+<p align="center">
+  <img src="docs/logo.png">
+</p>
+
+# uOttawa Rover Workspace
 
 uoRover development catkin workspace
 

@@ -1,0 +1,19 @@
+image: ros:melodic-ros-base
+
+cache:
+  paths:
+    - ccache/
+
+before_script:
+  - git submodule update --init --recursive
+  - apt-get update && apt-get install -y libusb-dev ros-melodic-openslam-gmapping
+  - rosdep install --from-paths ./src/external_packages --ignore-src --rosdistro melodic -y -r
+  - rm -rf ./src/external_packages/joystick_drivers/wiimote
+  
+catkin_make:
+  stage: build
+  script:
+    - catkin_make
+  only:
+    - merge_requests
+    - master

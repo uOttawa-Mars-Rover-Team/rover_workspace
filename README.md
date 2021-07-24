@@ -1,8 +1,8 @@
-<p align="center">
+<div align="center">
   <img src="docs/logo.png">
-</p>
+</div>
 
-# uOttawa Rover Workspace
+# uOttawa Rover Workspace [![](https://gitlab.com/uorover/rover_workspace/badges/master/pipeline.svg)](https://gitlab.com/uorover/rover_workspace/pipelines)
 
 uoRover development catkin workspace
 

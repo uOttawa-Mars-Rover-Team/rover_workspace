@@ -24,6 +24,7 @@ echo "Complete";
 echo "";
 
 echo "Initialize rosdep";
+sudo apt install python-rosdep;
 sudo rosdep init;
 rosdep update;
 echo "Complete";

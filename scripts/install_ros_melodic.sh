@@ -1,44 +1,36 @@
-echo "---- Seting up ROS melodic ----";
+#!/bin/bash
 
-echo "Setup your sources.list";
+complete () { echo -e "\e[1m\e[32mComplete.\e[0m\n"; }
+title () { echo -e "\e[1m\e[44m $1 \e[0m"; }
+
+title "---- Seting up ROS melodic ----"
+
+title "Setting up sources.list"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list';
-echo "Complete";
-echo "";
+complete
 
-echo "Set up your keys";
+title "Setting up keys"
 sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654;
-echo "Complete";
-echo "";
+complete
 
-echo "Configuring Ubuntu repositories to allow restricted, universe, and multiverse";
+title "Configuring Ubuntu repositories to allow restricted, universe, and multiverse"
 sudo add-apt-repository restricted;
 sudo add-apt-repository universe;
 sudo add-apt-repository multiverse;
-echo "Complete";
-echo "";
+complete
 
-echo "Installing ROS melodic";
+title "Installing ROS melodic"
 sudo apt update;
-sudo apt -y install ros-melodic-desktop-full;
-echo "Complete";
-echo "";
+sudo apt -y install ros-melodic-desktop-full ros-melodic-openslam-gmapping python-rosdep;
+complete
 
-echo "Initialize rosdep";
-sudo apt install python-rosdep;
+title "Initializing rosdep"
 sudo rosdep init;
 rosdep update;
-echo "Complete";
-echo "";
+complete
 
-echo "Environment setup - sourcing bashrc";
-echo "source /opt/ros/melodic/setup.bash";
+title "Sourcing .bashrc - Environment setup"
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc;
 echo "source ~/rover_workspace/devel/setup.bash" >> ~/.bashrc;
 source ~/.bashrc;
-echo "Complete";
-echo "";
-
-echo "Dependencies for building packages";
-sudo apt -y install python-rosinstall python-rosinstall-generator python-wstool build-essential;
-echo "Complete";
-echo "";
+complete

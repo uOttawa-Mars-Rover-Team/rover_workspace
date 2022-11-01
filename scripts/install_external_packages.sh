@@ -9,6 +9,10 @@ title "Cloning external packages repositories"
 git submodule update --init --recursive;
 complete
 
+title "Installing Dependencies for the drive system"
+sudo apt-get install -y ros-melodic-joy
+complete
+
 title "Installing dependencies for the external packages"
 sudo apt -y install python-rosinstall python-rosinstall-generator python-wstool build-essential libusb-dev libspnav-dev;
 complete

@@ -1,0 +1,8 @@
+# Set up symlinks to make arduinos easier to identify in /dev
+KERNEL=="ttyACM*", ATTRS{serial}=="5583834373335170E1C0", SYMLINK+="navsensors_uno"
+KERNEL=="ttyACM*", ATTRS{serial}=="75830333238351E04160", SYMLINK+="arm_mega"
+KERNEL=="ttyACM*", ATTRS{serial}=="5573630373135190D121", SYMLINK+="lifedetect_mega"
+
+# Rover drive system arduino nano
+# This nano has no serial number to identify it with
+KERNEL=="ttyUSB*", ATTRS{idProduct}=="7523", SYMLINK+="drive_nano"

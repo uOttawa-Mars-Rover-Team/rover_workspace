@@ -9,7 +9,7 @@ rospy.init_node('LifeDetectionControl')
 VacHosePub = rospy.Publisher('VacHoseCMD', String, queue_size=10)
 FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
 VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
-BeakerPub = rospy.Publisher('BeakerCMD', UInt8, queue_size= 10)
+BeakerPub = rospy.Publisher('BeakerCMD', String, queue_size= 10)
 AgitatePub = rospy.Publisher('AgitateCMD', String, queue_size= 10)
 
 keyPressed = False
@@ -45,9 +45,10 @@ def on_key_press(key):
             VacMotorPub.publish(Empty())
         elif (key == "a"):
             AgitatePub.publish("StartAgitation")
-        elif (unicode(key).isnumeric()):
-	    rospy.loginfo("moved to beaker"+ key)
-            BeakerPub.publish(key)
+        elif (key == "<Key.right: <65361>>"):
+            BeakerPub.publish("StartCWRotate")
+        elif (key == "<Key.left: <65363>>"):
+            BeakerPub.publish("StartCCWRotate")
         keyPressed = True
 
 with keyboard.Listener(on_release = on_key_release, on_press = on_key_press) as listener:

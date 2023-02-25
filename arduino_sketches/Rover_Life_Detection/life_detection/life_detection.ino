@@ -41,15 +41,20 @@ void hoseCb(std_msgs::String& hose_cmd) {
     }
     while (!checkLimits)
         nh.spinOnce();
-        if (!checkLimits()) {
-            digitalWrite(hoseStepPin, HIGH);
-            delayMicroseconds(2000);
-            digitalWrite(hoseStepPin, LOW);
-            delayMicroseconds(2000);
-        } else {
-            backOff();
-            break
+        if (dir == 0){
+          break
         }
+        for (int x = 0; x < stepsPerRevolution; x++){
+          if (!checkLimits()) {
+              digitalWrite(hoseStepPin, HIGH);
+              delayMicroseconds(2000);
+              digitalWrite(hoseStepPin, LOW);
+              delayMicroseconds(2000);
+          } else {
+              backOff();
+              break
+          }
+        }          
 }
 
 
@@ -144,7 +149,7 @@ void vacuumCb( const std_msgs::Empty& toggle_vacuum){
 void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
   if (!flapIsOpen){
     nh.loginfo("Opening funnel flap....");
-    for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 90 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
@@ -153,7 +158,7 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
     nh.loginfo("funnelFlapCb: Done");
   }else{
     nh.loginfo("Closing funnel flap....");
-    for (pos = 90; pos > 0; pos -= 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 90; pos > 0; pos -= 1) { // goes from 0 degrees to 90 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
@@ -189,22 +194,11 @@ int beakerHome = 1;
  *               12 : Rotate the system backward
  *  (Anything else) : Do nothing
  */
-void sampleSystemCb( const std_msgs::UInt8& sample_sys_cmd){
-  //Return Sampler to home position
-  if (sample_sys_cmd.data==0){
-    returnHome();
-  }
-  //Beaker Selection
-  else if (sample_sys_cmd.data>0 && sample_sys_cmd.data<11){
-    beakerController(sample_sys_cmd.data);
-  }
-  //Step Foward
-  else if (sample_sys_cmd.data==11){
-    stepForward();
-  }
-  //Step Backward
-  else if (sample_sys_cmd.data==12){
-    stepBack();
+void sampleSystemCb( const std_msgs::String& sample_sys_cmd){
+  if (sample_sys_cmd == "StartCWRotate"){
+    moveBeaker(true);
+  }else if (sample_sys_cmd == "StartCCWRotate"){
+    moveBeaker(false);
   }
 }
 
@@ -223,18 +217,18 @@ void aggitationCb( const std_msgs::String& aggitationCMD){
             digitalWrite(beakerDirPin, HIGH);
 
             digitalWrite(beakerStepPin, HIGH);
-            delayMicroseconds(2000);
+            delayMicroseconds(4000);
             digitalWrite(beakerStepPin, LOW);
-            delayMicroseconds(2000);
+            delayMicroseconds(4000);
     
-            delay(1000); // Wait a second
+            delay(10); // Wait a second
             digitalWrite(beakerDirPin, LOW);
 
             digitalWrite(beakerStepPin, HIGH);
-            delayMicroseconds(2000);
+            delayMicroseconds(4000);
             digitalWrite(beakerStepPin, LOW);
-            delayMicroseconds(2000);
-            delay(1000); // Wait a second
+            delayMicroseconds(4000);
+            delay(10); // Wait a second
             endtime = millis();
         }
     }
@@ -293,17 +287,8 @@ void stepBack(){
  *  beakerIndex: The desired beaker to fetch
  *      reverse: Flag that rotates system in reverse direction
  */
-void moveBeaker(int beakerIndex, bool reverse){
-  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution*beakerIndex);
-  // Rotate to correct position
-
-  char log_str [100];
-  if (reverse){
-    snprintf(log_str, 100, "Rotating sampler to position: %d ....", 0);
-  }else{
-    snprintf(log_str, 100, "Rotating sampler to position: %d ....", beakerIndex);
-  }
-  nh.loginfo(log_str);
+void moveBeaker(bool reverse){
+  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution);
   
   digitalWrite(beakerDirPin, reverse);
   for(int x = 0; x < steps; x++)

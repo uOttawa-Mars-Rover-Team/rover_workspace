@@ -1,8 +1,3 @@
-/*
-Life Detection Module
-
-Maintainer: Ken Lorbetskie
-*/
 
 #include <ros.h>
 #include <std_msgs/Empty.h>
@@ -24,59 +19,39 @@ int upperLimit = LOW;
 int lowerLimit = LOW;
 int dir = 0;
 
-/*
- * Function:  hoseCb 
- * --------------------
- * callback function that raises or lowers the
- * the hose depending on the input parameter.
- *
- *  hose_cmd: UInt8 ROS topic that passes a number which 
- *            maps to a certain command.
- *            
- *            hose_cmd:
- *                1 : Lower the hose
- *                2 : Raise the hose
- *  (Anything else) : Do nothing
- */
-void hoseCb( const std_msgs::UInt8& hose_cmd){
-  int stopFlag = LOW;
 
-  if (hose_cmd.data==1){
-    // Move Down
-    nh.loginfo("Moving hose down....");
-    dir = 1;
-    digitalWrite(hoseDirPin, HIGH);
-  }
-  else if (hose_cmd.data==2){
-    // Move Up
-    nh.loginfo("Moving hose up....");
-    dir = -1;
-    digitalWrite(hoseDirPin, LOW);
-  }else{
-    dir = 0;
-    return;
-  }
-  // Spin motor slowly
-  while (!checkLimits()){
-    nh.spinOnce();
-    for(int x = 0; x < stepsPerRevolution; x++){
-      if (!checkLimits()){
-      digitalWrite(hoseStepPin, HIGH);
-      delayMicroseconds(2000);
-      digitalWrite(hoseStepPin, LOW);
-      delayMicroseconds(2000);
-      }else{
-        stopFlag = HIGH;
-        break; 
-      }
+void hoseCb(std_msgs::String& hose_cmd) {
+    if (hose_cmd == "StartMoveDown") {
+        nh.loginfo("Moving hose down....");
+        dir = 1;
+        digitalWrite(hoseDirPin, HIGH);
+    } else if (hose_cmd == "StopMoveDown") {
+        dir = 0;
+        nh.loginfo("Stopped Down Movement");
+        return;
+    } else if (hose_cmd == "StartMoveUp") {
+        nh.loginfo("Moving hose up....");
+        dir = -1;
+        MoveHose();
+        digitalWrite(hoseDirPin, LOW);        
+    } else if (hose_cmd == "StopMoveUp") {
+        dir = 0;
+        nh.loginfo("Stopped Up Movement");
+        return;
     }
-    if(stopFlag == HIGH){
-      nh.loginfo("Limit reached. Backing off....");
-      backOff();
-      break;
-    }
-  }
+    while (!checkLimits)
+        nh.spinOnce();
+        if (!checkLimits()) {
+            digitalWrite(hoseStepPin, HIGH);
+            delayMicroseconds(2000);
+            digitalWrite(hoseStepPin, LOW);
+            delayMicroseconds(2000);
+        } else {
+            backOff();
+            break
+        }
 }
+
 
 /*
  * Function:  checkLimits 
@@ -169,7 +144,7 @@ void vacuumCb( const std_msgs::Empty& toggle_vacuum){
 void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
   if (!flapIsOpen){
     nh.loginfo("Opening funnel flap....");
-    for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
@@ -178,7 +153,7 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
     nh.loginfo("funnelFlapCb: Done");
   }else{
     nh.loginfo("Closing funnel flap....");
-    for (pos = 180; pos > 0; pos -= 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 90; pos > 0; pos -= 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
@@ -241,33 +216,35 @@ void sampleSystemCb( const std_msgs::UInt8& sample_sys_cmd){
  *  aggitation_timer: UInt8 ROS topic that passes the amount of time 
  *                    (in seconds) to aggitate the samples for.
  */
-void aggitationCb( const std_msgs::UInt8& aggitation_timer){
-  unsigned long starttime = millis();
-  unsigned long endtime = starttime;
-  int timer = aggitation_timer.data*1000;
-  char log_str [100];
-  snprintf(log_str, 100, "Aggitating samples for: %d seconds....", aggitation_timer.data);
-  nh.loginfo(log_str);
-  
-  while ((endtime - starttime) <=timer){
-    digitalWrite(beakerDirPin, HIGH);
+void aggitationCb( const std_msgs::String& aggitationCMD){
+    if (aggitationCMD == "StartAgitation") {
+        while (checkStatus()){
+            
+            digitalWrite(beakerDirPin, HIGH);
 
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
+            digitalWrite(beakerStepPin, HIGH);
+            delayMicroseconds(2000);
+            digitalWrite(beakerStepPin, LOW);
+            delayMicroseconds(2000);
     
-    delay(1000); // Wait a second
-    digitalWrite(beakerDirPin, LOW);
+            delay(1000); // Wait a second
+            digitalWrite(beakerDirPin, LOW);
 
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-    delay(1000); // Wait a second
-    endtime = millis();
-  }
-  nh.loginfo("aggitationCb: Done");  
+            digitalWrite(beakerStepPin, HIGH);
+            delayMicroseconds(2000);
+            digitalWrite(beakerStepPin, LOW);
+            delayMicroseconds(2000);
+            delay(1000); // Wait a second
+            endtime = millis();
+        }
+    }
+    bool checkStatus(aggitationCMD) {
+        if (aggitationCMD == "StartAgitation") {
+            return true
+        } else {
+            return false
+        }
+    }
 }
 
 /*
@@ -381,14 +358,14 @@ void returnHome(){
 
 //Publishing topics
 std_msgs::String str_msg;
-ros::Publisher logger("life_detection_logger", &str_msg);
+ros::Publisher TempLogger("life_detection_logger", &str_msg);
 
 //Subscribing topics hose_cmd
-ros::Subscriber<std_msgs::UInt8> hoseSub("hose_cmd", &hoseCb );
-ros::Subscriber<std_msgs::UInt8> sampleSystemSub("sample_sys_cmd", &sampleSystemCb );
-ros::Subscriber<std_msgs::UInt8> aggitationSub("aggitation_timer", &aggitationCb );
-ros::Subscriber<std_msgs::Empty> vacuumSub("toggle_vacuum", &vacuumCb );
-ros::Subscriber<std_msgs::Empty> funnelFlapSub("toggle_funnel_flap", &funnelFlapCb );
+ros::Subscriber<std_msgs::String> hoseSub("VacHoseCMD", &hoseCb );
+ros::Subscriber<std_msgs::UInt8> sampleSystemSub("BeakerCMD", &sampleSystemCb );
+ros::Subscriber<std_msgs::String> aggitationSub("AgitateCMD", &aggitationCb );
+ros::Subscriber<std_msgs::Empty> vacuumSub("VacMotorCMD", &vacuumCb );
+ros::Subscriber<std_msgs::Empty> funnelFlapSub("FunnelFlapCMD", &funnelFlapCb );
 
 void setup() {
 
@@ -415,7 +392,7 @@ void setup() {
   nh.subscribe(aggitationSub);
   nh.subscribe(vacuumSub);
   nh.subscribe(funnelFlapSub);
-  nh.advertise(logger); 
+  nh.advertise(TempLogger); 
 }
 
 void loop() {

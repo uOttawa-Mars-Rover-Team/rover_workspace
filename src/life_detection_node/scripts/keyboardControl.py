@@ -11,6 +11,7 @@ FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
 VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
 BeakerPub = rospy.Publisher('BeakerCMD', String, queue_size= 10)
 AgitatePub = rospy.Publisher('AgitateCMD', String, queue_size= 10)
+WeatherCollectionPub = rospy.Publusher('WeatherCollectionCMD', Empty, queue_size= 10)
 
 keyPressed = False
 
@@ -22,7 +23,7 @@ def on_key_release(key):
     if (key == "<Key.down: <65364>>"):
         VacHosePub.publish("StopDownMove")
     if (key == "u'a'"):
-    	rospy.loginfo("stoped agitet")
+    	AgitatePub.publish("StopAgitation")
     keyPressed = False
 
 def on_key_press(key):
@@ -49,6 +50,8 @@ def on_key_press(key):
             BeakerPub.publish("StartCWRotate")
         elif (key == "<Key.left: <65363>>"):
             BeakerPub.publish("StartCCWRotate")
+        elif (key == "w"):
+            WeatherCollectionPub.publish(Empty())
         keyPressed = True
 
 with keyboard.Listener(on_release = on_key_release, on_press = on_key_press) as listener:

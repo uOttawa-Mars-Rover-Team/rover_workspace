@@ -18,31 +18,32 @@ const int lowerPin = 12;
 int upperLimit = LOW;
 int lowerLimit = LOW;
 int dir = 0;
+bool collectWeather = false;
 
 
 void hoseCb(std_msgs::String& hose_cmd) {
-    if (hose_cmd == "StartMoveDown") {
+    if (hose_cmd.data == "StartMoveDown") {
         nh.loginfo("Moving hose down....");
         dir = 1;
         digitalWrite(hoseDirPin, HIGH);
-    } else if (hose_cmd == "StopMoveDown") {
+    } else if (hose_cmd.data == "StopMoveDown") {
         dir = 0;
         nh.loginfo("Stopped Down Movement");
         return;
-    } else if (hose_cmd == "StartMoveUp") {
+    } else if (hose_cmd.data == "StartMoveUp") {
         nh.loginfo("Moving hose up....");
         dir = -1;
-        MoveHose();
         digitalWrite(hoseDirPin, LOW);        
-    } else if (hose_cmd == "StopMoveUp") {
+    } else if (hose_cmd.data == "StopMoveUp") {
         dir = 0;
         nh.loginfo("Stopped Up Movement");
         return;
     }
-    while (!checkLimits)
+    while (!checkLimits){
         nh.spinOnce();
+        /* publish distance data */
         if (dir == 0){
-          break
+          break;
         }
         for (int x = 0; x < stepsPerRevolution; x++){
           if (!checkLimits()) {
@@ -52,9 +53,10 @@ void hoseCb(std_msgs::String& hose_cmd) {
               delayMicroseconds(2000);
           } else {
               backOff();
-              break
+              break;
           }
         }          
+}
 }
 
 
@@ -195,9 +197,9 @@ int beakerHome = 1;
  *  (Anything else) : Do nothing
  */
 void sampleSystemCb( const std_msgs::String& sample_sys_cmd){
-  if (sample_sys_cmd == "StartCWRotate"){
+  if (sample_sys_cmd.data == "StartCWRotate"){
     moveBeaker(true);
-  }else if (sample_sys_cmd == "StartCCWRotate"){
+  }else if (sample_sys_cmd.data == "StartCCWRotate"){
     moveBeaker(false);
   }
 }
@@ -210,18 +212,24 @@ void sampleSystemCb( const std_msgs::String& sample_sys_cmd){
  *  aggitation_timer: UInt8 ROS topic that passes the amount of time 
  *                    (in seconds) to aggitate the samples for.
  */
+
+bool checkStatus(String message){
+        if (message == "StartAgitation") {
+            return true;
+        } else {
+            return false; 
+        }
+}
+
 void aggitationCb( const std_msgs::String& aggitationCMD){
-    if (aggitationCMD == "StartAgitation") {
-        while (checkStatus()){
+    if (aggitationCMD.data == "StartAgitation") {
+        while (checkStatus(aggitationCMD.data)){
+            nh.spinOnce();
             
             digitalWrite(beakerDirPin, HIGH);
 
             digitalWrite(beakerStepPin, HIGH);
-            delayMicroseconds(4000);
-            digitalWrite(beakerStepPin, LOW);
-            delayMicroseconds(4000);
-    
-            delay(10); // Wait a second
+            delayMicroseconds(4000); 
             digitalWrite(beakerDirPin, LOW);
 
             digitalWrite(beakerStepPin, HIGH);
@@ -229,14 +237,6 @@ void aggitationCb( const std_msgs::String& aggitationCMD){
             digitalWrite(beakerStepPin, LOW);
             delayMicroseconds(4000);
             delay(10); // Wait a second
-            endtime = millis();
-        }
-    }
-    bool checkStatus(aggitationCMD) {
-        if (aggitationCMD == "StartAgitation") {
-            return true
-        } else {
-            return false
         }
     }
 }
@@ -302,41 +302,25 @@ void moveBeaker(bool reverse){
   
 }
 
-/*
- * Function:  beakerController 
- * --------------------
- * keeps track of Sample System's state and rotates
- * system to desired position
- *
- *  beakerIndex: The desired beaker to fetch
- */
-void beakerController(int beakerIndex){
-  if(beakerHome){
-    moveBeaker(beakerIndex, false);
-    beakerHome = 0;
-    currentBeakerIndex = beakerIndex;
-  }else{
-    //Return beaker to home position
-    nh.loginfo("Returning sampler to home position....");
-    moveBeaker(currentBeakerIndex, true);
-    nh.loginfo("beakerController: Done");
-    delay(2000);
-    moveBeaker(beakerIndex, false);
-    beakerHome = 0;
-    currentBeakerIndex = beakerIndex;
-  }
-  nh.loginfo("beakerController: Done");
-}
 
-/*
- * Function:  returnHome 
- * --------------------
- * returns Sample system to home postion
- */
-void returnHome(){
-  moveBeaker(currentBeakerIndex, true);
-  beakerHome = 1;
-  currentBeakerIndex = 0;
+void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
+  if (collectWeather){
+    collectWeather = false;
+    return;
+  } else {
+    bool collectWeather = true;
+    while (collectWeather){
+      nh.spinOnce();
+      /*float UV = 
+      float humidity = 
+      float temp = 
+      float windSpeed = 
+      float pressure = 
+      String data = UV + ";" + humidity + ";" + temp + ";" + windSpeed + ";" + pressure
+      publish data */
+    }
+  }
+
 }
 
 //=================================================================================================
@@ -351,6 +335,8 @@ ros::Subscriber<std_msgs::UInt8> sampleSystemSub("BeakerCMD", &sampleSystemCb );
 ros::Subscriber<std_msgs::String> aggitationSub("AgitateCMD", &aggitationCb );
 ros::Subscriber<std_msgs::Empty> vacuumSub("VacMotorCMD", &vacuumCb );
 ros::Subscriber<std_msgs::Empty> funnelFlapSub("FunnelFlapCMD", &funnelFlapCb );
+ros::Subscriber<std_msgs::Empty> weatherCollectionSub("WeatherCollectionCMD", &collectWeatherCb );
+
 
 void setup() {
 
@@ -377,6 +363,7 @@ void setup() {
   nh.subscribe(aggitationSub);
   nh.subscribe(vacuumSub);
   nh.subscribe(funnelFlapSub);
+  nh.subscribe(weatherCollectionSub);
   nh.advertise(TempLogger); 
 }
 

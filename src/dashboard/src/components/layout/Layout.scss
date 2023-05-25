@@ -1,0 +1,24 @@
+.root {
+  &-header-logo {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 9px;
+  }
+
+  &-header-menu .ant-popover-inner-content {
+    padding: 0px !important;
+  }
+
+  &-layout {
+    min-height: 100vh;
+  }
+
+  &-footer {
+    text-align: end;
+    margin: 10px 0;
+
+    &-link {
+      margin-left: 5px;
+    }
+  }
+}

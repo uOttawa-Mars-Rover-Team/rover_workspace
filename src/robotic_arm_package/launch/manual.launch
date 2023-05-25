@@ -1,0 +1,30 @@
+<!--
+Launch file for the two nodes: arm_joystick_controller & arm_control
+Includes two parameters for arm_control: baudrate & serial_dev
+-->
+<launch>
+	<arg name="joy_dev" default="/dev/input/js3" />	
+
+	<!-- Microcontroller Device Argument -->
+	<arg name="serial_dev" default="/dev/ttyACM0"/>
+
+	<!-- Arm Control Node -->
+	<!-- <node pkg="robotic_arm_package" type="arm_control.py" name="arm_control" output="screen"> -->
+		<!-- <param name="serial_dev" value="$(arg serial_dev)" /> -->
+		<!-- <param name="baudrate" type="int" value="115200"/> -->
+	<!-- </node> -->
+
+
+	<remap from="joy" to="joy_arm"/>
+
+	<!-- Arm Joystick Control Node -->
+	<node pkg="robotic_arm_package" type="arm_joystick_controller.py" name="arm_joystick_controller"></node>
+
+	<!-- Joystick Node -->
+  <node pkg="joy" type="joy_node" name="joy_node_arm">
+    <param name="dev" value="$(arg joy_dev)" />
+    <!-- <param name="deadzone" value="0.3" /> -->
+    <!-- <param name="autorepeat_rate" value="20" /> -->
+  </node>
+
+</launch>

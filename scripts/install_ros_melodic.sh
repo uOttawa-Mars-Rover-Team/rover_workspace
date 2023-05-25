@@ -21,7 +21,7 @@ complete
 
 title "Installing ROS melodic"
 sudo apt update;
-sudo apt -y install ros-melodic-desktop-full ros-melodic-openslam-gmapping python-rosdep;
+sudo apt -y install ros-melodic-desktop-full python-rosdep;
 complete
 
 title "Initializing rosdep"

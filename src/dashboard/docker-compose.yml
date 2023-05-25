@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+  frontend:
+    container_name: rover-dashboard
+    image: rover-dashboard
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/rover-dashboard
+      - rover-dashboard-data:/rover-dashboard/node_modules
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+networks:
+  default:
+    name: rover-network
+
+volumes:
+  rover-dashboard-data:
+    name: rover-dashboard-data

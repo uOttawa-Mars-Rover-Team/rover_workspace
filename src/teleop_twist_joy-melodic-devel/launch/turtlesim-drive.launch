@@ -19,6 +19,8 @@
 <!-- Teleoperation Node -->
   <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
     <rosparam command="load" file="$(arg config_filepath)" />
+    <param name="max_speed" type="int" value="1"/>
+    <param name="speed_levels" type="int" value="3"/>
   </node>
 
 <!-- Multiplex Motor Commands Node -->

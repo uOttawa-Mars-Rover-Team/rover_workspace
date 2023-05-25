@@ -1,0 +1,139 @@
+/* strtok example */
+#include <stdio.h>
+#include <cstring>
+#include <string>
+#include <iostream>
+using namespace std;
+
+int main ()
+{
+    /*
+  char str[] ="- This, a sample string.";
+  char * pch;
+  printf ("Splitting string \"%s\" into tokens:\n",str);
+  pch = strtok (str," ,.-");
+  while (pch != NULL)
+  {
+    printf ("%s\n",pch);
+    pch = strtok (NULL, " ,.-");
+  }
+  return 0;
+  */
+  
+  //New potential way to read input
+  // Get next command from Serial (add 1 for final 0)
+  const int INPUT_SIZE = 14;
+  //"M;EE;-1;1000;"
+  //"C;stop;"
+  //"C;init;"
+  char input[INPUT_SIZE + 1] = "M;L2;-1;1000;";
+  int size = 13;
+  //byte size = Serial.readBytes(input, INPUT_SIZE);
+  //input[] = "";
+  // Add the final 0 to end the C string
+  input[size] = 0;
+  
+  //we create an array to store the 
+
+  // Read each command pair
+  //we get the first part of the command and we assign it to a variable
+  char* command = strtok(input, ";");
+  string type = command;
+  string funcCommand;
+  int dir = 0;
+  int speed = 0;
+
+  //if to check which type of command was entered
+  if (type =="C") {
+      //println("The Command command type was entered");
+      cout << "The Command command type was entered";
+      //cout << "I am " << myAge << " years old.";
+      command = strtok(NULL, ";");
+      funcCommand = command;
+      
+  } else if (type == "M"){
+      cout << "The Motor command type was entered";
+      //we get the motor Identifier
+      command = strtok(NULL, ";");
+      funcCommand = command;
+      
+      //we get the motor dir
+      command = strtok(NULL, ";");
+      dir = atoi(command);
+      
+      
+      //we get the motor speed
+      command = strtok(NULL, ";");
+      speed =  atoi(command);
+      
+      
+  } else {
+      //an invalid command type ws entered
+      cout << "Invalid command type was entered";
+      //Serial.println("Invalid command type was entered");
+  }
+  
+  //wre checkout the results of the if
+  cout << "Here is the extracted information from the command \n";
+  cout << "Type: " << type << "\n";
+  cout << "Command: " << funcCommand << "\n";
+  cout << "Dir: " << dir << "\n";
+  cout << "Speed: " << speed << "\n";
+  
+  
+  if (funcCommand == "init") {
+    //do something
+    cout <<"The init command was entered";
+  }
+    else if (funcCommand == "start") {
+      //do something
+      cout <<"The send command was entered";
+    }
+    else if (funcCommand == "stretch") {
+      cout <<"The stretch command was entered.";
+      cout <<"Now stretching the arm";
+      //stretch();
+    }
+    else if (funcCommand == "stop") {
+      //we stop every motor exaclty where it is
+      //this command could also be the one sent when the joystick comes back to it's neutral position
+      cout <<"The stop command was entered";
+      cout <<"Stopping all motors";
+
+      //we call the stop function
+      //stop();
+    }
+    else if (funcCommand == "reboot") {
+      //do something
+      cout <<"The reboot command was entered";
+    }
+    else if (funcCommand == "EE") {
+      cout <<"The EE command was entered";
+      //stop();
+    }
+    else if (funcCommand == "WR") {
+      cout <<"The WR command was entered";
+      //stop();
+    }
+    else if (funcCommand =="TW") {
+      cout <<"The TW command was entered";
+      //stop();
+    }
+    else if (funcCommand== "L1") {
+      cout <<"The L1 command was entered";
+      //stop();
+    }
+    else if (funcCommand == "L2") {
+      cout <<"The L2 command was entered";
+      //stop();
+
+    }
+    else {
+      cout <<"Invalid command";
+    }
+  
+  
+  
+  
+  
+}

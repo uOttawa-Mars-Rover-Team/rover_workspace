@@ -19,9 +19,9 @@ def on_key_release(key):
     global keyPressed
     key = repr(key)
     if (key == "<Key.up: <65362>>"):
-        VacHosePub.publish("StopUpMove")
+        VacHosePub.publish("StopMoveUp")
     if (key == "<Key.down: <65364>>"):
-        VacHosePub.publish("StopDownMove")
+        VacHosePub.publish("StopMoveDown")
     if (key == "u'a'"):
     	AgitatePub.publish("StopAgitation")
     keyPressed = False
@@ -35,9 +35,9 @@ def on_key_press(key):
         if (key == "x"):
             exit()
         elif (key == "<Key.up: <65362>>"):
-            VacHosePub.publish("StartUpMove")
+            VacHosePub.publish("StartMoveUp")
         elif (key == "<Key.down: <65364>>"):
-            VacHosePub.publish("StartDownMove")
+            VacHosePub.publish("StartMoveDown")
         elif (key == "f"):
 	    rospy.loginfo("funnel flapped")
             FunnelFlapPub.publish(Empty())

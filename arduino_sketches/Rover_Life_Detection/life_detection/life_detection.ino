@@ -4,84 +4,82 @@
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 #include <Servo.h>
+#include <HCSR04.h>
+#include <BME280I2C.h>
+#include <Adafruit_SI1145.h>
 
 ros::NodeHandle  nh;
+
+//Publishing topics
+std_msgs::String str_msg;
+ros::Publisher weatherLogger("weather_logger", &str_msg);
+
 //=================================================================================================
 // VACUUM HOSE EXTENDER 
 
+const int hoseDirPin = 8;
+const int hoseStepPin = 7;
 const int stepsPerRevolution = 200;
-const int hoseDirPin = 2;
-const int hoseStepPin = 3;
-const int upperPin = 13; 
-const int lowerPin = 12;
-
-int upperLimit = LOW;
-int lowerLimit = LOW;
+const int trig = 44;
+const int echo = 46;
+const int upperPin = 45;
+const int lowerPin = 46;
 int dir = 0;
-bool collectWeather = false;
-
 
 void hoseCb(std_msgs::String& hose_cmd) {
-    if (hose_cmd.data == "StartMoveDown") {
-        nh.loginfo("Moving hose down....");
-        dir = 1;
-        digitalWrite(hoseDirPin, HIGH);
-    } else if (hose_cmd.data == "StopMoveDown") {
-        dir = 0;
-        nh.loginfo("Stopped Down Movement");
-        return;
-    } else if (hose_cmd.data == "StartMoveUp") {
-        nh.loginfo("Moving hose up....");
-        dir = -1;
-        digitalWrite(hoseDirPin, LOW);        
-    } else if (hose_cmd.data == "StopMoveUp") {
-        dir = 0;
-        nh.loginfo("Stopped Up Movement");
-        return;
+  if (hose_cmd.data == "StartMoveDown") {
+    nh.loginfo("Moving hose down....");
+    dir = 1;
+    digitalWrite(hoseDirPin, HIGH);
+  } else if (hose_cmd.data == "StopMoveDown") {
+    dir = 0;
+    nh.loginfo("Stopped Down Movement");
+    return;
+  } else if (hose_cmd.data == "StartMoveUp") {
+    nh.loginfo("Moving hose up....");
+    dir = -1;
+    digitalWrite(hoseDirPin, LOW);        
+  } else if (hose_cmd.data == "StopMoveUp") {
+    dir = 0;
+    nh.loginfo("Stopped Up Movement");
+    return;
+  }
+  while (1){
+    nh.spinOnce();
+      double* distance = HCSR04.measureDistanceCm();
+      //publish distance
+    if (dir == 0){
+      break;
     }
-    while (!checkLimits){
-        nh.spinOnce();
-        /* publish distance data */
-        if (dir == 0){
-          break;
-        }
-        for (int x = 0; x < stepsPerRevolution; x++){
-          if (!checkLimits()) {
-              digitalWrite(hoseStepPin, HIGH);
-              delayMicroseconds(2000);
-              digitalWrite(hoseStepPin, LOW);
-              delayMicroseconds(2000);
-          } else {
-              backOff();
-              break;
-          }
-        }          
-}
+    for (int x = 0; x < stepsPerRevolution; x++){
+      if (!checkLimits()) {
+        digitalWrite(hoseStepPin, HIGH);
+        delayMicroseconds(2000);
+        digitalWrite(hoseStepPin, LOW);
+        delayMicroseconds(2000);
+      } else {
+        backOff();
+        break;
+      }
+    }          
+  }
 }
 
 
-/*
- * Function:  checkLimits 
- * --------------------
- * reads the state of the upper an lower limit
- * switches of the vacuum hose extender.
- * 
- * returns: true if a switch is pressed
- */
 bool checkLimits(){
-  upperLimit = digitalRead(upperPin);
-  lowerLimit = digitalRead(lowerPin);
+  int lsUpperLimit = digitalRead(upperPin);
+  int lsLowerLimit = digitalRead(lowerPin);
 
-  if(upperLimit  == LOW){
+  if(lsUpperLimit  == LOW) {
     nh.logwarn("Upper Limit LOW");
   }
-  if(lowerLimit  == LOW){
+  if(lsLowerLimit  == LOW) {
     nh.logwarn("Lower Limit LOW");
   }
 
-  if(!upperLimit || !lowerLimit){
+  if(!lsUpperLimit || !lsLowerLimit){
     return true;
-  }else{
+  } else {
     return false;
   }
 }
@@ -94,9 +92,9 @@ bool checkLimits(){
  * 
  */
 void backOff(){
-  if (dir == 1 && !lowerLimit){
+  if (dir == 1){
      digitalWrite(hoseDirPin, LOW);
-  }else if (dir == -1 && !upperLimit){
+  }else if (dir == -1){
      digitalWrite(hoseDirPin, HIGH);
   }else{
     nh.logerror("check limit switches");
@@ -118,12 +116,8 @@ void backOff(){
 //=================================================================================================
 // VACUUM CONTROLLER
 
-const int vacuumPin = 10;
-
 int vacuumState = LOW;
-Servo servo;
-int pos = 0;
-boolean flapIsOpen = false;
+const int vacuumPin = 17;
 
 /*
  * Function:  vacuumCb 
@@ -133,11 +127,11 @@ boolean flapIsOpen = false;
 void vacuumCb( const std_msgs::Empty& toggle_vacuum){
   if (vacuumState == LOW){
     nh.loginfo("Turning on vacuum....");
-    digitalWrite(vacuumPin, LOW);
-    vacuumState = HIGH;
-  }else{
-    nh.loginfo("Turning off vacuum....");
     digitalWrite(vacuumPin, HIGH);
+    vacuumState = HIGH;
+  } else {
+    nh.loginfo("Turning off vacuum....");
+    digitalWrite(vacuumPin, LOW);
     vacuumState = LOW;
   }
 }
@@ -148,6 +142,11 @@ void vacuumCb( const std_msgs::Empty& toggle_vacuum){
  * --------------------
  * callback function that toggles the position of the funnel flap
  */
+
+Servo servo;
+int pos = 0;
+bool flapIsOpen = false;
+
 void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
   if (!flapIsOpen){
     nh.loginfo("Opening funnel flap....");
@@ -157,7 +156,7 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
       delay(15);                       // waits 15ms for the servo to reach the position
     }
     flapIsOpen = true;
-    nh.loginfo("funnelFlapCb: Done");
+    nh.loginfo("funnel flap opened");
   }else{
     nh.loginfo("Closing funnel flap....");
     for (pos = 90; pos > 0; pos -= 1) { // goes from 0 degrees to 90 degrees
@@ -166,7 +165,7 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
       delay(15);                       // waits 15ms for the servo to reach the position
     }
     flapIsOpen = false;
-    nh.loginfo("funnelFlapCb: Done");
+    nh.loginfo("funnel flap closed");
   }
 }
 
@@ -176,7 +175,7 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
 const float degrees_between_beaker = 25.00/360;
 const float gear_ratio = 309/14;
 const int beakerDirPin = 6;
-const int beakerStepPin = 7;
+const int beakerStepPin = 5;
 
 int currentBeakerIndex = 0;
 int beakerHome = 1;
@@ -202,6 +201,21 @@ void sampleSystemCb( const std_msgs::String& sample_sys_cmd){
   }else if (sample_sys_cmd.data == "StartCCWRotate"){
     moveBeaker(false);
   }
+}
+
+void moveBeaker(bool reverse){
+  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution);
+  
+  digitalWrite(beakerDirPin, reverse);
+  for(int x = 0; x < steps; x++)
+  {
+    nh.spinOnce();
+    digitalWrite(beakerStepPin, HIGH);
+    delayMicroseconds(2000);
+    digitalWrite(beakerStepPin, LOW);
+    delayMicroseconds(2000);
+  } 
+  
 }
 
 /*
@@ -241,67 +255,11 @@ void aggitationCb( const std_msgs::String& aggitationCMD){
     }
 }
 
-/*
- * Function:  stepForward 
- * --------------------
- * steps the motor foward 10 times to make fine adjustment
- * to the sample system's position
- */
-void stepForward(){
-  nh.loginfo("Step Forward");
-  digitalWrite(beakerDirPin, HIGH);
-     
-  for(int x = 0; x < 10; x++)
-  {
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-  }
-}
-
-/*
- * Function:  stepBack
- * --------------------
- * steps the motor backward 10 times to make fine adjustment
- * to the sample system's position
- */
-void stepBack(){
-  nh.loginfo("Step Backward");
-  digitalWrite(beakerDirPin, LOW);
-     
-  for(int x = 0; x < 10; x++)
-  {
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-  }
-}
-
-/*
- * Function:  moveBeaker 
- * --------------------
- * rotates the Sample System to the desired postion
- *
- *  beakerIndex: The desired beaker to fetch
- *      reverse: Flag that rotates system in reverse direction
- */
-void moveBeaker(bool reverse){
-  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution);
-  
-  digitalWrite(beakerDirPin, reverse);
-  for(int x = 0; x < steps; x++)
-  {
-    nh.spinOnce();
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-  } 
-  
-}
-
+bool collectWeather = false;
+BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
+BME280::PresUnit presUnit(BME280::PresUnit_atm);
+Adafruit_SI1145 uv = Adafruit_SI1145();
+BME280I2C bme;
 
 void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
   if (collectWeather){
@@ -311,23 +269,25 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
     bool collectWeather = true;
     while (collectWeather){
       nh.spinOnce();
-      /*float UV = 
-      float humidity = 
-      float temp = 
-      float windSpeed = 
-      float pressure = 
-      String data = UV + ";" + humidity + ";" + temp + ";" + windSpeed + ";" + pressure
-      publish data */
+      float UV = uv.readUV();
+      UV /= 100.0;  
+      float humidity = bme.hum();
+      float temp = bme.temp();
+      float windSpeed = 5.0;
+      float pressure = bme.pres();
+      String data1 = String(String(UV) + ";" + String(humidity) + ";" + String(temp) + ";" + String(windSpeed) + ";" + String(pressure));
+      int len = data1.length() + 1;
+      char data[len];
+      data1.toCharArray(data, len);
+      str_msg.data = data;
+      weatherLogger.publish(&str_msg);
+      delay(1000);
     }
   }
 
 }
 
 //=================================================================================================
-
-//Publishing topics
-std_msgs::String str_msg;
-ros::Publisher TempLogger("life_detection_logger", &str_msg);
 
 //Subscribing topics hose_cmd
 ros::Subscriber<std_msgs::String> hoseSub("VacHoseCMD", &hoseCb );
@@ -343,6 +303,10 @@ void setup() {
   // VACUUM HOSE EXTENDER
   pinMode(upperPin, INPUT);
   pinMode(lowerPin, INPUT);
+  pinMode(22, OUTPUT);
+  digitalWrite(22, HIGH);
+  pinMode(23, OUTPUT);
+  digitalWrite(23, HIGH);
 
   pinMode(hoseStepPin, OUTPUT);
   pinMode(hoseDirPin, OUTPUT);
@@ -364,7 +328,11 @@ void setup() {
   nh.subscribe(vacuumSub);
   nh.subscribe(funnelFlapSub);
   nh.subscribe(weatherCollectionSub);
-  nh.advertise(TempLogger); 
+  nh.advertise(weatherLogger); 
+
+  HCSR04.begin(trig, echo);
+  bme.begin();
+  uv.begin();
 }
 
 void loop() {

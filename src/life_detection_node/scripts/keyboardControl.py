@@ -11,7 +11,7 @@ FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
 VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
 BeakerPub = rospy.Publisher('BeakerCMD', String, queue_size= 10)
 AgitatePub = rospy.Publisher('AgitateCMD', String, queue_size= 10)
-WeatherCollectionPub = rospy.Publusher('WeatherCollectionCMD', Empty, queue_size= 10)
+WeatherCollectionPub = rospy.Publisher('WeatherCollectionCMD', Empty, queue_size= 10)
 
 keyPressed = False
 
@@ -34,21 +34,21 @@ def on_key_press(key):
     if keyPressed == False:
         if (key == "x"):
             exit()
-        elif (key == "<Key.up: <65362>>"):
-            VacHosePub.publish("StartMoveUp")
         elif (key == "<Key.down: <65364>>"):
             VacHosePub.publish("StartMoveDown")
+        elif (key == "<Key.p: <65362>>"):
+            VacHosePub.publish("StartMoveUp")
         elif (key == "f"):
 	    rospy.loginfo("funnel flapped")
             FunnelFlapPub.publish(Empty())
         elif (key == "v"):
-	    rospy.loginfo("vaccumed")
+	    rospy.loginfo("vacuum toggled")
             VacMotorPub.publish(Empty())
         elif (key == "a"):
             AgitatePub.publish("StartAgitation")
-        elif (key == "<Key.right: <65361>>"):
+        elif (key == "<Key.right: <65363>>"):
             BeakerPub.publish("StartCWRotate")
-        elif (key == "<Key.left: <65363>>"):
+        elif (key == "<Key.left: <65361>>"):
             BeakerPub.publish("StartCCWRotate")
         elif (key == "w"):
             WeatherCollectionPub.publish(Empty())

@@ -20,10 +20,10 @@ ros::Publisher weatherLogger("weather_logger", &str_msg);
 const int hoseDirPin = 8;
 const int hoseStepPin = 7;
 const int stepsPerRevolution = 200;
-const int trig = 44;
-const int echo = 46;
-const int upperPin = 45;
-const int lowerPin = 46;
+const int trig = 2;
+const int echo = 4;
+const int upperPin = 34;
+const int lowerPin = 35;
 int dir = 0;
 
 void hoseCb(std_msgs::String& hose_cmd) {
@@ -117,7 +117,7 @@ void backOff(){
 // VACUUM CONTROLLER
 
 int vacuumState = LOW;
-const int vacuumPin = 17;
+const int vacuumPin = 3;
 
 /*
  * Function:  vacuumCb 

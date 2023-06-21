@@ -5,11 +5,11 @@
 <launch>
   <!-- Arguments: Modify these as needed -->
   <arg name="joy_config" default="f310" />
-  <arg name="joy_dev" default="/dev/input/js0" />
+  <arg name="joy_dev" default="/dev/input/js2" />
   <arg name="config_filepath" default="$(find teleop_twist_joy)/config/$(arg joy_config).config.yaml" />
   
   <!-- Joystick Node -->
-  <node pkg="joy" type="joy_node" name="joy_node">
+  <node pkg="joy" type="joy_node" name="joy_node_drive">
     <param name="dev" value="$(arg joy_dev)" />
     <param name="deadzone" value="0.3" />
     <param name="autorepeat_rate" value="20" />
@@ -18,6 +18,8 @@
   <!-- Teleoperation Node -->
   <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
     <rosparam command="load" file="$(arg config_filepath)" />
+    <param name="max_speed" type="int" value="1"/>
+    <param name="speed_levels" type="int" value="3"/>
   </node>
 
   <!-- Multiplex Motor Commands Node -->

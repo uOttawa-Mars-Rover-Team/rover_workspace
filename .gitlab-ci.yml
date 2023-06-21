@@ -5,10 +5,7 @@ cache:
     - ccache/
 
 before_script:
-  - git submodule update --init --recursive
-  - apt-get update && apt-get install -y libusb-dev ros-melodic-openslam-gmapping
-  - rosdep install --from-paths ./src/external_packages --ignore-src --rosdistro melodic -y -r
-  - rm -rf ./src/external_packages/joystick_drivers/wiimote
+  - apt-get update && apt-get install -y libusb-dev ros-melodic-openslam-gmapping ros-melodic-realsense2-camera ros-melodic-rtabmap-ros ros-melodic-video-stream-opencv ros-melodic-rviz ros-melodic-rosserial ros-melodic-joystick-drivers
   
 catkin_make:
   stage: build

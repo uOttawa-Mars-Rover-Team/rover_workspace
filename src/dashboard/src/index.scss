@@ -1,0 +1,37 @@
+.ant-layout-header {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.ant-collapse-content-box {
+  padding: 0 !important;
+  line-height: 0;
+}
+
+.ant-descriptions-bordered .ant-descriptions-view {
+  border: none !important;
+}
+
+.ant-descriptions-view {
+  border-radius: unset !important;
+}
+
+.ant-skeleton-element {
+  width: 100% !important;
+}
+
+h3 {
+  padding: 0;
+  margin: 0;
+}
+
+header {
+  .ant-input {
+    background-color: #00000070;
+    border-color: #00000000;
+  }
+  .ant-btn {
+    background-color: #00000020;
+    border-color: #00000000;
+  }
+}
+

@@ -35,11 +35,12 @@ void loop() {
        delayMicroseconds(10);
        uint8_t cmd = (uint8_t) Serial.read();
 
+
        if (cmd == 0) {
            Serial.readBytes((char *) &received.linear, sizeof(float));
            Serial.readBytes((char *) &received.rotation, sizeof(float));
 
-           setWheelVelocity((int) ((received.linear - received.rotation) * 100), (int) ((received.linear + received.rotation) * 100));
+           setWheelVelocity((int) ((received.linear - received.rotation) * 100), (int) ((received.linear + received.rotation) * -100));
        }
    }
 }

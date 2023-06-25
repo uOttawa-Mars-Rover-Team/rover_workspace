@@ -1,0 +1,73 @@
+{
+  "url": "ws://localhost:9090",
+  "overview": {
+    "autoRefresh": {
+      "nodes": false,
+      "params": false,
+      "services": false,
+      "topics": false
+    },
+    "autoRefreshFrequency": 1000,
+    "cameraFeeds": [
+      {
+        "title": "IntelRealsense RGB Camera",
+        "topicName": "/camera/color/image_raw",
+        "messageType": "sensor_msgs/Image"
+      },
+      {
+        "title": "IntelRealsense Depth Camera",
+        "topicName": "/camera/depth/image_raw/compressed",
+        "messageType": "sensor_msgs/CompressedImage"
+      },
+      {
+        "title": "Webcam RGB Camera 1",
+        "topicName": "/webcam/image_raw",
+        "messageType": "sensor_msgs/Image"
+      },
+      {
+        "title": "Webcam RGB Camera 2",
+        "topicName": "/camera/rgb/image_rect_color/compressed",
+        "messageType": "sensor_msgs/CompressedImage"
+      }
+    ],
+    "cameraControls": {
+      "panorama": {
+        "topicName": "/panorama_path"
+      },
+      "picture": {
+        "topicName": "/picture_topic"
+      },
+      "video": {
+        "topicName": "/video_action"
+      }
+    },
+    "charts": [
+      {
+        "name": "UV Sensor",
+        "dataLabel": "UV Value",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Humidity Sensor",
+        "dataLabel": "Humidity",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Temperature Sensor",
+        "dataLabel": "Temperature",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Wind Sensor",
+        "dataLabel": "Wind Speed",
+        "topicName": "/weather_logger"
+      },
+
+      {
+        "name": "Pressure Sensor",
+        "dataLabel": "Pressure",
+        "topicName": "/weather_logger"
+      }
+    ]
+  }
+}

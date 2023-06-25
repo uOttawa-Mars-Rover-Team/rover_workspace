@@ -1,4 +1,5 @@
-axis_linear: 1  # Left thumb stick vertical
+axis_linear: 10  # Left thumb stick vertical
+
 scale_linear: 0.7
 scale_linear_turbo: 1.5
 

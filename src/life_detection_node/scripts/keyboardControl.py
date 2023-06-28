@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
 from std_msgs.msg import Empty
 from std_msgs.msg import UInt8
 from pynput import keyboard
@@ -9,8 +8,8 @@ rospy.init_node('LifeDetectionControl')
 VacHosePub = rospy.Publisher('VacHoseCMD', UInt8, queue_size=10)
 FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
 VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
-BeakerPub = rospy.Publisher('BeakerCMD', String, queue_size= 10)
-AgitatePub = rospy.Publisher('AgitateCMD', String, queue_size= 10)
+BeakerPub = rospy.Publisher('BeakerCMD', UInt8, queue_size= 10)
+AgitatePub = rospy.Publisher('AgitateCMD', UInt8, queue_size= 10)
 WeatherCollectionPub = rospy.Publisher('WeatherCollectionCMD', Empty, queue_size= 10)
 
 keyPressed = False
@@ -23,7 +22,7 @@ def on_key_release(key):
     if (key == "<Key.down: <65364>>"):
         VacHosePub.publish(4)
     if (key == "u'a'"):
-    	AgitatePub.publish("StopAgitation")
+    	AgitatePub.publish(0)
     keyPressed = False
 
 def on_key_press(key):
@@ -35,23 +34,19 @@ def on_key_press(key):
         if (key == "x"):
             exit()
         elif (key == "<Key.down: <65364>>"):
-	    rospy.loginfo("StartMoveDown")
             VacHosePub.publish(1)
         elif (key == "<Key.p: <65362>>"):
-	    rospy.loginfo("StartMoveUp")	
             VacHosePub.publish(2)
         elif (key == "f"):
-	    rospy.loginfo("funnel flapped")
             FunnelFlapPub.publish(Empty())
         elif (key == "v"):
-	    rospy.loginfo("vacuum toggled")
             VacMotorPub.publish(Empty())
         elif (key == "a"):
-            AgitatePub.publish("StartAgitation")
+            AgitatePub.publish(1)
         elif (key == "<Key.right: <65363>>"):
-            BeakerPub.publish("StartCWRotate")
+            BeakerPub.publish(1)
         elif (key == "<Key.left: <65361>>"):
-            BeakerPub.publish("StartCCWRotate")
+            BeakerPub.publish(2)
         elif (key == "w"):
             WeatherCollectionPub.publish(Empty())
         keyPressed = True

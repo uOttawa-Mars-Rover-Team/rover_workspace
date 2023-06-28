@@ -1,12 +1,11 @@
-
 #include <ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 #include <Servo.h>
 #include <HCSR04.h>
-#include <BME280I2C.h>
 #include <Adafruit_SI1145.h>
+#include <Adafruit_BME280.h>
 
 
 ros::NodeHandle  nh;
@@ -18,49 +17,55 @@ ros::Publisher weatherLogger("weather_logger", &str_msg);
 //=================================================================================================
 // VACUUM HOSE EXTENDER 
 
-const int hoseDirPin = 8;
-const int hoseStepPin = 7;
-const int stepsPerRevolution = 200;
+const int hoseDirPin = 10;
+const int hoseStepPin = 11;
+const int stepsPerRevolution = 10;
 const int trig = 2;
 const int echo = 4;
 const int upperPin = 34;
 const int lowerPin = 35;
 int dir = 0;
+HCSR04 hc(trig, echo);
 
-void hoseCb(std_msgs::String& hose_cmd) {
-  if (hose_cmd.data == "StartMoveDown") {
+void hoseCb(std_msgs::UInt8& hose_cmd) {
+    nh.loginfo(hose_cmd.data);
+  if (hose_cmd.data == 1) {
+    digitalWrite(hoseDirPin, true);
     nh.loginfo("Moving hose down....");
+    Serial.print("Moving hose down....");
     dir = 1;
-    digitalWrite(hoseDirPin, HIGH);
-  } else if (hose_cmd.data == "StopMoveDown") {
+  } else if (hose_cmd.data == 4) {
     dir = 0;
     nh.loginfo("Stopped Down Movement");
+    Serial.print("Stopped Down Movment");
     return;
-  } else if (hose_cmd.data == "StartMoveUp") {
+  } else if (hose_cmd.data == 2) {
+    digitalWrite(hoseDirPin, false);  
     nh.loginfo("Moving hose up....");
-    dir = -1;
-    digitalWrite(hoseDirPin, LOW);        
-  } else if (hose_cmd.data == "StopMoveUp") {
+    Serial.print("Moving hose up....");
+    dir = -1;      
+  } else if (hose_cmd.data == 3) {
     dir = 0;
     nh.loginfo("Stopped Up Movement");
+    Serial.print("Stopped Up Movement");
     return;
   }
   while (1){
     nh.spinOnce();
-      double* distance = HCSR04.measureDistanceCm();
-      //publish distance
+      float distance = hc.dist();
     if (dir == 0){
       break;
     }
     for (int x = 0; x < stepsPerRevolution; x++){
-      if (!checkLimits()) {
+      if (checkLimits()) {
+        backOff();
+        break;
+      } else {
+        Serial.print(dir);
         digitalWrite(hoseStepPin, HIGH);
         delayMicroseconds(2000);
         digitalWrite(hoseStepPin, LOW);
         delayMicroseconds(2000);
-      } else {
-        backOff();
-        break;
       }
     }          
   }
@@ -71,14 +76,16 @@ bool checkLimits(){
   int lsUpperLimit = digitalRead(upperPin);
   int lsLowerLimit = digitalRead(lowerPin);
 
-  if(lsUpperLimit  == LOW) {
-    nh.logwarn("Upper Limit LOW");
+  if(lsUpperLimit == HIGH) {
+    nh.logwarn("Upper Limit hit");
+    Serial.print("Upper Limit hit");
   }
-  if(lsLowerLimit  == LOW) {
-    nh.logwarn("Lower Limit LOW");
+  if(lsLowerLimit  == HIGH) {
+    nh.logwarn("Lower Limit hit");
+    Serial.print("Lower Limit hit");
   }
 
-  if(!lsUpperLimit || !lsLowerLimit){
+  if (lsUpperLimit || lsLowerLimit){
     return true;
   } else {
     return false;
@@ -94,9 +101,9 @@ bool checkLimits(){
  */
 void backOff(){
   if (dir == 1){
-     digitalWrite(hoseDirPin, LOW);
+     digitalWrite(hoseDirPin, false);
   }else if (dir == -1){
-     digitalWrite(hoseDirPin, HIGH);
+     digitalWrite(hoseDirPin, true);
   }else{
     nh.logerror("check limit switches");
     dir = 0;
@@ -196,10 +203,10 @@ int beakerHome = 1;
  *               12 : Rotate the system backward
  *  (Anything else) : Do nothing
  */
-void sampleSystemCb( const std_msgs::String& sample_sys_cmd){
-  if (sample_sys_cmd.data == "StartCWRotate"){
+void sampleSystemCb( const std_msgs::UInt8& sample_sys_cmd){
+  if (sample_sys_cmd.data == 1){
     moveBeaker(true);
-  }else if (sample_sys_cmd.data == "StartCCWRotate"){
+  }else if (sample_sys_cmd.data == 2){
     moveBeaker(false);
   }
 }
@@ -228,23 +235,25 @@ void moveBeaker(bool reverse){
  *                    (in seconds) to aggitate the samples for.
  */
 
-bool checkStatus(String message){
-        if (message == "StartAgitation") {
-            return true;
-        } else {
-            return false; 
-        }
-}
+// bool checkStatus(String message){
+//         if (message == 1) {
+//             return true;
+//         } else {
+//             return false; 
+//         }
+// }
 
-void aggitationCb( const std_msgs::String& aggitationCMD){
-    if (aggitationCMD.data == "StartAgitation") {
-        while (checkStatus(aggitationCMD.data)){
+void aggitationCb( const std_msgs::UInt8& aggitationCMD){
+    if (aggitationCMD.data == 1) {
             nh.spinOnce();
             
             digitalWrite(beakerDirPin, HIGH);
 
             digitalWrite(beakerStepPin, HIGH);
-            delayMicroseconds(4000); 
+            delayMicroseconds(4000);
+            digitalWrite(beakerStepPin, LOW);
+            delayMicroseconds(4000);
+
             digitalWrite(beakerDirPin, LOW);
 
             digitalWrite(beakerStepPin, HIGH);
@@ -252,15 +261,12 @@ void aggitationCb( const std_msgs::String& aggitationCMD){
             digitalWrite(beakerStepPin, LOW);
             delayMicroseconds(4000);
             delay(10); // Wait a second
-        }
     }
 }
 
 bool collectWeather = false;
-BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
-BME280::PresUnit presUnit(BME280::PresUnit_atm);
 Adafruit_SI1145 uv = Adafruit_SI1145();
-BME280I2C bme;
+Adafruit_BME280 bme;
 
 void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
   if (collectWeather){
@@ -268,14 +274,13 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
     return;
   } else {
     bool collectWeather = true;
-    while (collectWeather){
       nh.spinOnce();
       float UV = uv.readUV();
       UV /= 100.0;  
-      float humidity = bme.hum();
-      float temp = bme.temp();
+      float humidity = bme.readHumidity();
+      float temp = bme.readTemperature();
       float windSpeed = 5.0;
-      float pressure = bme.pres();
+      float pressure = bme.readPressure();
       String data1 = String(String(UV) + ";" + String(humidity) + ";" + String(temp) + ";" + String(windSpeed) + ";" + String(pressure));
       int len = data1.length() + 1;
       char data[len];
@@ -283,7 +288,6 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
       str_msg.data = data;
       weatherLogger.publish(&str_msg);
       delay(1000);
-    }
   }
 
 }
@@ -291,9 +295,9 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
 //=================================================================================================
 
 //Subscribing topics hose_cmd
-ros::Subscriber<std_msgs::String> hoseSub("VacHoseCMD", &hoseCb );
+ros::Subscriber<std_msgs::UInt8> hoseSub("VacHoseCMD", &hoseCb );
 ros::Subscriber<std_msgs::UInt8> sampleSystemSub("BeakerCMD", &sampleSystemCb );
-ros::Subscriber<std_msgs::String> aggitationSub("AgitateCMD", &aggitationCb );
+ros::Subscriber<std_msgs::UInt8> aggitationSub("AgitateCMD", &aggitationCb );
 ros::Subscriber<std_msgs::Empty> vacuumSub("VacMotorCMD", &vacuumCb );
 ros::Subscriber<std_msgs::Empty> funnelFlapSub("FunnelFlapCMD", &funnelFlapCb );
 ros::Subscriber<std_msgs::Empty> weatherCollectionSub("WeatherCollectionCMD", &collectWeatherCb );
@@ -315,7 +319,7 @@ void setup() {
   // VACUUM CONTROLLER
   pinMode(vacuumPin, OUTPUT);
   digitalWrite(vacuumPin, LOW);
-  servo.attach(9);
+  servo.attach(8);
 
   // BEAKER CAROUSEL CONTROLLER
   pinMode(beakerStepPin, OUTPUT);
@@ -331,9 +335,9 @@ void setup() {
   nh.subscribe(weatherCollectionSub);
   nh.advertise(weatherLogger); 
 
-  HCSR04.begin(trig, echo);
   bme.begin();
   uv.begin();
+  Serial.begin(9600);
 }
 
 void loop() {

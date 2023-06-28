@@ -2,6 +2,7 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 #include <Servo.h>
 #include <HCSR04.h>
 #include <Adafruit_SI1145.h>
@@ -11,8 +12,6 @@
 ros::NodeHandle  nh;
 
 //Publishing topics
-std_msgs::String str_msg;
-ros::Publisher weatherLogger("weather_logger", &str_msg);
 
 //=================================================================================================
 // VACUUM HOSE EXTENDER 
@@ -26,6 +25,9 @@ const int upperPin = 34;
 const int lowerPin = 35;
 int dir = 0;
 HCSR04 hc(trig, echo);
+
+std_msgs::Float32 flo_msg;
+ros::Publisher hoseDistance("hose_distance", &flo_msg);
 
 void hoseCb(std_msgs::UInt8& hose_cmd) {
     nh.loginfo(hose_cmd.data);
@@ -53,6 +55,8 @@ void hoseCb(std_msgs::UInt8& hose_cmd) {
   while (1){
     nh.spinOnce();
       float distance = hc.dist();
+      flo_msg.data = distance;
+      hoseDistance.publish(&flo_msg);
     if (dir == 0){
       break;
     }
@@ -182,8 +186,8 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
 
 const float degrees_between_beaker = 25.00/360;
 const float gear_ratio = 309/14;
-const int beakerDirPin = 6;
-const int beakerStepPin = 5;
+const int beakerDirPin = 12;
+const int beakerStepPin = 13;
 
 int currentBeakerIndex = 0;
 int beakerHome = 1;
@@ -267,6 +271,9 @@ void aggitationCb( const std_msgs::UInt8& aggitationCMD){
 bool collectWeather = false;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 Adafruit_BME280 bme;
+std_msgs::String str_msg;
+ros::Publisher weatherLogger("weather_logger", &str_msg);
+
 
 void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
   if (collectWeather){
@@ -334,6 +341,7 @@ void setup() {
   nh.subscribe(funnelFlapSub);
   nh.subscribe(weatherCollectionSub);
   nh.advertise(weatherLogger); 
+  nh.advertise(hoseDistance); 
 
   bme.begin();
   uv.begin();

@@ -6,7 +6,7 @@ from std_msgs.msg import UInt8
 from pynput import keyboard
 
 rospy.init_node('LifeDetectionControl')
-VacHosePub = rospy.Publisher('VacHoseCMD', String, queue_size=10)
+VacHosePub = rospy.Publisher('VacHoseCMD', UInt8, queue_size=10)
 FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
 VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
 BeakerPub = rospy.Publisher('BeakerCMD', String, queue_size= 10)
@@ -19,9 +19,9 @@ def on_key_release(key):
     global keyPressed
     key = repr(key)
     if (key == "<Key.up: <65362>>"):
-        VacHosePub.publish("StopMoveUp")
+        VacHosePub.publish(3)
     if (key == "<Key.down: <65364>>"):
-        VacHosePub.publish("StopMoveDown")
+        VacHosePub.publish(4)
     if (key == "u'a'"):
     	AgitatePub.publish("StopAgitation")
     keyPressed = False
@@ -35,9 +35,11 @@ def on_key_press(key):
         if (key == "x"):
             exit()
         elif (key == "<Key.down: <65364>>"):
-            VacHosePub.publish("StartMoveDown")
+	    rospy.loginfo("StartMoveDown")
+            VacHosePub.publish(1)
         elif (key == "<Key.p: <65362>>"):
-            VacHosePub.publish("StartMoveUp")
+	    rospy.loginfo("StartMoveUp")	
+            VacHosePub.publish(2)
         elif (key == "f"):
 	    rospy.loginfo("funnel flapped")
             FunnelFlapPub.publish(Empty())

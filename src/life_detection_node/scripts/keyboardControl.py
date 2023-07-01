@@ -3,14 +3,15 @@ import rospy
 from std_msgs.msg import Empty
 from std_msgs.msg import UInt8
 from pynput import keyboard
+import time
 
 rospy.init_node('LifeDetectionControl')
-VacHosePub = rospy.Publisher('VacHoseCMD', UInt8, queue_size=10)
-FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=10)
-VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=10)
-BeakerPub = rospy.Publisher('BeakerCMD', UInt8, queue_size= 10)
-AgitatePub = rospy.Publisher('AgitateCMD', UInt8, queue_size= 10)
-WeatherCollectionPub = rospy.Publisher('WeatherCollectionCMD', Empty, queue_size= 10)
+VacHosePub = rospy.Publisher('VacHoseCMD', UInt8, queue_size=100)
+FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=100)
+VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=100)
+BeakerPub = rospy.Publisher('BeakerCMD', UInt8, queue_size= 100)
+AgitatePub = rospy.Publisher('AgitateCMD', UInt8, queue_size= 100)
+WeatherCollectionPub = rospy.Publisher('WeatherCollectionCMD', Empty, queue_size= 100)
 
 keyPressed = False
 

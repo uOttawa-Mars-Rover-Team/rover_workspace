@@ -7,6 +7,7 @@
 #include <HCSR04.h>
 #include <Adafruit_SI1145.h>
 #include <Adafruit_BME280.h>
+#include <ezButton.h>
 
 
 ros::NodeHandle  nh;
@@ -18,78 +19,71 @@ ros::NodeHandle  nh;
 
 const int hoseDirPin = 10;
 const int hoseStepPin = 11;
-const int stepsPerRevolution = 10;
+const int stepsPerRevolution = 25;
 const int trig = 2;
 const int echo = 4;
-const int upperPin = 34;
-const int lowerPin = 35;
+ezButton lowerLimitSwitch(52);
+ezButton upperLimitSwitch(53);
 int dir = 0;
 HCSR04 hc(trig, echo);
 
 std_msgs::Float32 flo_msg;
 ros::Publisher hoseDistance("hose_distance", &flo_msg);
 
+
 void hoseCb(std_msgs::UInt8& hose_cmd) {
-    nh.loginfo(hose_cmd.data);
   if (hose_cmd.data == 1) {
-    digitalWrite(hoseDirPin, true);
+    digitalWrite(hoseDirPin, false);
     nh.loginfo("Moving hose down....");
-    Serial.print("Moving hose down....");
     dir = 1;
+    nh.spinOnce();
   } else if (hose_cmd.data == 4) {
     dir = 0;
     nh.loginfo("Stopped Down Movement");
-    Serial.print("Stopped Down Movment");
     return;
   } else if (hose_cmd.data == 2) {
-    digitalWrite(hoseDirPin, false);  
+    digitalWrite(hoseDirPin, true);  
     nh.loginfo("Moving hose up....");
-    Serial.print("Moving hose up....");
-    dir = -1;      
+    dir = -1;
+    nh.spinOnce();
   } else if (hose_cmd.data == 3) {
     dir = 0;
     nh.loginfo("Stopped Up Movement");
-    Serial.print("Stopped Up Movement");
     return;
   }
-  while (1){
-    nh.spinOnce();
-      float distance = hc.dist();
-      flo_msg.data = distance;
-      hoseDistance.publish(&flo_msg);
-    if (dir == 0){
+  float avgDistance = 0;
+  for (int i = 0; i<=5;i++){
+    float distance = hc.dist();
+    avgDistance = avgDistance + distance;
+  }
+  avgDistance = avgDistance/6;
+  flo_msg.data = avgDistance;
+  hoseDistance.publish(&flo_msg);
+  for (int x = 0; x < stepsPerRevolution; x++){
+    if (checkLimits()) {
+      backOff();
       break;
-    }
-    for (int x = 0; x < stepsPerRevolution; x++){
-      if (checkLimits()) {
-        backOff();
-        break;
-      } else {
-        Serial.print(dir);
-        digitalWrite(hoseStepPin, HIGH);
-        delayMicroseconds(2000);
-        digitalWrite(hoseStepPin, LOW);
-        delayMicroseconds(2000);
-      }
-    }          
+    } else {
+      digitalWrite(hoseStepPin, HIGH);
+      delayMicroseconds(2000);
+      digitalWrite(hoseStepPin, LOW);
+      delayMicroseconds(2000);
+    }   
   }
 }
 
 
 bool checkLimits(){
-  int lsUpperLimit = digitalRead(upperPin);
-  int lsLowerLimit = digitalRead(lowerPin);
-
-  if(lsUpperLimit == HIGH) {
+  int lsUpperLimit = upperLimitSwitch.getState();
+  int lsLowerLimit = lowerLimitSwitch.getState();
+  if(lsUpperLimit == LOW) {
     nh.logwarn("Upper Limit hit");
-    Serial.print("Upper Limit hit");
   }
-  if(lsLowerLimit  == HIGH) {
+  if(lsLowerLimit  == LOW) {
     nh.logwarn("Lower Limit hit");
-    Serial.print("Lower Limit hit");
   }
 
-  if (lsUpperLimit || lsLowerLimit){
+  if (!lsUpperLimit || !lsLowerLimit){
     return true;
   } else {
     return false;
@@ -105,16 +99,16 @@ bool checkLimits(){
  */
 void backOff(){
   if (dir == 1){
-     digitalWrite(hoseDirPin, false);
-  }else if (dir == -1){
      digitalWrite(hoseDirPin, true);
+  }else if (dir == -1){
+     digitalWrite(hoseDirPin, false);
   }else{
     nh.logerror("check limit switches");
     dir = 0;
     return;
   }
   delay(1000);
-  for(int x = 0; x < stepsPerRevolution; x++)
+  for(int x = 0; x < 400; x++)
       {
         digitalWrite(hoseStepPin, HIGH);
         delayMicroseconds(2000);
@@ -246,10 +240,19 @@ void moveBeaker(bool reverse){
 //             return false; 
 //         }
 // }
+bool checkStatus(int aggitationCMD) {
+  nh.spinOnce();
+  if (aggitationCMD == 1){
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
 
 void aggitationCb( const std_msgs::UInt8& aggitationCMD){
-    if (aggitationCMD.data == 1) {
-            nh.spinOnce();
+        while (checkStatus(aggitationCMD.data)) {
             
             digitalWrite(beakerDirPin, HIGH);
 
@@ -265,7 +268,7 @@ void aggitationCb( const std_msgs::UInt8& aggitationCMD){
             digitalWrite(beakerStepPin, LOW);
             delayMicroseconds(4000);
             delay(10); // Wait a second
-    }
+        }
 }
 
 bool collectWeather = false;
@@ -281,6 +284,7 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
     return;
   } else {
     bool collectWeather = true;
+    while (true){
       nh.spinOnce();
       float UV = uv.readUV();
       UV /= 100.0;  
@@ -295,6 +299,7 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
       str_msg.data = data;
       weatherLogger.publish(&str_msg);
       delay(1000);
+    }
   }
 
 }
@@ -313,13 +318,6 @@ ros::Subscriber<std_msgs::Empty> weatherCollectionSub("WeatherCollectionCMD", &c
 void setup() {
 
   // VACUUM HOSE EXTENDER
-  pinMode(upperPin, INPUT);
-  pinMode(lowerPin, INPUT);
-  pinMode(22, OUTPUT);
-  digitalWrite(22, HIGH);
-  pinMode(23, OUTPUT);
-  digitalWrite(23, HIGH);
-
   pinMode(hoseStepPin, OUTPUT);
   pinMode(hoseDirPin, OUTPUT);
 
@@ -327,6 +325,7 @@ void setup() {
   pinMode(vacuumPin, OUTPUT);
   digitalWrite(vacuumPin, LOW);
   servo.attach(8);
+  servo.write(0);
 
   // BEAKER CAROUSEL CONTROLLER
   pinMode(beakerStepPin, OUTPUT);
@@ -345,10 +344,11 @@ void setup() {
 
   bme.begin();
   uv.begin();
-  Serial.begin(9600);
 }
 
 void loop() {
+  upperLimitSwitch.loop();
+  lowerLimitSwitch.loop();
   nh.spinOnce();
   delay(1);
 }

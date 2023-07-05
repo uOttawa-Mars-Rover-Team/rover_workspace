@@ -41,7 +41,9 @@ def on_key_press(key):
         elif (key == "f"):
             FunnelFlapPub.publish(Empty())
         elif (key == "v"):
-            VacMotorPub.publish(Empty())
+            VacMotorPub.publish(1)
+        elif (key == "r"):
+            VacMotorPub.publish(2)
         elif (key == "a"):
             AgitatePub.publish(1)
         elif (key == "<Key.right: <65363>>"):

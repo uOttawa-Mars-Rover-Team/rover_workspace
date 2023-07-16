@@ -122,36 +122,36 @@ void backOff(){
 //=================================================================================================
 // VACUUM CONTROLLER
 
-int fowardVacuumState = LOW;
+int forwardVacuumState = LOW;
 int backwardVacuumState = LOW;
 const int vacuumPin = 3;
-const int forwardEnPin = #;
-const int backwardEnPin = #;
-const int forwardPWMPin = #;
-const int backwardPWMPin = #;
+const int forwardEnPin = 20;
+const int backwardEnPin = 21;
+const int forwardPWMPin = 7;
+const int backwardPWMPin = 6;
 
 /*
  * Function:  vacuumCb 
  * --------------------
  * callback function that toggles the vacuum relay.
  */
-void VacuumCb( const std_msgs::UInt8& toggle_vacuum){
+void vacuumCb( const std_msgs::UInt8& toggle_vacuum){
   if (toggle_vacuum.data == 1) {
     digitalWrite(backwardEnPin, LOW);
     digitalWrite(forwardEnPin, HIGH);
     if (forwardVacuumState == LOW) {
       nh.loginfo("Turning on vacuum....");
       for (int i = 0; i <= 255; i += 1){
-        analogWrite(forwardEnPin, i);
-        delay(10);
+        analogWrite(forwardPWMPin, i);
+        delay(20);
       }
       nh.loginfo("Vacuum is at full sucking power");
       forwardVacuumState = HIGH;
     } else {
       nh.loginfo("Turning off vacuum....");
       for (int i = 255; i >= 0; i -= 1){
-        analogWrite(forwardEnPin, i);
-        delay(10);
+        analogWrite(forwardPWMPin, i);
+        delay(20);
       }
       nh.loginfo("Vacuum is off");
       forwardVacuumState = LOW;
@@ -163,16 +163,16 @@ void VacuumCb( const std_msgs::UInt8& toggle_vacuum){
     if (backwardVacuumState == LOW) {
       nh.loginfo("Turning on vacuum....");
       for (int i = 0; i <= 255; i += 1){
-        analogWrite(backwardEnPin, i);
-        delay(10);
+        analogWrite(backwardPWMPin, i);
+        delay(20);
       }
       nh.loginfo("Vacuum is at full sucking power");
       backwardVacuumState = HIGH;
     } else {
       nh.loginfo("Turning off vacuum....");
       for (int i = 255; i >= 0; i -= 1){
-        analogWrite(backwardEnPin, i);
-        delay(10);
+        analogWrite(backwardPWMPin, i);
+        delay(20);
       }
       nh.loginfo("Vacuum is off");
       backwardVacuumState = LOW;
@@ -282,9 +282,11 @@ void moveBeaker(bool reverse){
 bool checkStatus(int aggitationCMD) {
   nh.spinOnce();
   if (aggitationCMD == 1){
+    nh.loginfo("Aggitation Started");
     return true;
   }
   else {
+    nh.loginfo("Aggitation Stopped");
     return false;
   }
 }
@@ -318,12 +320,14 @@ ros::Publisher weatherLogger("weather_logger", &str_msg);
 
 
 void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
-  if (collectWeather){
+  if (collectWeather == true){
     collectWeather = false;
+    nh.loginfo("Stopped weather collection");
     return;
   } else {
-    bool collectWeather = true;
-    while (true){
+    nh.loginfo("Collecting Weather...");
+    collectWeather = true;
+    while (collectWeather){
       nh.spinOnce();
       float UV = uv.readUV();
       UV /= 100.0;  
@@ -337,7 +341,7 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
       data1.toCharArray(data, len);
       str_msg.data = data;
       weatherLogger.publish(&str_msg);
-      delay(1000);
+      delay(5000);
     }
   }
 

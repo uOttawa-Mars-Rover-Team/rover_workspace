@@ -8,7 +8,7 @@ import time
 rospy.init_node('LifeDetectionControl')
 VacHosePub = rospy.Publisher('VacHoseCMD', UInt8, queue_size=100)
 FunnelFlapPub = rospy.Publisher('FunnelFlapCMD', Empty, queue_size=100)
-VacMotorPub = rospy.Publisher('VacMotorCMD', Empty, queue_size=100)
+VacMotorPub = rospy.Publisher('VacMotorCMD', UInt8, queue_size=100)
 BeakerPub = rospy.Publisher('BeakerCMD', UInt8, queue_size= 100)
 AgitatePub = rospy.Publisher('AgitateCMD', UInt8, queue_size= 100)
 WeatherCollectionPub = rospy.Publisher('WeatherCollectionCMD', Empty, queue_size= 100)

@@ -6,30 +6,45 @@ Gives you an overview of the sensors, images, and other ROS information (topics,
 
 ## Prerequisites
 
-> If you already have __Node.js__ and __npm__ installed or is running the Docker version, you can go straight to [Run the code](#run-the-code) (installed if you ran the `full_setup.sh` script).
-
-### Verify dependency installed
-
-Make sure that __Node.js__ and __npm__ is installed. 
-
-* To check if __Node.js__ is installed, try running `node -v` it should return the version, ex: `v10.16.0`.
-* To check if __npm__ is installed, try running `npm -v` it should return the version number, ex: `6.14.13`.
+> If you already have **Node.js** and **npm** installed or is running the Docker version, you can go straight to [Run the code](#run-the-code) (installed if you ran the `full_setup.sh` script).
 
 ### Install Node.js and NPM
 
-To install Node.js, run the following commands :
+To install Node.js (using a NodeSource PPA ), run the following commands:
+
+1. Update existing packages
 
 ```bash
-sudo apt-get install curl python-software-properties
-curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-sudo apt install -y nodejs
+sudo apt update
+sudo apt upgrade
 ```
+
+2. Install Node.js
+
+```bash
+cd ~
+curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
+sudo apt install nodejs
+```
+
+[Source](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04)
+
+Make sure to check your node and npm versions, as described above, after installation to ensure that it was successful.
+
+### Verify dependency installed
+
+Make sure that **Node.js** and **npm** is installed.
+
+- To check if **Node.js** is installed, try running `node -v` it should return the version, ex: `v18.17.0`.
+- To check if **npm** is installed, try running `npm -v` it should return the version number, ex: `9.8.1`.
+- Make sure that the major version (the `X` in version format `X.Y.Z`) is the same as the major versions listed above. The minor (`Y`) and patch (`Z`) portion don't have to be exactly the same.
 
 ## Run the code
 
 > Make sure the ROS webserver is running. To run it, make sure _roscore_ is running by running `roscore`, and launch the webserver by executing this command in another terminal from the root of the rover workspace `roslaunch src/dashboard/websocket.launch`.
 
-At the root of this directory, to install the React dependencies of the dashboard:
+At the root of **_this_** directory, install the dependencies of the dashboard:
 
 ```bash
 npm install
@@ -59,7 +74,7 @@ npm run serve
 
 ### Docker
 
-If you want to run the dashboard in Docker without needing to install __Node.js__, simply run the following command at the root of this directory:
+If you want to run the dashboard in Docker without needing to install **Node.js**, simply run the following command at the root of this directory:
 
 ```bash
 docker-compose up
@@ -73,17 +88,17 @@ A [React](https://reactjs.org/) web application communicating with ROS ([ROSLIBj
 
 Project structure:
 
-* `/src`
-    * `/assets`: static documents
-    * `/components`: reusable React components
-    * `/contexts`: React contexts responsible for the state
-    * `/hooks`: useful React hooks, most just wrappers on ROSlibjs library
-    * `/pages`: page React components
-    * `/utils`: other useful files
+- `/src`
+  - `/assets`: static documents
+  - `/components`: reusable React components
+  - `/contexts`: React contexts responsible for the state
+  - `/hooks`: useful React hooks, most just wrappers on ROSlibjs library
+  - `/pages`: page React components
+  - `/utils`: other useful files
 
 ### Useful tools
 
-* If you ever need to debug a React app, using the DevTools extension is useful ([Chrome](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en) or [Firefox](https://addons.mozilla.org/en-CA/firefox/addon/react-devtools/))
+- If you ever need to debug a React app, using the DevTools extension is useful ([Chrome](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en) or [Firefox](https://addons.mozilla.org/en-CA/firefox/addon/react-devtools/))
 
 ## Debug
 

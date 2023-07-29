@@ -1,3 +1,10 @@
+:root,
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .ant-layout-header {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
@@ -34,4 +41,3 @@ header {
     border-color: #00000000;
   }
 }
-

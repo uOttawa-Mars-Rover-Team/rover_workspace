@@ -130,20 +130,14 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
         </Col>
         <Col style={{ marginRight: 12 }}>
           {connected ? (
-            <Tooltip
-              title="Disconnect from ROS"
-              trigger={windowWidth >= 570 ? "" : "hover"}
-            >
+            <Tooltip title="Disconnect from ROS">
               <Button onClick={disconnect}>
                 <PoweroffOutlined />
                 {windowWidth >= 570 && "Disconnect from ROS"}
               </Button>
             </Tooltip>
           ) : (
-            <Tooltip
-              title="Connect to ROS"
-              trigger={windowWidth >= 750 ? "" : "hover"}
-            >
+            <Tooltip title="Connect to ROS">
               <Button onClick={connect}>
                 <ApiOutlined />
                 {windowWidth >= 750 && "Connect to ROS"}
@@ -153,10 +147,7 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
         </Col>
         {windowWidth >= 820 && (
           <Col>
-            <Tooltip
-              title="Download dashboard layout"
-              trigger={windowWidth >= 1000 ? "" : "hover"}
-            >
+            <Tooltip title="Download dashboard layout">
               <Button
                 href={`data:application/json;charset=utf-8,${dashboardConfig()}`}
                 target="_blank"

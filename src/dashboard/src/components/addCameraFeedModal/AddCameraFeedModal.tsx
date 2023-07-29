@@ -25,7 +25,7 @@ const AddCameraFeedModal: React.FC<AddCameraFeedModalProps> = ({
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       onCancel={dismissModal}
       title="Add Camera Feed"
       closable={false}

@@ -30,7 +30,11 @@ const defaultValue: ContextType = {
  */
 export const RosContext = createContext(defaultValue);
 
-const RosProvider: React.FC = ({ children }) => {
+type RosProviderProps = {
+  children: React.ReactNode;
+};
+
+const RosProvider: React.FC<RosProviderProps> = ({ children }) => {
   const [url, setUrl] = useLocalStorage("url", defaultValue.url);
   const [rosClient, setRosClient] = useState(defaultValue.rosClient);
   const [connected, setConnected] = useState(defaultValue.connected);

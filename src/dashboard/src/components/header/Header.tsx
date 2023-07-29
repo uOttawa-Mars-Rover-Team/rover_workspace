@@ -1,4 +1,4 @@
-import { PageHeader } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 interface HeaderProps {
   title: React.ReactNode;

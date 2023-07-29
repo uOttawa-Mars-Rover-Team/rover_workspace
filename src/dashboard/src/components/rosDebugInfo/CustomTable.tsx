@@ -4,6 +4,7 @@ import { ColumnsType } from "antd/lib/table";
 import CustomCollapse from "./CustomCollapse";
 
 interface CustomTableProps {
+  children?: React.ReactNode;
   lastRefreshed: string;
   title: string;
   data: any[];

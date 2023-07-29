@@ -9,6 +9,7 @@ import "./Layout.scss";
 const { Content, Footer } = AntLayout;
 
 interface LayoutProps {
+  children?: React.ReactNode;
   title: React.ReactNode;
   menuKey:
     | "overview"

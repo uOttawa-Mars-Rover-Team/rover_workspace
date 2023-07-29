@@ -12,6 +12,7 @@ import {
   Skeleton,
   Spin,
   Result,
+  CollapseProps,
 } from "antd";
 import { EditOutlined, SaveOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect, useState } from "react";
@@ -88,86 +89,75 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
     }
   }, [topicName, messageType, rosClient]);
 
-  return (
-    <Col sm={24} lg={12} xl={8} xxl={6}>
-      <Collapse defaultActiveKey={["1"]}>
-        <Collapse.Panel
-          header={
-            edit ? (
-              <>
-                <b>Editing Camera Feed</b>
-                <Form
-                  layout="vertical"
-                  onFinish={({ title, topicName, messageType }) => {
-                    editCameraFeed(
-                      { title, topicName, messageType },
-                      arrayIndex
-                    );
-                    setEdit(false);
-                  }}
-                  initialValues={{ title, topicName, messageType }}
-                  style={{ marginTop: 12 }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Form.Item label="Camera Title" name="title">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="ROS Topic Name" name="topicName">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="ROS Message Type" name="messageType">
-                    <Input />
-                  </Form.Item>
+  const cameraFeedItems: CollapseProps["items"] = [
+    {
+      key: "1",
+      label: edit ? (
+        <>
+          <b>Editing Camera Feed</b>
+          <Form
+            layout="vertical"
+            onFinish={({ title, topicName, messageType }) => {
+              editCameraFeed({ title, topicName, messageType }, arrayIndex);
+              setEdit(false);
+            }}
+            initialValues={{ title, topicName, messageType }}
+            style={{ marginTop: 12 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Form.Item label="Camera Title" name="title">
+              <Input />
+            </Form.Item>
+            <Form.Item label="ROS Topic Name" name="topicName">
+              <Input />
+            </Form.Item>
+            <Form.Item label="ROS Message Type" name="messageType">
+              <Input />
+            </Form.Item>
 
-                  <Row justify="space-between">
-                    <Col>
-                      <Button
-                        onClick={() => removeCameraFeed(arrayIndex)}
-                        danger
-                      >
-                        <DeleteOutlined />
-                        Remove
-                      </Button>
-                    </Col>
-                    <Row>
-                      <Col>
-                        <Button onClick={() => setEdit(false)}>Cancel</Button>
-                      </Col>
-                      <Form.Item style={{ marginBottom: 6, marginLeft: 12 }}>
-                        <Button type="primary" htmlType="submit">
-                          <SaveOutlined />
-                          Save
-                        </Button>
-                      </Form.Item>
-                    </Row>
-                  </Row>
-                </Form>
-              </>
-            ) : (
-              <>
-                <b>{title}</b>
-                <Tooltip title={cameraStateMessage[cameraState]}>
-                  <Badge status={cameraState} style={{ marginLeft: 12 }} />
-                </Tooltip>
-              </>
-            )
-          }
-          extra={
-            !edit && (
-              // eslint-disable-next-line jsx-a11y/anchor-is-valid
-              <a
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEdit((prev) => !prev);
-                }}
-              >
-                <EditOutlined /> Edit
-              </a>
-            )
-          }
-          key="1"
-          style={{ margin: 0, padding: 0 }}
+            <Row justify="space-between">
+              <Col>
+                <Button onClick={() => removeCameraFeed(arrayIndex)} danger>
+                  <DeleteOutlined />
+                  Remove
+                </Button>
+              </Col>
+              <Row>
+                <Col>
+                  <Button onClick={() => setEdit(false)}>Cancel</Button>
+                </Col>
+                <Form.Item style={{ marginBottom: 6, marginLeft: 12 }}>
+                  <Button type="primary" htmlType="submit">
+                    <SaveOutlined />
+                    Save
+                  </Button>
+                </Form.Item>
+              </Row>
+            </Row>
+          </Form>
+        </>
+      ) : (
+        <>
+          <b>{title}</b>
+          <Tooltip title={cameraStateMessage[cameraState]}>
+            <Badge status={cameraState} style={{ marginLeft: 12 }} />
+          </Tooltip>
+        </>
+      ),
+      extra: !edit && (
+        // eslint-disable-next-line jsx-a11y/anchor-is-valid
+        <a
+          onClick={(e) => {
+            e.stopPropagation();
+            setEdit((prev) => !prev);
+          }}
         >
+          <EditOutlined /> Edit
+        </a>
+      ),
+      style: { margin: 0, padding: 0 },
+      children: (
+        <>
           {(cameraState === CameraState.Connecting ||
             (cameraState === CameraState.Connected && !image)) && (
             <Row
@@ -191,16 +181,22 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
               subTitle="Make sure everything is running."
             />
           )}
-          <Descriptions bordered size="small" layout="vertical">
-            <Descriptions.Item label={<b>ROS Topic Name</b>} span={24}>
+          <Descriptions bordered size="small" layout="vertical" column={1}>
+            <Descriptions.Item label={<b>ROS Topic Name</b>}>
               <CopiableTag name={topicName} />
             </Descriptions.Item>
-            <Descriptions.Item label={<b>ROS Message Type</b>} span={24}>
+            <Descriptions.Item label={<b>ROS Message Type</b>}>
               <CopiableTag name={messageType} />
             </Descriptions.Item>
           </Descriptions>
-        </Collapse.Panel>
-      </Collapse>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <Col sm={24} lg={12} xl={8} xxl={6}>
+      <Collapse items={cameraFeedItems} defaultActiveKey={["1"]} />
     </Col>
   );
 };

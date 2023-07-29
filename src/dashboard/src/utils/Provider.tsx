@@ -1,6 +1,10 @@
 import { OverviewProvider, RosProvider } from "../contexts";
 
-const Provider: React.FC = ({ children }) => (
+type ProviderProps = {
+  children: React.ReactNode;
+};
+
+const Provider: React.FC<ProviderProps> = ({ children }) => (
   <RosProvider>
     <OverviewProvider>{children}</OverviewProvider>
   </RosProvider>

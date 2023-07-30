@@ -48,6 +48,7 @@ const Overview: React.FC = () => {
           <Image.PreviewGroup>
             {cameraFeeds.map(({ title, topicName, messageType }, index) => (
               <CameraFeed
+                key={index}
                 arrayIndex={index}
                 topicName={topicName}
                 title={title}

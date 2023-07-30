@@ -40,7 +40,11 @@ const defaultValue: ContextType = {
  */
 export const OverviewContext = createContext(defaultValue);
 
-const OverviewProvider: React.FC = ({ children }) => {
+type OverviewProviderProps = {
+  children: React.ReactNode;
+};
+
+const OverviewProvider: React.FC<OverviewProviderProps> = ({ children }) => {
   const [cameraFeeds, setCameraFeeds] = useLocalStorage(
     "cameraFeeds",
     defaultValue.cameraFeeds
@@ -50,7 +54,7 @@ const OverviewProvider: React.FC = ({ children }) => {
     defaultValue.autoRefresh
   );
 
-  const { url }= useContext(RosContext);
+  const { url } = useContext(RosContext);
 
   const dashboardConfig = () =>
     encodeURIComponent(

@@ -1,8 +1,9 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Col, Collapse, Row, Tooltip } from "antd";
+import { Col, Collapse, Row, Tooltip, CollapseProps } from "antd";
 import { PlayCircleOutlined, PauseCircleOutlined } from "@ant-design/icons";
 
 interface CustomCollapseProps {
+  children: React.ReactNode;
   lastRefreshed: string;
   title: string;
   size: number;
@@ -17,16 +18,16 @@ const CustomCollapse: React.FC<CustomCollapseProps> = ({
   lastRefreshed,
   title,
   size,
-}) => (
-  <Collapse defaultActiveKey={["1"]}>
-    <Collapse.Panel
-      header={
+}) => {
+  const customCollapseItems: CollapseProps["items"] = [
+    {
+      key: "1",
+      label: (
         <>
           <b>{title}</b> ({size})
         </>
-      }
-      key="1"
-      extra={
+      ),
+      extra: (
         <Row align="middle" gutter={12}>
           <Col>
             <Tooltip title="Last Updated">{lastRefreshed}</Tooltip>
@@ -49,11 +50,12 @@ const CustomCollapse: React.FC<CustomCollapseProps> = ({
             </Tooltip>
           </Col>
         </Row>
-      }
-    >
-      {children}
-    </Collapse.Panel>
-  </Collapse>
-);
+      ),
+      children: children,
+    },
+  ];
+
+  return <Collapse items={customCollapseItems} defaultActiveKey={["1"]} />;
+};
 
 export default CustomCollapse;

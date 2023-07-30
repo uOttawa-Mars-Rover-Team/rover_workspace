@@ -9,6 +9,7 @@ import {
   Row,
   Popover,
   Tag,
+  CollapseProps,
 } from "antd";
 import { DeleteOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
 
@@ -72,6 +73,53 @@ const ParamsPanel: React.FC = () => {
       });
     }
   };
+
+  const collapseItems: CollapseProps["items"] = [
+    {
+      key: "1",
+      label: <b>Add Param</b>,
+      children: (
+        <Form
+          layout="vertical"
+          style={{ padding: 12 }}
+          onFinish={addParamOnFinish}
+        >
+          <Row gutter={[12, 12]}>
+            <Col span={12}>
+              <Form.Item
+                label="Name"
+                name="name"
+                rules={[
+                  { required: true, message: "Need to provide param name" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Value"
+                name="value"
+                rules={[
+                  {
+                    required: true,
+                    message: "Need to provide param value",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row justify="end">
+            <Button htmlType="submit" type="primary">
+              <SaveOutlined /> Save
+            </Button>
+          </Row>
+        </Form>
+      ),
+    },
+  ];
 
   return (
     <CustomTable
@@ -150,48 +198,7 @@ const ParamsPanel: React.FC = () => {
       setShouldRefresh={setShouldRefresh}
     >
       <div style={{ padding: 12, paddingTop: params.length === 0 ? 12 : 0 }}>
-        <Collapse bordered={true}>
-          <Collapse.Panel header={<b>Add Param</b>} key="1">
-            <Form
-              layout="vertical"
-              style={{ padding: 12 }}
-              onFinish={addParamOnFinish}
-            >
-              <Row gutter={[12, 12]}>
-                <Col span={12}>
-                  <Form.Item
-                    label="Name"
-                    name="name"
-                    rules={[
-                      { required: true, message: "Need to provide param name" },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="Value"
-                    name="value"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Need to provide param value",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row justify="end">
-                <Button htmlType="submit" type="primary">
-                  <SaveOutlined /> Save
-                </Button>
-              </Row>
-            </Form>
-          </Collapse.Panel>
-        </Collapse>
+        <Collapse items={collapseItems} bordered={true} />
       </div>
     </CustomTable>
   );

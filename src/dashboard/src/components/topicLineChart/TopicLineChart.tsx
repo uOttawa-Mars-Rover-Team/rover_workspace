@@ -43,7 +43,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
       <div>
         <h3>{dataName}</h3>
         <p>
-          {label.toLocaleString()}: {payload[0].value}
+          {label.toLocaleString()}: {payload[0].value.toString()}
         </p>
       </div>
     );

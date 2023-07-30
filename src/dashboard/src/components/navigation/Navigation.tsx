@@ -1,4 +1,4 @@
-import { Collapse, Button, Tooltip, Form, Input } from "antd";
+import { Collapse, Button, Tooltip, Form, Input, CollapseProps } from "antd";
 import { AimOutlined } from "@ant-design/icons";
 
 import L, { Map } from "leaflet";
@@ -178,22 +178,18 @@ const Navigation: React.FC = () => {
     setMarker(newMarker);
   }
 
-  return (
-    <Collapse defaultActiveKey={["1"]}>
-      <Collapse.Panel
-        header={<b>Map</b>}
-        key="1"
-        extra={
-          <Tooltip title="Current location">
-            Rover position: {pos.getLatLng().lat}, {pos.getLatLng().lng}
-          </Tooltip>
-        }
-      >
+  const mapCollapseItems: CollapseProps["items"] = [
+    {
+      key: "1",
+      label: <b>Map</b>,
+      extra: (
+        <Tooltip title="Current location">
+          Rover position: {pos.getLatLng().lat}, {pos.getLatLng().lng}
+        </Tooltip>
+      ),
+      children: (
         <div style={{ height: 550 }}>
-          <MapContainer
-            whenCreated={setMap}
-            style={{ height: "95%", width: "100%", zIndex: 0 }}
-          >
+          <MapContainer style={{ height: "95%", width: "100%", zIndex: 0 }}>
             <div
               style={{ zIndex: 1000, position: "absolute", right: 10, top: 10 }}
             >
@@ -225,9 +221,11 @@ const Navigation: React.FC = () => {
             />
           </Form>
         </div>
-      </Collapse.Panel>
-    </Collapse>
-  );
+      ),
+    },
+  ];
+
+  return <Collapse items={mapCollapseItems} defaultActiveKey={["1"]} />;
 };
 
 export default Navigation;

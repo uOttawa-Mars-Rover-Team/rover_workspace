@@ -1,7 +1,8 @@
 import "leaflet/dist/leaflet.css";
-import { Collapse, CollapseProps, Row, Switch, Col } from "antd";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { Collapse, CollapseProps, Row, Switch, Col, Space, Button } from "antd";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { useState } from "react";
+import DraggableMarker from "./DraggableMarker";
 
 const Navigation: React.FC = () => {
   const initPosition = {
@@ -22,9 +23,9 @@ const Navigation: React.FC = () => {
       label: <b>Map</b>,
       extra: <div>Rover position: </div>,
       children: (
-        <div style={{ height: 550 }}>
+        <div style={{ height: 600 }}>
           <MapContainer
-            center={[initPosition.lat, initPosition.lng]}
+            center={initPosition}
             zoom={initZoom}
             style={{
               height: "95%",
@@ -34,11 +35,19 @@ const Navigation: React.FC = () => {
               attribution="Google Maps"
               url={useTerrain ? terrainTileLayer : satelliteTileLayer}
             />
+            <Marker position={[initPosition.lat, initPosition.lng]}></Marker>
+            <DraggableMarker initPosition={initPosition} />
           </MapContainer>
-          <Row gutter={[12, 12]} justify="end" align="middle">
-            <Col>Use terrain map</Col>
+          <Row gutter={[12, 12]} justify="space-between" align="middle">
             <Col>
-              <Switch onChange={() => setUseTerrain(!useTerrain)} />
+              <Button>Add marker</Button>
+            </Col>
+            <Col>Position: </Col>
+            <Col>
+              <Space align="center">
+                <div>Use terrain map</div>
+                <Switch onChange={() => setUseTerrain(!useTerrain)} />
+              </Space>
             </Col>
           </Row>
         </div>

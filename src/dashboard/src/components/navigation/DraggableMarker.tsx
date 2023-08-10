@@ -1,10 +1,9 @@
 import * as Leaflet from "leaflet";
 import { useState, useRef } from "react";
 import { Marker, Popup } from "react-leaflet";
-import { displayPosition } from "./utils";
 
 type DraggableMarkerProps = {
-  initPosition: Leaflet.LatLngExpression;
+  initPosition: Leaflet.LatLng;
   title?: string;
   precision?: number;
 };
@@ -42,7 +41,9 @@ const DraggableMarker: React.FC<DraggableMarkerProps> = ({
               textAlign: "center",
             }}
           >
-            <p>{displayPosition(position, precision)}</p>
+            <p>{`${position.lat.toFixed(precision)}, ${position.lng.toFixed(
+              precision
+            )}`}</p>
             <p onClick={() => setDraggable(!draggable)}>
               {draggable ? "Not fixed" : "Fixed"}
             </p>

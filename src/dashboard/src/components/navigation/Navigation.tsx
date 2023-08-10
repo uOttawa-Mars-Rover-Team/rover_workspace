@@ -17,11 +17,11 @@ const Navigation: React.FC = () => {
   const [useTerrain, setUseTerrain] = useState(false);
 
   const [map, setMap] = useState<null | Leaflet.Map>();
-  const [mapPosition, setMapPosition] = useState<undefined | Leaflet.LatLng>(
-    initPosition
-  );
+  const [mapPosition, setMapPosition] = useState(initPosition);
   const onMove = useCallback(() => {
-    setMapPosition(map?.getCenter());
+    if (map) {
+      setMapPosition(map.getCenter());
+    }
   }, [map]);
   useEffect(() => {
     if (map) {
@@ -60,9 +60,9 @@ const Navigation: React.FC = () => {
             </Col>
             <Col>
               Map Center:{" "}
-              {`${mapPosition?.lat.toFixed(
+              {`${mapPosition.lat.toFixed(
                 precision
-              )}, ${mapPosition?.lng.toFixed(precision)}`}
+              )}, ${mapPosition.lng.toFixed(precision)}`}
             </Col>
             <Col>
               <Space align="center">

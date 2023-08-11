@@ -45,15 +45,6 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   )}, ${mapPosition.lng.toFixed(precision)}`;
 
   const [form] = Form.useForm<{ lat: string; lng: string }>();
-  // Use a useEffect to set the form's initial lat and lng values. Setting with
-  // the defaultValue prop seems to return undefined for values unless they have
-  // been updated by the user at least once
-  useEffect(() => {
-    form.setFieldsValue({
-      lat: initPosition.lat.toFixed(precision),
-      lng: initPosition.lng.toFixed(precision),
-    });
-  }, []);
 
   useEffect(() => {
     if (map) {
@@ -142,7 +133,11 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
                     <Button htmlType="submit">Add marker</Button>
                   </Form.Item>
                   at
-                  <Form.Item name="lat" noStyle>
+                  <Form.Item
+                    name="lat"
+                    initialValue={initPosition.lat.toFixed(precision)}
+                    noStyle
+                  >
                     <InputNumber<string>
                       style={{ width: "8em" }}
                       min="-90"
@@ -152,7 +147,11 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
                     />
                   </Form.Item>
                   ,
-                  <Form.Item name="lng" noStyle>
+                  <Form.Item
+                    name="lng"
+                    initialValue={initPosition.lng.toFixed(precision)}
+                    noStyle
+                  >
                     <InputNumber<string>
                       style={{ width: "8em" }}
                       name="lng"

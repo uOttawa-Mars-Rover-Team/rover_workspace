@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { useState, useEffect, useContext } from "react";
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Space } from "antd";
+import { Button, Col, Form, Input, Row, Space } from "antd";
 import ROSLIB from "roslib";
 import { RosContext } from "../../contexts";
 
@@ -20,28 +20,28 @@ interface Datapoint {
 }
 type DatapointAccessorFunction = (message: string) => Datapoint;
 interface TopicLineChartProps {
-  topicName: string;
   messageDatapointAccessor: DatapointAccessorFunction;
-  dataName: string;
+  dataLabel: string;
+  defaultTopicName?: string;
   stroke?: string;
 }
 interface CustomTooltipProps {
   active: boolean;
   payload: Array<Datapoint>;
   label: String | Date;
-  dataName: string;
+  dataLabel: string;
 }
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({
   active,
   payload,
   label,
-  dataName,
+  dataLabel,
 }) => {
   if (active && label && payload && payload.length) {
     return (
       <div>
-        <h3>{dataName}</h3>
+        <h3>{dataLabel}</h3>
         <p>
           {label.toLocaleString()}: {payload[0].value}
         </p>
@@ -57,11 +57,12 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 };
 
 const TopicLineChart: React.FC<TopicLineChartProps> = ({
-  topicName,
   messageDatapointAccessor,
-  dataName,
+  dataLabel,
+  defaultTopicName = "",
   stroke = "#0b7385",
 }) => {
+  const [topicName, setTopicName] = useState(defaultTopicName);
   const [data, setData] = useState<Array<Datapoint>>([]);
   const { rosClient } = useContext(RosContext);
   // The ROS message type is assumed to be a string (with a JSON format). The messageDatapointAccessor
@@ -98,19 +99,26 @@ const TopicLineChart: React.FC<TopicLineChartProps> = ({
 
   return (
     <>
+      <Form layout="vertical">
+        <Form.Item label="ROS Topic Name">
+          <Input
+            value={topicName}
+            onChange={(e) => {
+              setTopicName(e.target.value);
+            }}
+          />
+        </Form.Item>
+      </Form>
       <Space
         direction="horizontal"
         style={{ width: "100%", justifyContent: "center" }}
-      >
-        <h2>{!data.length && "No Data"}</h2>
-      </Space>
+      ></Space>
       <ResponsiveContainer width="100%" height={500}>
         <LineChart
-          width={500}
-          height={300}
           data={data}
           margin={{
             right: 30,
+            bottom: 5,
           }}
         >
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -127,25 +135,36 @@ const TopicLineChart: React.FC<TopicLineChartProps> = ({
           <YAxis />
           {/* 
             // @ts-ignore */}
-          <Tooltip content={<CustomTooltip dataName={dataName} />} />
+          <Tooltip content={<CustomTooltip dataLabel={dataLabel} />} />
           <Legend />
-          <Line type="linear" dataKey="value" name={dataName} stroke={stroke} />
+          <Line
+            type="linear"
+            dataKey="value"
+            name={dataLabel}
+            stroke={stroke}
+          />
         </LineChart>
       </ResponsiveContainer>
-      <Button
-        type="primary"
-        danger
-        onClick={() => {
-          setData([]);
-          setCsvHref(initialCsvHref);
-        }}
-      >
-        Reset Data
-      </Button>
-      <Button href={csvHref} target="_blank" download={`${dataName}.csv`}>
-        <DownloadOutlined />
-        Download .CSV
-      </Button>
+      <Row gutter={[12, 12]}>
+        <Col>
+          <Button
+            type="primary"
+            danger
+            onClick={() => {
+              setData([]);
+              setCsvHref(initialCsvHref);
+            }}
+          >
+            Reset Data
+          </Button>
+        </Col>
+        <Col>
+          <Button href={csvHref} target="_blank" download={`${dataLabel}.csv`}>
+            <DownloadOutlined />
+            Download .CSV
+          </Button>
+        </Col>
+      </Row>
     </>
   );
 };

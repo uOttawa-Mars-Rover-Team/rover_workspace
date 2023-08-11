@@ -1,0 +1,13 @@
+<launch>
+   <!-- Set the name of the camera -->
+   <arg name="cam_name" value="drive_cam" />
+
+   <!-- The gstreamer pipeline to get the camera -->
+   <env name="GSCAM_CONFIG" value="udpsrc port=5001 ! application/x-rtp, encoding-name=H264, payload=96 ! rtph264depay ! queue ! decodebin ! queue ! videoconvert" />
+
+   <node pkg="gscam" type="gscam" name="$(arg cam_name)" >
+      <param name="camera_name" value="$(arg cam_name)" />
+      <remap from="camera/image_raw" to="$(arg cam_name)/image_raw"/>
+   </node>
+
+</launch>

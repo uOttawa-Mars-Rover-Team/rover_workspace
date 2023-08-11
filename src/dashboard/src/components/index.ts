@@ -5,7 +5,7 @@ export { default as CustomCollapse } from "./rosDebugInfo/CustomCollapse";
 export { default as Header } from "./header/Header";
 export { default as Layout } from "./layout/Layout";
 export { default as Navigation } from "./navigation/Navigation";
-export { default as TemperatureChart } from "./temperatureChart/TemperatureChart";
+export { default as LifeDetectionCharts } from "./lifeDetectionCharts/LifeDetectionCharts";
 
 export {
   ServicesPanel,

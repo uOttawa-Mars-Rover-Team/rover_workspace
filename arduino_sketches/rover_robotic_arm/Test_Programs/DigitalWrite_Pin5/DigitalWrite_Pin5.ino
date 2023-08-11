@@ -14,19 +14,24 @@ IBT-2 pins 5 (R_IS) and 6 (L_IS) not connected
  
 //int SENSOR_PIN = 0; // center pin of the potentiometer
  
-int LA1_RPWM_Output = 10; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
-int LA1_LPWM_Output = 11; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
-int LA2_RPWM_Output = 12; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
-int LA2_LPWM_Output = 13; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
+int LA1_RPWM_Output = 5; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
+int LA1_LPWM_Output = 4; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
+//int LA2_RPWM_Output = 12; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
+//int LA2_LPWM_Output = 13; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
+int L_EN = 47;
+int R_EN = 50;
  
 void setup()
 {
   pinMode(LA1_RPWM_Output, OUTPUT);
   pinMode(LA1_LPWM_Output, OUTPUT);
-  pinMode(LA2_RPWM_Output, OUTPUT);
-  pinMode(LA2_LPWM_Output, OUTPUT);
-  //pinMode(R_EN, OUTPUT);
-  //pinMode(L_EN, OUTPUT);
+  //pinMode(LA2_RPWM_Output, OUTPUT);
+  //pinMode(LA2_LPWM_Output, OUTPUT);
+  pinMode(R_EN, OUTPUT);
+  pinMode(L_EN, OUTPUT);
+
+  digitalWrite(R_EN, HIGH);
+  digitalWrite(L_EN, HIGH);
 }
  
 void loop() {
@@ -35,26 +40,33 @@ void loop() {
   //digitalWrite(R_EN, HIGH);
   for (int i = 0; i <= 255; i++) {
     analogWrite(LA1_RPWM_Output, i);
-    analogWrite(LA2_RPWM_Output, i);
-    delay(30);
+    //analogWrite(LA2_RPWM_Output, i);
+    delay(10);
   }
+
+  delay(2000)
+
+  //decelerate to zero
   for (int i = 255; i >= 0; i--) {
     analogWrite(LA1_RPWM_Output, i);
-    analogWrite(LA2_RPWM_Output, i);
-    delay(30);
+    //analogWrite(LA2_RPWM_Output, i);
+    delay(10);
   }
 
   //backwards accelerate to max speed and then decelerate
   //digitalWrite(L_EN, HIGH);
   for (int i = 0; i <= 255; i++) {
     analogWrite(LA1_LPWM_Output, i);
-    analogWrite(LA2_LPWM_Output, i);
-    delay(30);
+
+    //analogWrite(LA2_LPWM_Output, i);
+    delay(10);
   }
+
+  //decelerate to zero
   for (int i = 255; i >= 0; i--) {
     analogWrite(LA1_LPWM_Output, i);
-    analogWrite(LA2_LPWM_Output, i);
-    delay(30);
+    //analogWrite(LA2_LPWM_Output, i);
+    delay(10);
   }
   
 

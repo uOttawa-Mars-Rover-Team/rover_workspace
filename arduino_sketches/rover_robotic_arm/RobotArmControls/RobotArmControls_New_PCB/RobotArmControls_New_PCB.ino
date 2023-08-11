@@ -1,51 +1,47 @@
-/*
-   This program is the (as of now) the main robotic arm control code. That is the program which is going to take in inputs from the joystick (or keyboard while testing)
-   and is going to interpret it and control the motors accordingly.
-
-   Author of this version of the program: Olivier Caron (30-jan-2022)
-*/
-
 //we inport the needed libraries nameley AccelStepper (used for stepper control) and ezButton (takes care of button debouncing)
 #include <ezButton.h>
 #include <AccelStepper.h>
 #include <MultiStepper.h>
-
-
-//we declare and sometimes initialize all of the necessary variables
-
+#include <JrkG2.h>
 
 //we initialize the two Wrist Limit switches objects
-ezButton limitSwitchRed(42);  // create ezButton object that attach to pin 7;
-ezButton limitSwitchBlack(43);  // create ezButton object that attach to pin 7;
-
-//we declare the stepper enable pins
-int wristRightEnablePin = 27; //stepper 2
-int wristLeftEnablePin = 30; //stepper 3
-int towerEnablePin = 33; //stepper 4
-int endEffectorEnablePin = 24; //stepper 1
+ezButton LS1(43);
+ezButton LS2(44);
+ezButton LS3(45);
+ezButton LS4(46);
 
 //we declare the steppers
-AccelStepper wristRight(AccelStepper::DRIVER, 9, 8); //step, direction
-AccelStepper wristLeft(AccelStepper::DRIVER, 11, 10);
-AccelStepper tower(AccelStepper::DRIVER, 13, 12);
-//TODO: put right pin numbers for the tower stepper
-AccelStepper endEffector(AccelStepper::DRIVER, 7, 6);
+AccelStepper wristRight(AccelStepper::DRIVER, 11, 10); //step, direction
+AccelStepper wristLeft(AccelStepper::DRIVER, 9, 8);
+AccelStepper tower(AccelStepper::DRIVER, 7, 6);
+AccelStepper endEffector(AccelStepper::DRIVER, 13, 12);
 
 //we set up the multistepper
 MultiStepper wristEE;
 
-//enable pin for LA2
-int LA2_EN = 30;
+// we declare objects for the Linear Actuator drivers
+// TODO: set the device number for LA2 to 12
+JrkG2I2C LA1(11);
+JrkG2I2C LA2(12);
 
-//we declare the Linear Actuator pins
-//TODO: make sure that the pins are the right ones
-int LA1_RPWM_Output = 3; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
-int LA1_LPWM_Output = 2; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
-int LA2_RPWM_Output = 5;
-int LA2_LPWM_Output = 4;
+// declare pin numbers for the linear actuator optical encoders
+int LA1_EncoderPin = 2;
+int LA2_EncoderPin = 3;
+
+// Timers to remove false positive counts from encoder pulse count
+unsigned long trigDelay_LA1 = millis();
+unsigned long trigDelay_LA2 = millis();
+
+int timeBetweenPulses = 60; // time between pulses at 125 speed
+
+// LA Encoder count variables
+int count[] = {0,0}; //count[0] tracks LA1 encoder pulses and count[1] tracks LA2 encoder pulses
+
+//direction array to track the direction the Linear Actuators are moving in
+//directionLA[0] tracks the direction of LA1 and directionLA[1] tracks the direction of LA2
+int directionLA[2]; 
 
 //we set up the max range constants/variables for the diffrents motors/Steppers
-
 //TODO: make sure that these values are accurate and or are updated during the init sequence
 //const long wristMaxRange = 2500;
 constexpr long wristPitchMaxRange = 2500;
@@ -58,42 +54,21 @@ const long towerMaxRange = 2500;
 bool wristStop = true;
 
 //input size var
-const int INPUT_SIZE = 11;
-
-/*
-struct Command {
-public:
-
-  String commandType;
-  int direction;
-  int speed;
-
-};
-*/
+const int INPUT_SIZE = 12;
 
 //we set up the motor and button variables and
 void setup() {
   //we start the serial comms
   Serial.begin(115200);
 
+  //start I2C comms
+  Wire.begin();
+
   //we set the debounce time of the limitSwitches, that is the amount of time the program is going to wait until it accepts another input from the switches
-  limitSwitchRed.setDebounceTime(50); // set debounce time to 50 milliseconds
-  limitSwitchBlack.setDebounceTime(50);
-
-  //we do some stepper setup stuff
-  // Configure each stepper
-
-  //setup and enable the stepper enable pins
-  pinMode(wristRightEnablePin, OUTPUT);
-  pinMode(wristLeftEnablePin, OUTPUT);
-  pinMode(towerEnablePin, OUTPUT);
-  pinMode(endEffectorEnablePin, OUTPUT);
-
-  //we set the pins to high
-  digitalWrite(wristRightEnablePin, HIGH);
-  digitalWrite(wristLeftEnablePin, HIGH);
-  digitalWrite(towerEnablePin, HIGH);
-  digitalWrite(endEffectorEnablePin, HIGH);
+  LS1.setDebounceTime(50); // set debounce time to 50 milliseconds
+  LS2.setDebounceTime(50);
+  LS3.setDebounceTime(50);
+  LS4.setDebounceTime(50);
 
   //we configure the default speed for each stepper
   //TODO: verify each of these speeds in a separate test and then modify these values
@@ -111,31 +86,33 @@ void setup() {
   wristEE.addStepper(wristRight);
   wristEE.addStepper(wristLeft);
 
-  //we also do some linear actuator setup stuff
-  //maybe enable the LA and set the basic speed?
-  //we setup the pin modes for the LA
-  pinMode(LA1_RPWM_Output, OUTPUT);
-  pinMode(LA1_LPWM_Output, OUTPUT);
-  pinMode(LA2_RPWM_Output, OUTPUT);
-  pinMode(LA2_LPWM_Output, OUTPUT);
+  // set up the optical encoder pins with pullup resistors
+  pinMode(LA1_EncoderPin, INPUT_PULLUP);
+  pinMode(LA2_EncoderPin, INPUT_PULLUP);
+  // set up interrupt pins for the LA encoders
+  attachInterrupt(digitalPinToInterrupt(LA1_EncoderPin),counter_LA1,RISING);
+  attachInterrupt(digitalPinToInterrupt(LA2_EncoderPin),counter_LA2,RISING);
+
+  // // zero LA1 to the most retracted position
+  // trigDelay_LA1 = millis();
+  // zeroActuators("LA1", 125);
+  // // zero LA2 to the most retracted position
+  // trigDelay_LA2 = millis();
+  // zeroActuators("LA2",125);
+
+  //zeroEndEffector();
 
   //we call stop to make sure that none of the motors move
   stop();
-
-  //we enable the LA2
-  digitalWrite(LA2_EN, HIGH);
 }
 
-/*
-Command parseCommand() {
-
-}
-*/
 
 void loop() {
   //we do some of the needed setup to get the limitSwitches working
-  limitSwitchRed.loop(); // MUST call the loop() function first
-  limitSwitchBlack.loop();
+  LS1.loop(); // MUST call the loop() function first
+  LS2.loop();
+  LS3.loop();
+  LS4.loop();
 
   //we need to add a timeout function which stops everything if we haven't gotten a new instruction in a set ammount of time
   //that being said, this could probably be done on the python side of things and then we just send the stop command here, YES!
@@ -157,6 +134,8 @@ void loop() {
     //New potential way to read input
     // Get next command from Serial (add 1 for final 0)
     char input[INPUT_SIZE + 1];
+    // characters from the serial input are read into the input array
+    // readBytesUntil returns the number of characters read to the size variable
     byte size = Serial.readBytesUntil('!',input, INPUT_SIZE);
     // Add the final 0 to end the C string
     input[size] = 0;
@@ -192,8 +171,8 @@ void loop() {
 
       //we get the dir
       //Serial.println("input str: " + inputStr;
-      inputStr = strtok(NULL, ";");
-      dir = atoi(inputStr);
+      inputStr = strtok(NULL, ";"); // tokenizes the next part of the input string
+      dir = atoi(inputStr); // converts the string to an integer value
 
       //we get the speed
       inputStr = strtok(NULL, ";");
@@ -219,7 +198,7 @@ void loop() {
     /*
        Things which will be taken care of by the python code
        - Timing out code, that is if a command hasn't been send in a long time, the python code sends a stop command so that we don't continue actuating the arm
-          - This can probably be taken care of by teh code on the PI
+          - This can probably be taken care of by the code on the PI
        - Checking if the commands are the same, that is if we're moving the wrist, instead of sending the "WR" command over and over, the python code only sends it once and if anything changes (ex: speed)
          When the command stops being send the code is going to send the "stop" command, or if we want to actuate another motor, the code is going to send the corresponding command
 
@@ -310,6 +289,9 @@ void loop() {
   }
   tower.run();
   endEffector.run();
+
+  // send the current linear actuator positions over serial
+  //sendLinearActuatorPositions();
 } //end of loop()
 
 //we create the stop function since it's functionality can be used multiple times
@@ -339,53 +321,142 @@ void stop() {
   //we set the wristStop command to true so that the run command cannot be called and the motors will thus not move.
   wristStop = true;
 
+  //we stop the LAs
+  LA1.stopMotor();
+  LA2.stopMotor();
 
-
-  //we stop the LA
-  //again this is somewhat unclear but we could by instance set their enable pin to low
-
-  //LA 1
-  analogWrite(LA1_RPWM_Output, 0);
-  analogWrite(LA1_LPWM_Output, 0);
-
-  //LA 2
-  analogWrite(LA2_RPWM_Output, 0);
-  analogWrite(LA2_LPWM_Output, 0);
-
-}
-
-
+} //end of stop
 
 //this function is the one which moves the linear actuators
 void moveActuators(String command, int dir, int speed) {
   stop();
 
-  //Extend is done on the LPWM pin
-  //Rectract is done on the RPWM pin
-
-  //in theory we don't need to set the other pins to 0 because we called stop() at the start of this function
-
-  if (dir == 1){
-    //we check to see which actuator needs to move and then extend it 
-    if (command.equals("L1")) {
-      //we extend L1
-      analogWrite(LA1_LPWM_Output, speed);
-    }
-    else {
-      //we extend L2
-      analogWrite(LA2_LPWM_Output, speed);
-    } //end of else
-  } 
+  //we check to see which actuator needs to move and then extend it 
+  if (command.equals("L1")) {
+    //if dir is 1 extend, if -1 retract
+    // The linear actuator driver sets the speed by subtracting 2048 from the given value so a value of 2048 corresponds to 0 speed
+    LA1.setTarget(2048+(dir*speed));
+    directionLA[0] = dir;
+  }
   else {
-    //we retract
-    if (command.equals("L1")) {
-      //we retract L1
-      analogWrite(LA1_RPWM_Output, speed);
-    }
-    else {
-      //we retract L2
-      analogWrite(LA2_RPWM_Output, speed);
-    } //end of else
-  } //end of if
+    //we extend or retract L2
+    LA2.setTarget(2048+(dir*speed));
+    directionLA[1] = dir;
+  } //end of else
 
 } //end of moveActuators()
+
+// Method to set Linear Actuators at 0 in stroke position
+void zeroActuators(String actuator, int speed){
+  stop(); // stop all motors
+  
+  int index = 0;
+
+  if (actuator.equals("LA2")){
+    index = 1;
+  }
+
+  // timer to ensure that the encoder count hasn't been updated for long enough before stopping the linear actuator 
+  unsigned long prevTimer = millis(); 
+  int homeFlag = 0;
+  int prevCount = 0;
+
+  while(homeFlag == 0){
+    moveActuators(actuator, 1, speed); // retracts the actuator
+    
+    if(prevCount == count){ // if the previous count hasn't updated the actuator might have stopped
+      if(millis() - prevTimer > timeBetweenPulses){ // if it has stopped for the time indicated by timeBetweenPulses it's done retracting
+        stop();
+        //reset count, break out of loop
+        count[index] = 0;
+        homeFlag = 1;
+      }
+    }else{ // if the count is updating reset the prevCount variable and timer
+      prevCount = count[index];
+      prevTimer = millis();
+    }
+  }
+}
+
+
+// Zero End Effector to middle position 
+//***CHECK SIGNS IN MOVETO FUNCTIONS***
+void zeroEndEffector(){
+  stop();
+  
+  int homeFlag = 0; //condition for while loop
+  
+  // set max speed and acceleration, we could alternatively set these values based on function inputs
+  endEffector.setMaxSpeed(50.0);
+  endEffector.setAcceleration(1000.0);
+  //set target position for max range, this target accounts for the worst case scenario of the initial stepper position
+  endEffector.moveTo(endEffectorMaxRange*2); 
+
+  while (homeFlag == 0){
+    endEffector.run(); //moves motor towards target position
+    
+    if(LS1.getState() == LOW){ //if limit switch is pressed
+      endEffector.stop(); //stop motor
+      homeFlag = 1; //break out of while loop
+    }
+  }
+
+  endEffector.move(-endEffectorMaxRange); //relative position, should move stepper to the middle
+  // run the motor until the distance from the target position is 0.
+  while(endEffector.distanceToGo() != 0){
+    endEffector.run();
+  }
+
+  long numSteps = endEffector.currentPosition(); // returns our position relative to our initial point
+  endEffector.setCurrentPosition(numSteps); //sets current position to be the absolute zero position
+}
+
+// Zero wrist to middle position
+// ***CHECK SIGNS***
+// INCOMPLETE
+void zeroWristPitch(){
+  stop();
+  // condition for while loop
+  int homeFlag = 0;
+  // positions
+  long positions[2] = {wristPitchMaxRange, -1*wristPitchMaxRange};
+  // set speeds and target positions
+  wristRight.setMaxSpeed(500.0);
+  wristLeft.setMaxSpeed(500.0);
+  wristEE.moveTo(positions);
+
+  while (homeFlag == 0){
+    wristEE.run(); // move stepper to target position
+    if (LS2.getState() == LOW){ // if limit switch is pressed
+      homeFlag = 1; // break out of while loop, so motors are not being run anymore
+    }
+  }
+
+  // move them back to the middle
+}
+
+// ISR for LA1 encoder
+void counter_LA1(){
+  if (millis() - trigDelay_LA1 >= timeBetweenPulses){
+    trigDelay_LA1 = millis();
+    count[0] += directionLA[0];
+  } 
+}
+
+// ISR for LA2 encoder
+void counter_LA2(){
+  if (millis() - trigDelay_LA2 >= timeBetweenPulses){
+    trigDelay_LA2 = millis();
+    count[1] += directionLA[1];
+  } 
+}
+
+// converts encoder pulses to mm and sends them over serial
+void sendLinearActuatorPositions(){
+  float positionInMM_LA1 = count[0]/100 * 25.4;
+  float positionInMM_LA2 = count[1]/100 * 25.4;
+  Serial.print(positionInMM_LA1);
+  Serial.print(";");
+  Serial.println(positionInMM_LA2);
+}
+

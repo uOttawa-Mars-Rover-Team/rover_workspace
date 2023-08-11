@@ -27,12 +27,18 @@
 
 LSM9DS1 imu;
 
-//GPS
-#define PRINT_CALCULATED
-#define PRINT_SPEED 250 // 250 ms between prints
-static unsigned long lastPrint = 0; // Keep track of print time
+#define START_CHAR '#' //indicates start of message
+#define IMU_CHAR 'I' //indicates imu message
+#define GPS_CHAR 'G' //indicates gps message
 
 #define DECLINATION -8.58 // Declination (degrees) in Boulder, CO.
+
+// IMU Calibration Values
+//////// THIS NEEDS TO BE REDONE IF WE CHANGE THE IMU !!!!!!
+// (Use the script provided in the Arduino sketches to get the values)
+#define GRYO_X_OFFSET -0.85
+#define GYRO_Y_OFFSET 0.05
+#define GYRO_Z_OFFSET -2.05
 
 
 // you can change the pin numbers to match your wiring:
@@ -42,6 +48,162 @@ Adafruit_GPS GPS(&mySerial);
 // Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
 #define GPSECHO  false
+
+float getRoll(float accelY, float accelZ)
+{
+  return atan2(accelY, accelZ);
+}
+
+float getPitch(float accelX, float accelY, float accelZ)
+{
+  return atan2(-accelX, sqrt((accelY * accelY) + (accelZ * accelZ)));
+}
+
+float getYaw(float magX, float magY, float magZ)
+{
+  float yaw;
+  if (magY == 0)
+  {
+    yaw = (magX < 0) ? PI : 0;
+  }
+  else
+  {
+    yaw = atan2(magX, magY);
+  }
+
+  yaw -= (DECLINATION * (PI / 180));
+
+  if (yaw > PI) 
+  {
+    yaw -= (2 * PI);
+  }
+  else if (yaw < -PI) 
+  {
+    yaw += (2 * PI);
+  }
+
+  return yaw;
+}
+
+float radsToDegrees(float rads)
+{
+  return (rads * (180.0 / PI));
+}
+
+void sendIMUData()
+{
+  float ax, ay, az, mx, my, mz;
+  ax = imu.ax;
+  ay = imu.ay;
+  az = imu.az;
+  my = -imu.my;
+  mx = -imu.mx;
+  mz = imu.mz;
+  
+  const float roll = getRoll(ay, az);//atan2(ay, az);
+  const float pitch = getPitch(ax, ay, az);//atan2(-ax, sqrt(ay * ay + az * az));
+  const float yaw = getYaw(mx, my, mz);
+
+  // float heading;
+  // if (my == 0)
+  // {
+  //   heading = (mx < 0) ? PI : 0;
+  // }
+  // else
+  // {
+  //   heading = atan2(mx, my);
+  // }
+
+  // heading -= DECLINATION * PI / 180;
+
+  // if (heading > PI) 
+  // {
+  //   heading -= (2 * PI);
+  // }
+  // else if (heading < -PI) 
+  // {
+  //   heading += (2 * PI);
+  // }
+
+  // Convert everything from radians to degrees:
+  // heading *= 180.0 / PI;
+  // pitch *= 180.0 / PI;
+  // roll  *= 180.0 / PI;
+
+  //print the IMU stuff
+  Serial.print(START_CHAR);
+  Serial.print(IMU_CHAR);
+  Serial.print("roll:");
+  Serial.print(radsToDegrees(roll), 4);
+  Serial.print(", ");
+  Serial.print("pitch:");
+  Serial.print(radsToDegrees(pitch), 4);
+  Serial.print(", ");
+  Serial.print("yaw:");
+  Serial.print(radsToDegrees(yaw), 4);
+  Serial.print(", ");
+
+  //angular velocity in deg/s
+  Serial.print("ang_vel:");
+  Serial.print(imu.calcGyro(imu.gx) - GRYO_X_OFFSET);
+  Serial.print(",");
+  Serial.print(imu.calcGyro(imu.gy) - GYRO_Y_OFFSET);
+  Serial.print(",");
+  Serial.print(imu.calcGyro(imu.gz) - GYRO_Z_OFFSET);
+  Serial.print(", ");
+
+  //linear acceleration in g's
+  Serial.print("lin_accel:");
+  Serial.print(imu.calcAccel(ax));
+  Serial.print(",");
+  Serial.print(imu.calcAccel(ay));
+  Serial.print(",");
+  Serial.print(imu.calcAccel(az));
+  Serial.println(", ");
+}
+
+void sendGPSData()
+{
+//  Serial.print(START_CHAR);
+//  Serial.print(GPS_CHAR);
+//
+//  //fix is 0 if not connected and 1 if is
+//  Serial.print("fix: ");
+//  Serial.print((int)GPS.fix);
+//  Serial.print(",");
+//
+//  //the number of satellites connected to
+//  Serial.print("sats: ");
+//  Serial.print((int)GPS.satellites);
+//  Serial.print(",");
+
+  //get latitude and longitude if has a fix
+  if (GPS.fix) {
+//    Serial.print("lat: ");
+//    Serial.print(GPS.latitude, 4);
+//    Serial.print(GPS.lat);
+//    Serial.print(",");
+//    Serial.print("lon: ");
+//    Serial.print(GPS.longitude, 4);
+//    Serial.print(GPS.lon);
+//    Serial.println(",");
+
+    char msg[60];
+    char latitudeStr[12];
+    char longitudeStr[12];
+    
+    dtostrf(GPS.latitude, 5, 4, latitudeStr);
+    dtostrf(GPS.longitude, 5, 4, longitudeStr);
+    
+    snprintf(msg, sizeof(msg), "%c%cfix:%i, sats:%i, lat:%s%c, lon:%s%c, ", START_CHAR, GPS_CHAR, (int)GPS.fix, (int)GPS.satellites, latitudeStr, GPS.lat, longitudeStr, GPS.lon);
+    Serial.println(msg);
+  } else {
+//    Serial.println("lat: None,lon: None,");
+    char msg[38];
+    snprintf(msg, sizeof(msg), "%c%cfix:%i, sats:%i, lat:None, lon:None, ", START_CHAR, GPS_CHAR, (int)GPS.fix, (int)GPS.satellites);
+    Serial.println(msg);
+  }
+}
 
 void setup()
 {
@@ -66,7 +228,7 @@ void setup()
   // print it out we don't suggest using anything higher than 1 Hz
 
   // Request updates on antenna status, comment out to keep quiet
-  GPS.sendCommand(PGCMD_ANTENNA);
+  //GPS.sendCommand(PGCMD_ANTENNA);
 
   delay(1000);
   // Ask for firmware version
@@ -81,111 +243,62 @@ void setup()
   }
 }
 
-uint32_t timer = millis();
+//uint32_t timer = millis();
 void loop()                     // run over and over again
 {
   //IMU
   // Update the sensor values whenever new data is available
-  if ( imu.gyroAvailable() )
-  {
-    // update gx, gy, and gz
-    imu.readGyro();
-  }
-  if ( imu.accelAvailable() )
-  {
-    // update ax, ay, and az
-    imu.readAccel();
-  }
-  if ( imu.magAvailable() )
-  {
-    // update mx, my, and mz
-    imu.readMag();
-  }
+//  const bool hasNewGyroData = imu.gyroAvailable();
+//  const bool hasNewAccelData = imu.accelAvailable();
+//  const bool hasNewMagData = imu.magAvailable();
+//  if (hasNewGyroData)
+//  {
+//    // update gx, gy, and gz
+//    imu.readGyro();
+//  }
+//
+//  if (hasNewAccelData)
+//  {
+//    // update ax, ay, and az
+//    imu.readAccel();
+//  }
+//
+//  if (hasNewMagData)
+//  {
+//    // update mx, my, and mz
+//    imu.readMag();
+//  }
+//
+//  if(hasNewGyroData || hasNewAccelData || hasNewMagData)
+//  {
+//    //sendIMUData();
+//  }
 
   //GPS
-  char c = GPS.read();
+  //
+   char c = GPS.read();
   // if you want to debug, this is a good time to do it!
   /*if ((c) && (GPSECHO))
     Serial.write(c);*/
 
-  // if a sentence is received, we can check the checksum, parse it...
   if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-    //Serial.println(GPS.lastNMEA());   // this also sets the newNMEAreceived() flag to false
+    //For debugging
+//    Serial.println(GPS.lastNMEA());   // this also sets the newNMEAreceived() flag to false
 
-    if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
-      return;  // we can fail to parse a sentence in which case we should just wait for another
+    if(GPS.parse(GPS.lastNMEA()))
+    {
+//      Serial.println("parse worked");
+      sendGPSData();
+    }
   }
 
   // if millis() or timer wraps around, we'll just reset it
-  if (timer > millis())  timer = millis();
+  // if (timer > millis())  timer = millis();
 
-  // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) {
-    timer = millis(); // reset the timer
+  // // approximately every 2 seconds or so, print out the current stats
+  // if (millis() - timer > 2000) {
+  //   timer = millis(); // reset the timer
 
-    //fix is 0 if not connected and 1 if is
-    Serial.print("fix: ");
-    Serial.print((int)GPS.fix);
-    Serial.println(",");
-
-    //the number of satellites connected to
-    Serial.print("sats: ");
-    Serial.print((int)GPS.satellites);
-    Serial.println(",");
-
-    //get latitude and longitude if has a fix
-    if (GPS.fix) {
-      Serial.print("lat: ");
-      Serial.print(GPS.latitude, 4);
-      Serial.print(GPS.lat);
-      Serial.println(",");
-      Serial.print("lon: ");
-      Serial.print(GPS.longitude, 4);
-      Serial.print(GPS.lon);
-      Serial.println(",");
-    } else {
-      Serial.println("lat: None,\nlon: None,");
-    }
-
-    float ax, ay, az, mx, my, mz;
-    ax = imu.ax;
-    ay = imu.ay;
-    az = imu.az;
-    my = -imu.my;
-    mx = -imu.mx;
-    mz = imu.mz;
     
-    float roll = atan2(ay, az);
-  float pitch = atan2(-ax, sqrt(ay * ay + az * az));
-
-  float heading;
-  if (my == 0)
-    heading = (mx < 0) ? PI : 0;
-  else
-    heading = atan2(mx, my);
-
-  heading -= DECLINATION * PI / 180;
-
-  if (heading > PI) heading -= (2 * PI);
-  else if (heading < -PI) heading += (2 * PI);
-
-  // Convert everything from radians to degrees:
-  heading *= 180.0 / PI;
-  pitch *= 180.0 / PI;
-  roll  *= 180.0 / PI;
-
-    //print the IMU stuff
-    Serial.print("roll: ");
-    Serial.print(roll, 4);
-    Serial.println(",");
-    Serial.print("pitch: ");
-    Serial.print(pitch, 4);
-    Serial.println(",");
-    Serial.print("yaw: ");
-    Serial.print(heading, 4);
-    Serial.println(",");
-  }
+  // }
 }

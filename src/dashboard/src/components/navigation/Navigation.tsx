@@ -1,13 +1,27 @@
 import "leaflet/dist/leaflet.css";
 import * as Leaflet from "leaflet";
-import { Collapse, CollapseProps, Row, Switch, Col, Space, Button } from "antd";
-import { MapContainer, Marker } from "react-leaflet";
+import {
+  Collapse,
+  CollapseProps,
+  Row,
+  Switch,
+  Col,
+  Space,
+  Button,
+  Typography,
+  InputNumber,
+  Form,
+} from "antd";
+import { MapContainer } from "react-leaflet";
 import { useCallback, useEffect, useState } from "react";
 import DraggableMarker from "./DraggableMarker";
-import { tileLayerOffline, savetiles } from "leaflet.offline";
+import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 
-const Navigation: React.FC = () => {
-  const precision = 5;
+type NavigationType = {
+  precision?: number;
+};
+
+const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   const initPosition = new Leaflet.LatLng(45.4203222, -75.6803941);
   const initZoom = 18;
   // Define URL templates according to the Leaflet TileLayer style to get map
@@ -25,6 +39,21 @@ const Navigation: React.FC = () => {
       setMapPosition(map.getCenter());
     }
   }, [map]);
+  const mapCoords = `${mapPosition.lat.toFixed(
+    precision
+  )}, ${mapPosition.lng.toFixed(precision)}`;
+
+  const [form] = Form.useForm<{ lat: string; lng: string }>();
+  // Use a useEffect to set the form's initial lat and lng values. Setting with
+  // the defaultValue prop seems to return undefined for values unless they have
+  // been updated by the user at least once
+  useEffect(() => {
+    form.setFieldsValue({
+      lat: initPosition.lat.toFixed(precision),
+      lng: initPosition.lng.toFixed(precision),
+    });
+  }, []);
+
   useEffect(() => {
     if (map) {
       map.on("move", onMove);
@@ -38,7 +67,8 @@ const Navigation: React.FC = () => {
       const offlineTileLayer = tileLayerOffline(activeTileLayer, {
         attribution: "Google Maps",
       });
-      // lets you know when the tiles are finished saving/removing
+      // Add success callback functions for tiles that have been saved and
+      // removed. These let you know when the tiles are finished saving/removing
       offlineTileLayer.on("saveend", (_e) => {
         window.alert("Success!");
       });
@@ -48,18 +78,23 @@ const Navigation: React.FC = () => {
       offlineTileLayer.addTo(map);
 
       const controlSaveTiles = savetiles(offlineTileLayer, {
-        confirm(layer: any, successCallback: any) {
+        saveWhatYouSee: true,
+        confirm(controlStatus: SaveStatus, successCallback: () => void) {
           if (
             window.confirm(
-              `Save ${layer._tilesforSave.length} tiles? (may take up to a few minutes)`
+              `Save ${controlStatus.lengthToBeSaved} tiles? (This may take a few minutes).`
             )
           ) {
             successCallback();
           }
         },
-        confirmRemoval(layer: any, successCallback: any) {
-          if (window.confirm(`Remove ${layer.storagesize} tiles?`)) {
-            successCallback();
+        confirmRemoval(controlStatus: SaveStatus, successCallback: () => void) {
+          if (controlStatus.storagesize) {
+            if (window.confirm(`Remove ${controlStatus.storagesize} tiles?`)) {
+              successCallback();
+            }
+          } else {
+            window.alert("No tiles to save.");
           }
         },
         saveText:
@@ -82,7 +117,7 @@ const Navigation: React.FC = () => {
       label: <b>Map</b>,
       extra: <div>Rover position: </div>,
       children: (
-        <div style={{ height: 600 }}>
+        <div style={{ height: "46em" }}>
           <MapContainer
             center={initPosition}
             zoom={initZoom}
@@ -91,18 +126,49 @@ const Navigation: React.FC = () => {
             }}
             ref={setMap}
           >
-            <Marker position={initPosition}></Marker>
-            <DraggableMarker initPosition={initPosition} />
+            <DraggableMarker initPosition={initPosition} title="Base Station" />
           </MapContainer>
           <Row gutter={[12, 12]} justify="space-between" align="middle">
             <Col>
-              <Button>Add marker</Button>
+              <Form
+                form={form}
+                onFinish={(value) => {
+                  console.log(value.lat);
+                  console.log(value.lng);
+                  console.log("submit!");
+                }}
+              >
+                <Space>
+                  <Form.Item noStyle>
+                    <Button htmlType="submit">Add marker</Button>
+                  </Form.Item>
+                  at
+                  <Form.Item name="lat" noStyle>
+                    <InputNumber<string>
+                      style={{ width: "8em" }}
+                      min="-90"
+                      max="90"
+                      step={Math.pow(10, -1 * precision).toString()}
+                      stringMode
+                    />
+                  </Form.Item>
+                  ,
+                  <Form.Item name="lng" noStyle>
+                    <InputNumber<string>
+                      style={{ width: "8em" }}
+                      name="lng"
+                      min="-180"
+                      max="180"
+                      step={Math.pow(10, -1 * precision).toString()}
+                      stringMode
+                    />
+                  </Form.Item>
+                </Space>
+              </Form>
             </Col>
             <Col>
               Map Center:{" "}
-              {`${mapPosition.lat.toFixed(
-                precision
-              )}, ${mapPosition.lng.toFixed(precision)}`}
+              <Typography.Text copyable>{mapCoords}</Typography.Text>
             </Col>
             <Col>
               <Space align="center">

@@ -29,6 +29,45 @@
         "topicName": "/camera/rgb/image_rect_color/compressed",
         "messageType": "sensor_msgs/CompressedImage"
       }
+    ],
+    "cameraControls": {
+      "panorama": {
+        "topicName": "/panorama_path"
+      },
+      "picture": {
+        "topicName": "/picture_topic"
+      },
+      "video": {
+        "topicName": "/video_action"
+      }
+    },
+    "charts": [
+      {
+        "name": "UV Sensor",
+        "dataLabel": "UV Value",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Humidity Sensor",
+        "dataLabel": "Humidity",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Temperature Sensor",
+        "dataLabel": "Temperature",
+        "topicName": "/weather_logger"
+      },
+      {
+        "name": "Wind Sensor",
+        "dataLabel": "Wind Speed",
+        "topicName": "/weather_logger"
+      },
+
+      {
+        "name": "Pressure Sensor",
+        "dataLabel": "Pressure",
+        "topicName": "/weather_logger"
+      }
     ]
   }
 }

@@ -1,0 +1,9 @@
+<!--
+Launch file for the node: M_arm_controls_New_PCB
+-->
+<launch>
+
+	<!-- Manual Arm Controls Node -->
+	<node pkg="robotic_arm_package" type="M_arm_controls_New_PCB.py" name="M_arm_controls" output="screen"></node>
+
+</launch>

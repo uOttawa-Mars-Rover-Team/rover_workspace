@@ -1,0 +1,11 @@
+<!--
+	Use this launch file to run just the gps node.
+    Note: the node can also be run through the command line by running
+        'rosrun gps_node GPS_ros_node.py <optional_arduino_port>'
+-->
+<launch>
+    <!-- Remove the output=screen to remove the printouts from the gpd node. -->
+    <node pkg="gps_node" type="GPS_ros_node.py" name="GPS_ros_node" output="screen">
+        <param name="arduino_port" value="/dev/ttyACM0"/>
+    </node>
+</launch>

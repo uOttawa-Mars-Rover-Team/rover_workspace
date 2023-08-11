@@ -1,105 +1,91 @@
-/*
-Life Detection Module
-
-Maintainer: Ken Lorbetskie
-*/
-
 #include <ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 #include <Servo.h>
+#include <HCSR04.h>
+#include <Adafruit_SI1145.h>
+#include <Adafruit_BME280.h>
+#include <ezButton.h>
+
 
 ros::NodeHandle  nh;
+
+//Publishing topics
+
 //=================================================================================================
 // VACUUM HOSE EXTENDER 
 
-const int stepsPerRevolution = 200;
-const int hoseDirPin = 2;
-const int hoseStepPin = 3;
-const int upperPin = 13; 
-const int lowerPin = 12;
-
-int upperLimit = LOW;
-int lowerLimit = LOW;
+const int hoseDirPin = 10;
+const int hoseStepPin = 11;
+const int stepsPerRevolution = 25;
+const int trig = 2;
+const int echo = 4;
+ezButton lowerLimitSwitch(52);
+ezButton upperLimitSwitch(53);
 int dir = 0;
+HCSR04 hc(trig, echo);
 
-/*
- * Function:  hoseCb 
- * --------------------
- * callback function that raises or lowers the
- * the hose depending on the input parameter.
- *
- *  hose_cmd: UInt8 ROS topic that passes a number which 
- *            maps to a certain command.
- *            
- *            hose_cmd:
- *                1 : Lower the hose
- *                2 : Raise the hose
- *  (Anything else) : Do nothing
- */
-void hoseCb( const std_msgs::UInt8& hose_cmd){
-  int stopFlag = LOW;
+std_msgs::Float32 flo_msg;
+ros::Publisher hoseDistance("hose_distance", &flo_msg);
 
-  if (hose_cmd.data==1){
-    // Move Down
+
+void hoseCb(std_msgs::UInt8& hose_cmd) {
+  if (hose_cmd.data == 1) {
+    digitalWrite(hoseDirPin, false);
     nh.loginfo("Moving hose down....");
     dir = 1;
-    digitalWrite(hoseDirPin, HIGH);
-  }
-  else if (hose_cmd.data==2){
-    // Move Up
+    nh.spinOnce();
+  } else if (hose_cmd.data == 4) {
+    dir = 0;
+    nh.loginfo("Stopped Down Movement");
+    return;
+  } else if (hose_cmd.data == 2) {
+    digitalWrite(hoseDirPin, true);  
     nh.loginfo("Moving hose up....");
     dir = -1;
-    digitalWrite(hoseDirPin, LOW);
-  }else{
+    nh.spinOnce();
+  } else if (hose_cmd.data == 3) {
     dir = 0;
+    nh.loginfo("Stopped Up Movement");
     return;
   }
-  // Spin motor slowly
-  while (!checkLimits()){
-    nh.spinOnce();
-    for(int x = 0; x < stepsPerRevolution; x++){
-      if (!checkLimits()){
+  float avgDistance = 0;
+  for (int i = 0; i<=5;i++){
+    float distance = hc.dist();
+    avgDistance = avgDistance + distance;
+  }
+  avgDistance = avgDistance/6;
+  flo_msg.data = avgDistance;
+  hoseDistance.publish(&flo_msg);
+  for (int x = 0; x < stepsPerRevolution; x++){
+    if (checkLimits()) {
+      backOff();
+      break;
+    } else {
       digitalWrite(hoseStepPin, HIGH);
       delayMicroseconds(2000);
       digitalWrite(hoseStepPin, LOW);
       delayMicroseconds(2000);
-      }else{
-        stopFlag = HIGH;
-        break; 
-      }
-    }
-    if(stopFlag == HIGH){
-      nh.loginfo("Limit reached. Backing off....");
-      backOff();
-      break;
-    }
+    }   
   }
 }
 
-/*
- * Function:  checkLimits 
- * --------------------
- * reads the state of the upper an lower limit
- * switches of the vacuum hose extender.
- * 
- * returns: true if a switch is pressed
- */
+
 bool checkLimits(){
-  upperLimit = digitalRead(upperPin);
-  lowerLimit = digitalRead(lowerPin);
-
-  if(upperLimit  == LOW){
-    nh.logwarn("Upper Limit LOW");
+  int lsUpperLimit = upperLimitSwitch.getState();
+  int lsLowerLimit = lowerLimitSwitch.getState();
+  if(lsUpperLimit == LOW) {
+    nh.logwarn("Upper Limit hit");
   }
-  if(lowerLimit  == LOW){
-    nh.logwarn("Lower Limit LOW");
+  if(lsLowerLimit  == LOW) {
+    nh.logwarn("Lower Limit hit");
   }
 
-  if(!upperLimit || !lowerLimit){
+  if (!lsUpperLimit || !lsLowerLimit){
     return true;
-  }else{
+  } else {
     return false;
   }
 }
@@ -112,17 +98,17 @@ bool checkLimits(){
  * 
  */
 void backOff(){
-  if (dir == 1 && !lowerLimit){
-     digitalWrite(hoseDirPin, LOW);
-  }else if (dir == -1 && !upperLimit){
-     digitalWrite(hoseDirPin, HIGH);
+  if (dir == 1){
+     digitalWrite(hoseDirPin, true);
+  }else if (dir == -1){
+     digitalWrite(hoseDirPin, false);
   }else{
     nh.logerror("check limit switches");
     dir = 0;
     return;
   }
   delay(1000);
-  for(int x = 0; x < stepsPerRevolution; x++)
+  for(int x = 0; x < 400; x++)
       {
         digitalWrite(hoseStepPin, HIGH);
         delayMicroseconds(2000);
@@ -136,27 +122,62 @@ void backOff(){
 //=================================================================================================
 // VACUUM CONTROLLER
 
-const int vacuumPin = 10;
-
-int vacuumState = LOW;
-Servo servo;
-int pos = 0;
-boolean flapIsOpen = false;
+int forwardVacuumState = LOW;
+int backwardVacuumState = LOW;
+const int vacuumPin = 3;
+const int forwardEnPin = 20;
+const int backwardEnPin = 21;
+const int forwardPWMPin = 7;
+const int backwardPWMPin = 6;
 
 /*
  * Function:  vacuumCb 
  * --------------------
  * callback function that toggles the vacuum relay.
  */
-void vacuumCb( const std_msgs::Empty& toggle_vacuum){
-  if (vacuumState == LOW){
-    nh.loginfo("Turning on vacuum....");
-    digitalWrite(vacuumPin, LOW);
-    vacuumState = HIGH;
-  }else{
-    nh.loginfo("Turning off vacuum....");
-    digitalWrite(vacuumPin, HIGH);
-    vacuumState = LOW;
+void vacuumCb( const std_msgs::UInt8& toggle_vacuum){
+  if (toggle_vacuum.data == 1) {
+    digitalWrite(backwardEnPin, LOW);
+    digitalWrite(forwardEnPin, HIGH);
+    if (forwardVacuumState == LOW) {
+      nh.loginfo("Turning on vacuum....");
+      for (int i = 0; i <= 255; i += 1){
+        analogWrite(forwardPWMPin, i);
+        delay(20);
+      }
+      nh.loginfo("Vacuum is at full sucking power");
+      forwardVacuumState = HIGH;
+    } else {
+      nh.loginfo("Turning off vacuum....");
+      for (int i = 255; i >= 0; i -= 1){
+        analogWrite(forwardPWMPin, i);
+        delay(20);
+      }
+      nh.loginfo("Vacuum is off");
+      forwardVacuumState = LOW;
+      digitalWrite(forwardEnPin, LOW);
+    }
+  } else if (toggle_vacuum.data == 2) {
+    digitalWrite(forwardEnPin, LOW);
+    digitalWrite(backwardEnPin, HIGH);
+    if (backwardVacuumState == LOW) {
+      nh.loginfo("Turning on vacuum....");
+      for (int i = 0; i <= 255; i += 1){
+        analogWrite(backwardPWMPin, i);
+        delay(20);
+      }
+      nh.loginfo("Vacuum is at full sucking power");
+      backwardVacuumState = HIGH;
+    } else {
+      nh.loginfo("Turning off vacuum....");
+      for (int i = 255; i >= 0; i -= 1){
+        analogWrite(backwardPWMPin, i);
+        delay(20);
+      }
+      nh.loginfo("Vacuum is off");
+      backwardVacuumState = LOW;
+      digitalWrite(backwardEnPin, LOW);
+    }
   }
 }
 
@@ -166,25 +187,30 @@ void vacuumCb( const std_msgs::Empty& toggle_vacuum){
  * --------------------
  * callback function that toggles the position of the funnel flap
  */
+
+Servo servo;
+int pos = 0;
+bool flapIsOpen = false;
+
 void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
   if (!flapIsOpen){
     nh.loginfo("Opening funnel flap....");
-    for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 90 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
     }
     flapIsOpen = true;
-    nh.loginfo("funnelFlapCb: Done");
+    nh.loginfo("funnel flap opened");
   }else{
     nh.loginfo("Closing funnel flap....");
-    for (pos = 180; pos > 0; pos -= 1) { // goes from 0 degrees to 180 degrees
+    for (pos = 90; pos > 0; pos -= 1) { // goes from 0 degrees to 90 degrees
       // in steps of 1 degree
       servo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
     }
     flapIsOpen = false;
-    nh.loginfo("funnelFlapCb: Done");
+    nh.loginfo("funnel flap closed");
   }
 }
 
@@ -193,8 +219,8 @@ void funnelFlapCb( const std_msgs::Empty& toggle_funnel_flap){
 
 const float degrees_between_beaker = 25.00/360;
 const float gear_ratio = 309/14;
-const int beakerDirPin = 6;
-const int beakerStepPin = 7;
+const int beakerDirPin = 12;
+const int beakerStepPin = 13;
 
 int currentBeakerIndex = 0;
 int beakerHome = 1;
@@ -215,118 +241,15 @@ int beakerHome = 1;
  *  (Anything else) : Do nothing
  */
 void sampleSystemCb( const std_msgs::UInt8& sample_sys_cmd){
-  //Return Sampler to home position
-  if (sample_sys_cmd.data==0){
-    returnHome();
-  }
-  //Beaker Selection
-  else if (sample_sys_cmd.data>0 && sample_sys_cmd.data<11){
-    beakerController(sample_sys_cmd.data);
-  }
-  //Step Foward
-  else if (sample_sys_cmd.data==11){
-    stepForward();
-  }
-  //Step Backward
-  else if (sample_sys_cmd.data==12){
-    stepBack();
+  if (sample_sys_cmd.data == 1){
+    moveBeaker(true);
+  }else if (sample_sys_cmd.data == 2){
+    moveBeaker(false);
   }
 }
 
-/*
- * Function:  aggitationCb 
- * --------------------
- * callback function that shakes the samples
- *
- *  aggitation_timer: UInt8 ROS topic that passes the amount of time 
- *                    (in seconds) to aggitate the samples for.
- */
-void aggitationCb( const std_msgs::UInt8& aggitation_timer){
-  unsigned long starttime = millis();
-  unsigned long endtime = starttime;
-  int timer = aggitation_timer.data*1000;
-  char log_str [100];
-  snprintf(log_str, 100, "Aggitating samples for: %d seconds....", aggitation_timer.data);
-  nh.loginfo(log_str);
-  
-  while ((endtime - starttime) <=timer){
-    digitalWrite(beakerDirPin, HIGH);
-
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-    
-    delay(1000); // Wait a second
-    digitalWrite(beakerDirPin, LOW);
-
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-    delay(1000); // Wait a second
-    endtime = millis();
-  }
-  nh.loginfo("aggitationCb: Done");  
-}
-
-/*
- * Function:  stepForward 
- * --------------------
- * steps the motor foward 10 times to make fine adjustment
- * to the sample system's position
- */
-void stepForward(){
-  nh.loginfo("Step Forward");
-  digitalWrite(beakerDirPin, HIGH);
-     
-  for(int x = 0; x < 10; x++)
-  {
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-  }
-}
-
-/*
- * Function:  stepBack
- * --------------------
- * steps the motor backward 10 times to make fine adjustment
- * to the sample system's position
- */
-void stepBack(){
-  nh.loginfo("Step Backward");
-  digitalWrite(beakerDirPin, LOW);
-     
-  for(int x = 0; x < 10; x++)
-  {
-    digitalWrite(beakerStepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(beakerStepPin, LOW);
-    delayMicroseconds(2000);
-  }
-}
-
-/*
- * Function:  moveBeaker 
- * --------------------
- * rotates the Sample System to the desired postion
- *
- *  beakerIndex: The desired beaker to fetch
- *      reverse: Flag that rotates system in reverse direction
- */
-void moveBeaker(int beakerIndex, bool reverse){
-  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution*beakerIndex);
-  // Rotate to correct position
-
-  char log_str [100];
-  if (reverse){
-    snprintf(log_str, 100, "Rotating sampler to position: %d ....", 0);
-  }else{
-    snprintf(log_str, 100, "Rotating sampler to position: %d ....", beakerIndex);
-  }
-  nh.loginfo(log_str);
+void moveBeaker(bool reverse){
+  int steps = round(degrees_between_beaker*gear_ratio*stepsPerRevolution);
   
   digitalWrite(beakerDirPin, reverse);
   for(int x = 0; x < steps; x++)
@@ -341,68 +264,111 @@ void moveBeaker(int beakerIndex, bool reverse){
 }
 
 /*
- * Function:  beakerController 
+ * Function:  aggitationCb 
  * --------------------
- * keeps track of Sample System's state and rotates
- * system to desired position
+ * callback function that shakes the samples
  *
- *  beakerIndex: The desired beaker to fetch
+ *  aggitation_timer: UInt8 ROS topic that passes the amount of time 
+ *                    (in seconds) to aggitate the samples for.
  */
-void beakerController(int beakerIndex){
-  if(beakerHome){
-    moveBeaker(beakerIndex, false);
-    beakerHome = 0;
-    currentBeakerIndex = beakerIndex;
-  }else{
-    //Return beaker to home position
-    nh.loginfo("Returning sampler to home position....");
-    moveBeaker(currentBeakerIndex, true);
-    nh.loginfo("beakerController: Done");
-    delay(2000);
-    moveBeaker(beakerIndex, false);
-    beakerHome = 0;
-    currentBeakerIndex = beakerIndex;
+
+// bool checkStatus(String message){
+//         if (message == 1) {
+//             return true;
+//         } else {
+//             return false; 
+//         }
+// }
+bool checkStatus(int aggitationCMD) {
+  nh.spinOnce();
+  if (aggitationCMD == 1){
+    nh.loginfo("Aggitation Started");
+    return true;
   }
-  nh.loginfo("beakerController: Done");
+  else {
+    nh.loginfo("Aggitation Stopped");
+    return false;
+  }
 }
 
-/*
- * Function:  returnHome 
- * --------------------
- * returns Sample system to home postion
- */
-void returnHome(){
-  moveBeaker(currentBeakerIndex, true);
-  beakerHome = 1;
-  currentBeakerIndex = 0;
+
+void aggitationCb( const std_msgs::UInt8& aggitationCMD){
+        while (checkStatus(aggitationCMD.data)) {
+            
+            digitalWrite(beakerDirPin, HIGH);
+
+            digitalWrite(beakerStepPin, HIGH);
+            delayMicroseconds(4000);
+            digitalWrite(beakerStepPin, LOW);
+            delayMicroseconds(4000);
+
+            digitalWrite(beakerDirPin, LOW);
+
+            digitalWrite(beakerStepPin, HIGH);
+            delayMicroseconds(4000);
+            digitalWrite(beakerStepPin, LOW);
+            delayMicroseconds(4000);
+            delay(10); // Wait a second
+        }
+}
+
+bool collectWeather = false;
+Adafruit_SI1145 uv = Adafruit_SI1145();
+Adafruit_BME280 bme;
+std_msgs::String str_msg;
+ros::Publisher weatherLogger("weather_logger", &str_msg);
+
+
+void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
+  if (collectWeather == true){
+    collectWeather = false;
+    nh.loginfo("Stopped weather collection");
+    return;
+  } else {
+    nh.loginfo("Collecting Weather...");
+    collectWeather = true;
+    while (collectWeather){
+      nh.spinOnce();
+      float UV = uv.readUV();
+      UV /= 100.0;  
+      float humidity = bme.readHumidity();
+      float temp = bme.readTemperature();
+      float windSpeed = 5.0;
+      float pressure = bme.readPressure();
+      String data1 = String(String(UV) + ";" + String(humidity) + ";" + String(temp) + ";" + String(windSpeed) + ";" + String(pressure));
+      int len = data1.length() + 1;
+      char data[len];
+      data1.toCharArray(data, len);
+      str_msg.data = data;
+      weatherLogger.publish(&str_msg);
+      delay(5000);
+    }
+  }
+
 }
 
 //=================================================================================================
 
-//Publishing topics
-std_msgs::String str_msg;
-ros::Publisher logger("life_detection_logger", &str_msg);
-
 //Subscribing topics hose_cmd
-ros::Subscriber<std_msgs::UInt8> hoseSub("hose_cmd", &hoseCb );
-ros::Subscriber<std_msgs::UInt8> sampleSystemSub("sample_sys_cmd", &sampleSystemCb );
-ros::Subscriber<std_msgs::UInt8> aggitationSub("aggitation_timer", &aggitationCb );
-ros::Subscriber<std_msgs::Empty> vacuumSub("toggle_vacuum", &vacuumCb );
-ros::Subscriber<std_msgs::Empty> funnelFlapSub("toggle_funnel_flap", &funnelFlapCb );
+ros::Subscriber<std_msgs::UInt8> hoseSub("VacHoseCMD", &hoseCb );
+ros::Subscriber<std_msgs::UInt8> sampleSystemSub("BeakerCMD", &sampleSystemCb );
+ros::Subscriber<std_msgs::UInt8> aggitationSub("AgitateCMD", &aggitationCb );
+ros::Subscriber<std_msgs::UInt8> vacuumSub("VacMotorCMD", &vacuumCb );
+ros::Subscriber<std_msgs::Empty> funnelFlapSub("FunnelFlapCMD", &funnelFlapCb );
+ros::Subscriber<std_msgs::Empty> weatherCollectionSub("WeatherCollectionCMD", &collectWeatherCb );
+
 
 void setup() {
 
   // VACUUM HOSE EXTENDER
-  pinMode(upperPin, INPUT);
-  pinMode(lowerPin, INPUT);
-
   pinMode(hoseStepPin, OUTPUT);
   pinMode(hoseDirPin, OUTPUT);
 
   // VACUUM CONTROLLER
   pinMode(vacuumPin, OUTPUT);
   digitalWrite(vacuumPin, LOW);
-  servo.attach(9);
+  servo.attach(8);
+  servo.write(0);
 
   // BEAKER CAROUSEL CONTROLLER
   pinMode(beakerStepPin, OUTPUT);
@@ -415,10 +381,17 @@ void setup() {
   nh.subscribe(aggitationSub);
   nh.subscribe(vacuumSub);
   nh.subscribe(funnelFlapSub);
-  nh.advertise(logger); 
+  nh.subscribe(weatherCollectionSub);
+  nh.advertise(weatherLogger); 
+  nh.advertise(hoseDistance); 
+
+  bme.begin();
+  uv.begin();
 }
 
 void loop() {
+  upperLimitSwitch.loop();
+  lowerLimitSwitch.loop();
   nh.spinOnce();
   delay(1);
 }

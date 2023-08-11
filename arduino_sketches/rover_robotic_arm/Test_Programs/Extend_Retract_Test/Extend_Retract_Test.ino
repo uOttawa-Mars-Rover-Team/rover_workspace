@@ -12,10 +12,10 @@ IBT-2 pin 8 (GND) to Arduino GND
 IBT-2 pins 5 (R_IS) and 6 (L_IS) not connected
 */
  
-int RPWM_Output = 3; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
-int LPWM_Output = 2; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
-int R_EN = 30;
-int L_EN = 33;
+int RPWM_Output = 5; // Arduino PWM output pin 5; connect to IBT-2 pin 1 (RPWM) Forward
+int LPWM_Output = 4; // Arduino PWM output pin 6; connect to IBT-2 pin 2 (LPWM) Backward;
+int R_EN = 50;
+int L_EN = 47;
  
 void setup()
 {
@@ -33,10 +33,10 @@ void loop() {
   //forward accelerate to max speed and then decelerate
 
   
-  analogWrite(RPWM_Output, 100);
+  analogWrite(RPWM_Output, 125);
   analogWrite(LPWM_Output, 0);
   //analogWrite(LPWM_Output, 100);
-  delay(2000);
+  delay(5000);
 
   // Stop Actuator
   analogWrite(RPWM_Output, 0);
@@ -45,9 +45,9 @@ void loop() {
  delay(2000);
  
   // //backwards accelerate to max speed and then decelerate
-  analogWrite(LPWM_Output, 100);
+  analogWrite(LPWM_Output, 125);
   analogWrite(RPWM_Output, 0);
-  delay(2000);
+  delay(5000);
 
   // Stop Actuator
   analogWrite(RPWM_Output, 0);

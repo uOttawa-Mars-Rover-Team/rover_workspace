@@ -1,0 +1,19 @@
+<!--
+Launch file for the two nodes: arm_joystick_controller & arm_control
+Includes two parameters for arm_control: baudrate & serial_dev
+-->
+<launch>
+
+	<!-- Microcontroller Device Argument -->
+	<arg name="serial_dev" default="/dev/ttyACM0"/>
+
+	<!-- Arm Control Node -->
+	<node pkg="robotic_arm_package" type="arm_control.py" name="arm_control" output="screen">
+		<param name="serial_dev" value="$(arg serial_dev)" />
+		<param name="baudrate" type="int" value="115200"/>
+	</node>
+
+	<!-- Arm Joystick Control Node -->
+	<node pkg="robotic_arm_package" type="arm_joystick_controller.py" name="arm_joystick_controller"></node>
+
+</launch>

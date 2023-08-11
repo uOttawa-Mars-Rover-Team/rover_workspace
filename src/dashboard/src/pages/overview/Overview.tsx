@@ -19,7 +19,7 @@ import {
   ParamsPanel,
   NodesPanel,
   AddCameraFeedModal,
-  TemperatureChart,
+  LifeDetectionCharts,
 } from "../../components";
 import { DashboardContext } from "../../contexts";
 
@@ -61,7 +61,7 @@ const Overview: React.FC = () => {
         <Navigation />
 
         <Header title="Sensors" icon={<WifiOutlined />} />
-        <TemperatureChart />
+        <LifeDetectionCharts />
 
         <Header title="ROS Debug Information" icon={<InfoCircleOutlined />} />
         <Row gutter={[12, 12]}>

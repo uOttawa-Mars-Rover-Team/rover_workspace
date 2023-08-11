@@ -12,14 +12,18 @@ import {
   Typography,
   InputNumber,
   Form,
+  Input,
 } from "antd";
 import { MapContainer } from "react-leaflet";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import DraggableMarker from "./DraggableMarker";
 import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 
 type NavigationType = {
   precision?: number;
+};
+type markerObjectListType = {
+  [key: number]: JSX.Element;
 };
 
 const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
@@ -43,8 +47,12 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   const mapCoords = `${mapPosition.lat.toFixed(
     precision
   )}, ${mapPosition.lng.toFixed(precision)}`;
+  const [markers, setMarkers] = useState<markerObjectListType>({
+    0: <DraggableMarker initPosition={initPosition} title="Base Station" />,
+  });
+  const [numMarkers, setNumMarkers] = useState(Object.keys(markers).length);
 
-  const [form] = Form.useForm<{ lat: string; lng: string }>();
+  const [form] = Form.useForm<{ lat: string; lng: string; title: string }>();
 
   useEffect(() => {
     if (map) {
@@ -116,21 +124,41 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
             }}
             ref={setMap}
           >
-            <DraggableMarker initPosition={initPosition} title="Base Station" />
+            {Object.keys(markers).map((markerNum, index) => {
+              return (
+                <Fragment key={index}>{markers[Number(markerNum)]}</Fragment>
+              );
+            })}
           </MapContainer>
           <Row gutter={[12, 12]} justify="space-between" align="middle">
             <Col>
               <Form
                 form={form}
                 onFinish={(value) => {
-                  console.log(value.lat);
-                  console.log(value.lng);
-                  console.log("submit!");
+                  const newPosition = new Leaflet.LatLng(
+                    Number(value.lat),
+                    Number(value.lng)
+                  );
+                  const newMarkers = markers;
+                  newMarkers[numMarkers] = (
+                    <DraggableMarker
+                      initPosition={newPosition}
+                      title={
+                        value.title.trim()
+                          ? value.title.trim()
+                          : `Marker #${(numMarkers + 1).toString()}`
+                      }
+                    />
+                  );
+                  setMarkers(newMarkers);
+                  setNumMarkers(numMarkers + 1);
                 }}
               >
                 <Space>
                   <Form.Item noStyle>
-                    <Button htmlType="submit">Add marker</Button>
+                    <Button type="primary" htmlType="submit">
+                      Add marker
+                    </Button>
                   </Form.Item>
                   at
                   <Form.Item
@@ -154,12 +182,15 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
                   >
                     <InputNumber<string>
                       style={{ width: "8em" }}
-                      name="lng"
                       min="-180"
                       max="180"
                       step={Math.pow(10, -1 * precision).toString()}
                       stringMode
                     />
+                  </Form.Item>
+                  with title
+                  <Form.Item name="title" initialValue="" noStyle>
+                    <Input />
                   </Form.Item>
                 </Space>
               </Form>

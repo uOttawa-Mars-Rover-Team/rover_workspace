@@ -1,4 +1,4 @@
-import "font-awesome/css/font-awesome.min.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "leaflet/dist/leaflet.css";
 import * as Leaflet from "leaflet";
 import {
@@ -55,7 +55,18 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
         title="Base Station"
         icon={
           new Leaflet.DivIcon({
-            html: '<i style="color:orange;font-size:3.5em;position:absolute;top:-0.4em;right:-0.3em;" class="fa fa-home"></i>',
+            html: '<i style="color:purple;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-house"></i>',
+          })
+        }
+      />
+    ),
+    1: (
+      <DraggableMarker
+        initPosition={initPosition}
+        title="Rover"
+        icon={
+          new Leaflet.DivIcon({
+            html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
           })
         }
       />
@@ -115,8 +126,8 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
             window.alert("No tiles to save.");
           }
         },
-        saveText: '<i class="fa fa-download" title="Save tiles"></i>',
-        rmText: '<i class="fa fa-trash" title="Remove tiles"></i>',
+        saveText: '<i class="fa-solid fa-download" title="Save tiles"></i>',
+        rmText: '<i class="fa-solid fa-trash" title="Remove tiles"></i>',
       });
       controlSaveTiles.addTo(map);
 

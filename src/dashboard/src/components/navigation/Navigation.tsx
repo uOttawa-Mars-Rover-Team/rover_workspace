@@ -49,7 +49,17 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   )}, ${mapPosition.lng.toFixed(precision)}`;
 
   const [markers, setMarkers] = useState<markerObjectListType>({
-    0: <DraggableMarker initPosition={initPosition} title="Base Station" />,
+    0: (
+      <DraggableMarker
+        initPosition={initPosition}
+        title="Base Station"
+        icon={
+          new Leaflet.DivIcon({
+            html: '<i style="color:orange;font-size:3.5em;position:absolute;top:-0.4em;right:-0.3em;" class="fa fa-home"></i>',
+          })
+        }
+      />
+    ),
   });
   const [numMarkers, setNumMarkers] = useState(Object.keys(markers).length);
   const markerDeleteCallbackGenerator = (markerIndex: number) => {

@@ -16,7 +16,7 @@ import {
 } from "antd";
 import { MapContainer } from "react-leaflet";
 import { Fragment, useCallback, useEffect, useState } from "react";
-import DraggableMarker from "./DraggableMarker";
+import { DraggableMarker } from "./Markers";
 import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 
 type NavigationType = {
@@ -26,7 +26,11 @@ type markerObjectListType = {
   [key: number]: JSX.Element;
 };
 
-const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
+export const defaultPrecision = 5;
+
+const Navigation: React.FC<NavigationType> = ({
+  precision = defaultPrecision,
+}) => {
   const initPosition = new Leaflet.LatLng(45.4203222, -75.6803941);
   const initZoom = 18;
   // Define URL templates according to the Leaflet TileLayer style to get map

@@ -39,7 +39,7 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
 
   const [map, setMap] = useState<null | Leaflet.Map>(null);
   const [mapPosition, setMapPosition] = useState(initPosition);
-  const onMove = useCallback(() => {
+  const onMoveCallback = useCallback(() => {
     if (map) {
       setMapPosition(map.getCenter());
     }
@@ -64,9 +64,9 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
 
   useEffect(() => {
     if (map) {
-      map.on("move", onMove);
+      map.on("move", onMoveCallback);
       return () => {
-        map.off("move", onMove);
+        map.off("move", onMoveCallback);
       };
     }
   }, [map]);

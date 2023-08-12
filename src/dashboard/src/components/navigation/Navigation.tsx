@@ -47,10 +47,18 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   const mapCoords = `${mapPosition.lat.toFixed(
     precision
   )}, ${mapPosition.lng.toFixed(precision)}`;
+
   const [markers, setMarkers] = useState<markerObjectListType>({
     0: <DraggableMarker initPosition={initPosition} title="Base Station" />,
   });
   const [numMarkers, setNumMarkers] = useState(Object.keys(markers).length);
+  const markerDeleteCallbackGenerator = (markerIndex: number) => {
+    return () => {
+      const newMarkers = markers;
+      delete newMarkers[markerIndex];
+      setMarkers(newMarkers);
+    };
+  };
 
   const [form] = Form.useForm<{ lat: string; lng: string; title: string }>();
 
@@ -143,6 +151,7 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
                   newMarkers[numMarkers] = (
                     <DraggableMarker
                       initPosition={newPosition}
+                      deleteCallback={markerDeleteCallbackGenerator(numMarkers)}
                       title={
                         value.title.trim()
                           ? value.title.trim()

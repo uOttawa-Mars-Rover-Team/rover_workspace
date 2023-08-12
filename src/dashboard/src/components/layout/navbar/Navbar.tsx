@@ -53,7 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
     <Header
       style={{
         position: "fixed",
-        zIndex: 1,
+        zIndex: 10000,
         bottom: 10,
         left: 10,
         borderRadius: 6,

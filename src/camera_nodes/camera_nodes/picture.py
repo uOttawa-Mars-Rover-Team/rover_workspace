@@ -6,15 +6,17 @@ import cv2
 import rclpy
 from cv_bridge import CvBridge, CvBridgeError
 from rclpy.impl.implementation_singleton import rclpy_implementation as _rclpy
-from rclpy.node import Node, SrvTypeRequest, SrvTypeResponse
+from rclpy.node import SrvTypeRequest, SrvTypeResponse
 from rclpy.signals import SignalHandlerGuardCondition
 from rclpy.utilities import timeout_sec_to_nsec
 from sensor_msgs.msg import CompressedImage, Image
 
 from general_interfaces.srv import SaveImage
 
+from .common import CameraNode
 
-class PictureNode(Node):
+
+class PictureNode(CameraNode):
     """
     Initializes node running a SaveImage type service. This service receives a
     request with an image topic and a path and attempts the save a single image
@@ -33,16 +35,13 @@ class PictureNode(Node):
     contain a valid extension for images.
     """
 
-    VALID_IMAGE_EXTENSIONS = {".jpg"}
-
     def __init__(self, node_name: str = "picture_node"):
         super().__init__(node_name)
         self.srv = self.create_service(
             SaveImage, "save_picture", self.save_picture_callback
         )
-        self.bridge = CvBridge()
-        self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
         self.get_logger().info(f"Started service: {self.srv.srv_name}")
+        self.bridge = CvBridge()
 
     def save_picture_callback(
         self, request: SrvTypeRequest, response: SrvTypeResponse
@@ -55,7 +54,6 @@ class PictureNode(Node):
         :param response: The service response.
         :return: The modified service response.
         """
-
         self.get_logger().info(f"Received request with data: {request}")
         response.status = False
 
@@ -75,7 +73,7 @@ class PictureNode(Node):
             # Make sure that all paths that aren't directories end with a valid
             # file extension
             extension = f".{request.path.split('.')[-1]}"
-            if extension not in self.VALID_IMAGE_EXTENSIONS:
+            if extension not in self.VALID_IMG_EXTENSIONS:
                 response.message = (
                     "The specified path filename doesn't end with a valid extension."
                 )
@@ -83,28 +81,9 @@ class PictureNode(Node):
 
         # Ensure that the topic specified is valid and publishes a message of
         # the right type
-        topic_exists = False
-        topics = self.get_topic_names_and_types()
-        for topic_name, topic_types in topics:
-            if topic_name == request.image_topic:
-                topic_exists = True
-                # topic_types is a list. It's not clear how to handle a topic
-                # with multiple published types. For now, the request will be
-                # aborted if the first type in the list is not as expected
-                topic_type = topic_types[0]
-                if topic_type == "sensor_msgs/msg/Image":
-                    message_type = Image
-                elif topic_type == "sensor_msgs/msg/CompressedImage":
-                    message_type = CompressedImage
-                else:
-                    response.message = f"The requested topic {request.image_topic} does not have a valid message type."
-                    return response
-                break
-
-        if not topic_exists:
-            response.message = (
-                f"The requested topic {request.image_topic} was not found."
-            )
+        valid_topic, message_type = self.validate_image_topic(request.image_topic)
+        if not valid_topic:
+            response.message = f"The requested topic {request.image_topic} was not found or does not have a valid message type."
             return response
 
         # Await a single message from the specified topic

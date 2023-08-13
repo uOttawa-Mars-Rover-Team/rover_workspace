@@ -1,4 +1,4 @@
-# common_interfaces Package
+# general_interfaces Package
 
 ## Purpose
 

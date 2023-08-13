@@ -7,6 +7,8 @@
   <maintainer email="12845445-bvsam@users.noreply.gitlab.com">ben</maintainer>
   <license>TODO: License declaration</license>
 
+  <exec_depend>general_interfaces</exec_depend>
+
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>

@@ -7,9 +7,9 @@ string image_topic
 # The path to write the image to
 string path
 ---
-# An status code for the request based on HTTP standards
-uint16 status_code
+# Whether the request succeeded
+bool status
 
 # A message containing the result of the service.
 # This can contain extra info. about the status of the request, etc.
-string response
+string message

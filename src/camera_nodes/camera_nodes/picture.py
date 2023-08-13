@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import cv2
 import rclpy
@@ -18,7 +19,21 @@ class PictureNode(Node):
     Initializes node running a SaveImage type service. This service receives a
     request with an image topic and a path and attempts the save a single image
     from the image topic at the specified path.
+
+    The path may be a directory or a path containing a directory and filename.
+
+    If the service request has `create_path` set to true, then the specified
+    directory to the path is created.
+
+    If the path ends with a "/" it's interpreted as a directory and a file with
+    a random name is saved at the specified directory (if it exists, or if
+    create_path is True).
+
+    Otherwise, the path is interpreted as a path with a filename and must
+    contain a valid extension for images.
     """
+
+    VALID_IMAGE_EXTENSIONS = {".jpg"}
 
     def __init__(self, node_name: str = "picture_node"):
         super().__init__(node_name)
@@ -26,6 +41,8 @@ class PictureNode(Node):
             SaveImage, "save_picture", self.save_picture_callback
         )
         self.bridge = CvBridge()
+        self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
+        self.get_logger().info(f"Started service: {self.srv.srv_name}")
 
     def save_picture_callback(
         self, request: SrvTypeRequest, response: SrvTypeResponse
@@ -42,10 +59,27 @@ class PictureNode(Node):
         self.get_logger().info(f"Received request with data: {request}")
         response.status = False
 
-        # Ensure that the path specified is valid
-        if not os.path.exists(request.path):
-            response.message = "The specified path doesn't exist."
-            return response
+        if request.path.endswith("/"):
+            # Path to a directory has been received
+            #
+            # Ensure that the path specified is valid. It should exist if
+            # request.create_path is false
+            if not os.path.isdir(request.path) and not request.create_path:
+                response.message = "The specified path doesn't exist."
+                return response
+            else:
+                Path(request.path).mkdir(parents=True, exist_ok=True)
+        else:
+            # Path to a filename has been received
+            #
+            # Make sure that all paths that aren't directories end with a valid
+            # file extension
+            extension = f".{request.path.split('.')[-1]}"
+            if extension not in self.VALID_IMAGE_EXTENSIONS:
+                response.message = (
+                    "The specified path filename doesn't end with a valid extension."
+                )
+                return response
 
         # Ensure that the topic specified is valid and publishes a message of
         # the right type
@@ -56,7 +90,7 @@ class PictureNode(Node):
                 topic_exists = True
                 # topic_types is a list. It's not clear how to handle a topic
                 # with multiple published types. For now, the request will be
-                # aborted
+                # aborted if the first type in the list is not as expected
                 topic_type = topic_types[0]
                 if topic_type == "sensor_msgs/msg/Image":
                     message_type = Image
@@ -80,10 +114,16 @@ class PictureNode(Node):
             response.message = "Could not receive a single message from the topic."
             return response
 
-        # Save the image at the specified path with a default name
-        picture_name = f"{int(time.time())}.jpg"
-        full_path = os.path.join(request.path, picture_name)
+        if request.path.split("/")[-1] == "":
+            # The path points to a directory Save the image at the specified
+            # path with a default name
+            picture_name = f"{int(time.time())}.jpg"
+            full_path = os.path.join(request.path, picture_name)
+        else:
+            full_path = request.path
+
         status = self.save_image(image_message, full_path)
+        # Check status and make sure the file exists at the specified path
         if not status or not os.path.isfile(full_path):
             response.message = (
                 "Failed to convert image from the topic and save to the specified path."
@@ -91,7 +131,7 @@ class PictureNode(Node):
             return response
 
         response.status = True
-        response.message = "Success."
+        response.message = f"Success. Saved at {full_path}."
 
         return response
 
@@ -104,11 +144,14 @@ class PictureNode(Node):
             image.
         :return: Whether the image was saved successfully.
         """
+        # Use the "bgr8" encoding to make sure the colour of the image is as
+        # expected
+        encoding = "bgr8"
         try:
             if type(image) is Image:
-                cv2_image = self.bridge.imgmsg_to_cv2(image)
+                cv2_image = self.bridge.imgmsg_to_cv2(image, encoding)
             elif type(image) is CompressedImage:
-                cv2_image = self.bridge.compressed_imgmsg_to_cv2(image)
+                cv2_image = self.bridge.compressed_imgmsg_to_cv2(image, encoding)
             else:
                 return False
         except CvBridgeError:
@@ -119,9 +162,12 @@ class PictureNode(Node):
         # Return whether cv2.imwrite() saved the image
         return status
 
-    # Source code take and modified from:
+    # Source code taken and modified from:
     # https://github.com/ros2/rclpy/blob/540b809b1b4d6fc064cfd392834123f713593be4/rclpy/rclpy/wait_for_message.py
     # This feature was not yet implemented on ros2 humble when taken
+    #
+    # Copyright 2022 Sony Group Corporation. Licensed under the Apache License,
+    # Version 2.0 http://www.apache.org/licenses/LICENSE-2.0
     def wait_for_message(self, msg_type, topic: str, time_to_wait: int = -1):
         """
         Wait for the next incoming message.

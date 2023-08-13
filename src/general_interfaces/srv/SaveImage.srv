@@ -6,6 +6,9 @@ string image_topic
 
 # The path to write the image to
 string path
+
+# Whether to create the path, if it doesn't already exist
+bool create_path false
 ---
 # Whether the request succeeded
 bool status

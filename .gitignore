@@ -1,6 +1,8 @@
 build/
 devel/
 src/CMakeLists.txt
+install/
+log/
 
 **/.vscode/
 **/.vs/

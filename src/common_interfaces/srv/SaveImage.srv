@@ -1,0 +1,15 @@
+# Purpose: This service will be used to request for an image from a
+# ROS image topic to be saved at a specified path
+
+# The ROS2 topic to receive the image from
+string image_topic
+
+# The path to write the image to
+string path
+---
+# An status code for the request based on HTTP standards
+uint16 status_code
+
+# A message containing the result of the service.
+# This can contain extra info. about the status of the request, etc.
+string response

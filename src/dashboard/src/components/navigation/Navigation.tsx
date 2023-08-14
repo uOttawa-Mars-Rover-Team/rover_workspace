@@ -1,4 +1,4 @@
-import "font-awesome/css/font-awesome.min.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "leaflet/dist/leaflet.css";
 import * as Leaflet from "leaflet";
 import {
@@ -39,7 +39,7 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
 
   const [map, setMap] = useState<null | Leaflet.Map>(null);
   const [mapPosition, setMapPosition] = useState(initPosition);
-  const onMove = useCallback(() => {
+  const onMoveCallback = useCallback(() => {
     if (map) {
       setMapPosition(map.getCenter());
     }
@@ -47,18 +47,47 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
   const mapCoords = `${mapPosition.lat.toFixed(
     precision
   )}, ${mapPosition.lng.toFixed(precision)}`;
+
   const [markers, setMarkers] = useState<markerObjectListType>({
-    0: <DraggableMarker initPosition={initPosition} title="Base Station" />,
+    0: (
+      <DraggableMarker
+        initPosition={initPosition}
+        title="Base Station"
+        icon={
+          new Leaflet.DivIcon({
+            html: '<i style="color:purple;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-house"></i>',
+          })
+        }
+      />
+    ),
+    1: (
+      <DraggableMarker
+        initPosition={initPosition}
+        title="Rover"
+        icon={
+          new Leaflet.DivIcon({
+            html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
+          })
+        }
+      />
+    ),
   });
   const [numMarkers, setNumMarkers] = useState(Object.keys(markers).length);
+  const markerDeleteCallbackGenerator = (markerIndex: number) => {
+    return () => {
+      const newMarkers = markers;
+      delete newMarkers[markerIndex];
+      setMarkers(newMarkers);
+    };
+  };
 
   const [form] = Form.useForm<{ lat: string; lng: string; title: string }>();
 
   useEffect(() => {
     if (map) {
-      map.on("move", onMove);
+      map.on("move", onMoveCallback);
       return () => {
-        map.off("move", onMove);
+        map.off("move", onMoveCallback);
       };
     }
   }, [map]);
@@ -97,8 +126,8 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
             window.alert("No tiles to save.");
           }
         },
-        saveText: '<i class="fa fa-download" title="Save tiles"></i>',
-        rmText: '<i class="fa fa-trash" title="Remove tiles"></i>',
+        saveText: '<i class="fa-solid fa-download" title="Save tiles"></i>',
+        rmText: '<i class="fa-solid fa-trash" title="Remove tiles"></i>',
       });
       controlSaveTiles.addTo(map);
 
@@ -143,6 +172,7 @@ const Navigation: React.FC<NavigationType> = ({ precision = 5 }) => {
                   newMarkers[numMarkers] = (
                     <DraggableMarker
                       initPosition={newPosition}
+                      deleteCallback={markerDeleteCallbackGenerator(numMarkers)}
                       title={
                         value.title.trim()
                           ? value.title.trim()

@@ -30,7 +30,7 @@
         "messageType": "sensor_msgs/CompressedImage"
       }
     ],
-    "cameraControls" : {
+    "cameraControls": {
       "panorama": {
         "topicName": "/panorama_path"
       },

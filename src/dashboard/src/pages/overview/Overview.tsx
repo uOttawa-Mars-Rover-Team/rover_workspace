@@ -5,7 +5,6 @@ import {
   CompassOutlined,
   InfoCircleOutlined,
   WifiOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
@@ -21,7 +20,6 @@ import {
   NodesPanel,
   AddCameraFeedModal,
   TemperatureChart,
-  CameraControls,
 } from "../../components";
 import { DashboardContext } from "../../contexts";
 
@@ -59,11 +57,6 @@ const Overview: React.FC = () => {
             ))}
           </Image.PreviewGroup>
         </Row>
-
-        <Header title="Camera Controls" icon={<FileAddOutlined />} />
-        <CameraControls
-          cameraTopics={cameraFeeds.map(({ topicName }) => topicName)}
-        />
 
         <Header title="Navigation" icon={<CompassOutlined />} />
         <Navigation />

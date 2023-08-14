@@ -1,0 +1,12 @@
+# Purpose: This service will be used to request for a panorama to be
+# made and saved to a path using all the existing images at that path
+
+# The path to a directory to read images from
+string path
+---
+# Whether the request succeeded
+bool status
+
+# A message containing the result of the service.
+# This can contain extra info. about the status of the request, etc.
+string message

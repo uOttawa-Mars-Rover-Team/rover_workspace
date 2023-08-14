@@ -9,7 +9,9 @@ class CameraNode(Node):
     A base class for camera nodes.
     """
 
+    # Image extensions which will be deemed allowable to work with
     VALID_IMG_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+    # A map from ROS message "paths" to ROS image message Python classes
     IMG_MSG_NAME_MAP = {
         "sensor_msgs/msg/Image": Image,
         "sensor_msgs/msg/CompressedImage": CompressedImage,
@@ -37,6 +39,7 @@ class CameraNode(Node):
             Python class representing the type of the message being published
             at the topic.
         """
+        # Set the default value for params
         if valid_topic_types is None:
             valid_topic_types = self.IMG_MSG_NAME_MAP
 
@@ -46,9 +49,10 @@ class CameraNode(Node):
         topics = self.get_topic_names_and_types()
         for topic_name, topic_types in topics:
             if topic_name == img_topic_name:
-                # topic_types is a list. It's not clear how to handle a topic
-                # with multiple published types. For now, the request will be
-                # aborted if the first type in the list is not as expected
+                # topic_types is a list. It's not clear what this means and how
+                # to handle a topic with multiple published types. For now, the
+                # request will be aborted if the first type in the list is not
+                # as expected
                 topic_type = topic_types[0]
                 if topic_type in valid_topic_types:
                     valid_topic = True

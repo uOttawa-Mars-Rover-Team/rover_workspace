@@ -18,16 +18,16 @@ from .common import CameraNode
 
 class PictureNode(CameraNode):
     """
-    Initializes node running a SaveImage type service. This service receives a
-    request with an image topic and a path and attempts the save a single image
-    from the image topic at the specified path.
+    Initializes a node running a SaveImage type service. This service receives
+    a request with an image topic and a path and attempts the save a single
+    image from the image topic at the specified path.
 
     The path may be a directory or a path containing a directory and filename.
 
     If the service request has `create_path` set to true, then the specified
     directory to the path is created.
 
-    If the path ends with a "/" it's interpreted as a directory and a file with
+    If the path ends with a `/` it's interpreted as a directory and a file with
     a random name is saved at the specified directory (if it exists, or if
     create_path is True).
 
@@ -57,6 +57,7 @@ class PictureNode(CameraNode):
         self.get_logger().info(f"Received request with data: {request}")
         response.status = False
 
+        # Validate the path received
         if request.path.endswith("/"):
             # Path to a directory has been received
             #
@@ -79,8 +80,8 @@ class PictureNode(CameraNode):
                 )
                 return response
 
-        # Ensure that the topic specified is valid and publishes a message of
-        # the right type
+        # Ensure that the topic specified exists and publishes messages of a
+        # valid type
         valid_topic, message_type = self.validate_image_topic(request.image_topic)
         if not valid_topic:
             response.message = f"The requested topic {request.image_topic} was not found or does not have a valid message type."
@@ -88,11 +89,11 @@ class PictureNode(CameraNode):
 
         # Await a single message from the specified topic
         status, image_message = self.wait_for_message(message_type, request.image_topic)
-
         if not status:
             response.message = "Could not receive a single message from the topic."
             return response
 
+        # Determine the full path to the image being written
         if request.path.split("/")[-1] == "":
             # The path points to a directory Save the image at the specified
             # path with a default name

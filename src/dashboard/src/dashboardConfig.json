@@ -29,6 +29,17 @@
         "topicName": "/camera/rgb/image_rect_color/compressed",
         "messageType": "sensor_msgs/CompressedImage"
       }
-    ]
+    ],
+    "cameraControls" : {
+      "panorama": {
+        "topicName": "/panorama_path"
+      },
+      "picture": {
+        "topicName": "/picture_topic"
+      },
+      "video": {
+        "topicName": "/video_action"
+      }
+    }
   }
 }

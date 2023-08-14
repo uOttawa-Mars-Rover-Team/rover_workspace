@@ -88,7 +88,17 @@ class PictureNode(CameraNode):
             return response
 
         # Await a single message from the specified topic
-        status, image_message = self.wait_for_message(message_type, request.image_topic)
+        # Use a try/except, as the wait_for_message method has been observed to
+        # possibly not work as expected at times
+        try:
+            status, image_message = self.wait_for_message(
+                message_type, request.image_topic
+            )
+        except Exception as e:
+            status = False
+            self.get_logger().info(
+                f"Caught an exception when awaiting single message from topic: {request.image_topic}. Error message: {e}."
+            )
         if not status:
             response.message = "Could not receive a single message from the topic."
             return response

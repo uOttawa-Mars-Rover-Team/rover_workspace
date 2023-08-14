@@ -1,4 +1,13 @@
-import { Button, Descriptions, Input, Row, Select } from "antd";
+import {
+  Button,
+  Col,
+  Descriptions,
+  Input,
+  Row,
+  Select,
+  Space,
+  Switch,
+} from "antd";
 import CameraControlsWrapper from "./CameraControlsWrapper";
 import { useContext, useEffect, useState } from "react";
 import { RosContext } from "../../contexts";
@@ -20,14 +29,40 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
   const defaultTopic = "";
   const initPath = "";
 
+  // Picture node
   const [pictureTopic, setPictureTopic] = useState(defaultTopic);
   const [pictureWritePath, setPictureWritePath] = useState(initPath);
+  const [pictureCreatePath, setPictureCreatePath] = useState(false);
+  // Panorama node
+  const [panoramaPath, setPanoramaPath] = useState(initPath);
+  // Video node
+  const [videoTopic, setVideoTopic] = useState(defaultTopic);
+  const [videoWritePath, setVideoWritePath] = useState(initPath);
 
   useEffect(() => {
     if (ROSClient) {
       setRosClient(ROSClient);
     }
   }, [ROSClient]);
+
+  const useService = (
+    serviceName: string,
+    serviceType: string,
+    serviceContent: object
+  ) => {
+    if (!rosClient) {
+      return;
+    }
+    const service = new ROSLIB.Service({
+      ros: rosClient,
+      name: serviceName,
+      serviceType: serviceType,
+    });
+    const request = new ROSLIB.ServiceRequest(serviceContent);
+    service.callService(request, (response: object) => {
+      console.log(response);
+    });
+  };
 
   const publishMessage = (
     topicName: string,
@@ -45,11 +80,6 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
     const message = new ROSLIB.Message(messageContent);
     topic.publish(message);
   };
-
-  const [panoramaPath, setPanoramaPath] = useState(initPath);
-
-  const [videoTopic, setVideoTopic] = useState(defaultTopic);
-  const [videoWritePath, setVideoWritePath] = useState(initPath);
 
   const validatePath = (path: string) => {
     if (path.trim() === "" || !path.includes("/")) {
@@ -90,27 +120,37 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
             />
           </Descriptions.Item>
         </Descriptions>
-        <Row style={{ padding: 10 }}>
-          <Button
-            type="primary"
-            onClick={() => {
-              if (validatePath(pictureWritePath)) {
-                const data = {
-                  imageTopic: pictureTopic,
-                  path: pictureWritePath,
-                };
-                publishMessage(
-                  config.overview.cameraControls.picture.topicName,
-                  "std_msgs/String",
-                  {
-                    data: JSON.stringify(data),
-                  }
-                );
-              }
-            }}
-          >
-            Save
-          </Button>
+        <Row style={{ padding: 10 }} justify="space-between" align="middle">
+          <Col>
+            <Button
+              type="primary"
+              onClick={() => {
+                if (validatePath(pictureWritePath)) {
+                  const data = {
+                    image_topic: pictureTopic,
+                    path: pictureWritePath,
+                    create_path: pictureCreatePath,
+                  };
+                  useService(
+                    "save_picture",
+                    "general_interfaces/srv/SaveImage",
+                    data
+                  );
+                }
+              }}
+            >
+              Save
+            </Button>
+          </Col>
+          <Col>
+            <Space>
+              <b>Create path</b>
+              <Switch
+                checked={pictureCreatePath}
+                onChange={() => setPictureCreatePath(!pictureCreatePath)}
+              />
+            </Space>
+          </Col>
         </Row>
       </CameraControlsWrapper>
 

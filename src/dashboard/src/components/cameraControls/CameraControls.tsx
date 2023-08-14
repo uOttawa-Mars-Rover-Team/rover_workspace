@@ -7,6 +7,7 @@ import {
   Select,
   Space,
   Switch,
+  notification,
 } from "antd";
 import CameraControlsWrapper from "./CameraControlsWrapper";
 import { useContext, useEffect, useState } from "react";
@@ -60,7 +61,15 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
     });
     const request = new ROSLIB.ServiceRequest(serviceContent);
     service.callService(request, (response: object) => {
-      console.log(response);
+      const notificationData = {
+        message: `Service request to ${serviceName} ${
+          response.status ? "succeeded" : "failed"
+        }.`,
+        description: response.message,
+      };
+      response.status
+        ? notification.success(notificationData)
+        : notification.error(notificationData);
     });
   };
 

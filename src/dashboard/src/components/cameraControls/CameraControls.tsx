@@ -60,17 +60,26 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
       serviceType: serviceType,
     });
     const request = new ROSLIB.ServiceRequest(serviceContent);
-    service.callService(request, (response: object) => {
-      const notificationData = {
-        message: `Service request to ${serviceName} ${
-          response.status ? "succeeded" : "failed"
-        }.`,
-        description: response.message,
-      };
-      response.status
-        ? notification.success(notificationData)
-        : notification.error(notificationData);
-    });
+    service.callService(
+      request,
+      (response: object) => {
+        const notificationData = {
+          message: `Service request to ${serviceName} ${
+            response.status ? "succeeded" : "failed"
+          }.`,
+          description: response.message,
+        };
+        response.status
+          ? notification.success(notificationData)
+          : notification.error(notificationData);
+      },
+      (error) => {
+        notification.error({
+          message: `ROS Error (${serviceName}).`,
+          description: error,
+        });
+      }
+    );
   };
 
   const publishMessage = (
@@ -141,7 +150,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
                     create_path: pictureCreatePath,
                   };
                   useService(
-                    "save_picture",
+                    config.overview.cameraControls.picture.serviceName,
                     "general_interfaces/srv/SaveImage",
                     data
                   );
@@ -184,13 +193,12 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
                 const data = {
                   path: panoramaPath,
                 };
-                publishMessage(
-                  config.overview.cameraControls.panorama.topicName,
-                  "std_msgs/String",
-                  {
-                    data: JSON.stringify(data),
-                  }
+                useService(
+                  config.overview.cameraControls.panorama.serviceName,
+                  "general_interfaces/srv/CreatePanorama",
+                  data
                 );
+                console.log("WOWO");
               }
             }}
           >

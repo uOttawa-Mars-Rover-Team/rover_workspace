@@ -62,12 +62,12 @@ class PanoramaNode(CameraNode):
         valid_image_paths = [
             path
             for path in image_paths
-            if path.endswith(f"{self.PANORAMA_SUFFIX}{self.PANORAMA_EXTENSION}")
+            if not path.endswith(f"{self.PANORAMA_SUFFIX}{self.PANORAMA_EXTENSION}")
         ]
         # Check to see that there are enough non-panorama images in the
         # directory to make a panorama from
         if len(valid_image_paths) < self.MIN_REQ_IMAGES:
-            response.message = f"Not enough images at the specified path. {self.MIN_REQ_IMAGES} are required."
+            response.message = f"Not enough images at the specified path. {self.MIN_REQ_IMAGES} are required. {len(valid_image_paths)} were found."
             return response
 
         # Read the images at the paths as cv2 images and stitch the panorama

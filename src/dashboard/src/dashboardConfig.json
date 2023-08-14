@@ -32,10 +32,10 @@
     ],
     "cameraControls": {
       "panorama": {
-        "topicName": "/panorama_path"
+        "serviceName": "create_panorama"
       },
       "picture": {
-        "topicName": "/picture_topic"
+        "serviceName": "save_picture"
       },
       "video": {
         "topicName": "/video_action"

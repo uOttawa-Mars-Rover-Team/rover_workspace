@@ -19,6 +19,7 @@ find_package(rosidl_default_generators REQUIRED)
 # Added as part of interface CMakeLists.txt definition
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SaveImage.srv"
+  "srv/CreatePanorama.srv"
 )
 
 if(BUILD_TESTING)

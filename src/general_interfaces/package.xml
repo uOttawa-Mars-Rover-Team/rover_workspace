@@ -11,15 +11,18 @@
 
   <!-- Lines added as part of the interface package definition were copied from the docs at:
   https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html  -->
-  <!-- Added as part of interface package definition  -->
+  <!-- Added as part of interface package definition -->
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <!-- Added as part of interface package definition  -->
+  <!-- Added as part of interface package definition -->
   <exec_depend>rosidl_default_runtime</exec_depend>
+  <!-- Added as part of interface package definition -->
+  <!-- Specifically, this is required for custom action definitions -->
+  <depend>action_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
-  <!-- Added as part of interface package definition  -->
+  <!-- Added as part of interface package definition -->
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>

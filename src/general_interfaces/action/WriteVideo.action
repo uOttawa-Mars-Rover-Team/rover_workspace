@@ -1,0 +1,22 @@
+# Purpose: This action will be used to request for a video to be
+# written to a path using images from a ROS topic
+
+# The ROS topic to receive images from (used to write the video)
+string image_topic
+
+# The path to write the image to
+string path
+
+---
+
+# Whether the action succeeded
+bool status
+
+# A message containing the result of the action
+string message
+
+---
+
+# A message indicating time each video has been written for, any other 
+# relevant info., etc.
+string feedback

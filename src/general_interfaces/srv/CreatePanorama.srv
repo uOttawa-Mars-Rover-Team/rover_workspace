@@ -3,7 +3,9 @@
 
 # The path to a directory to read images from
 string path
+
 ---
+
 # Whether the request succeeded
 bool status
 

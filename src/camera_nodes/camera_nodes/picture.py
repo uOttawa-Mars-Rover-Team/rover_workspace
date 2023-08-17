@@ -1,6 +1,6 @@
 import os
+import pathlib
 import time
-from pathlib import Path
 
 import cv2
 import rclpy
@@ -58,27 +58,22 @@ class PictureNode(CameraNode):
         response.status = False
 
         # Validate the path received
-        if request.path.endswith("/"):
-            # Path to a directory has been received
-            #
-            # Ensure that the path specified is valid. It should exist if
-            # request.create_path is false
-            if not os.path.isdir(request.path) and not request.create_path:
-                response.message = "The specified path doesn't exist."
-                return response
-            else:
-                Path(request.path).mkdir(parents=True, exist_ok=True)
+        # Case where path to a directory has been received
+        if request.path.endswith(os.path.sep) and self.validate_path_dir(
+            request.path, request.create_path
+        ):
+            if request.create_path:
+                pathlib.Path(request.path).mkdir(parents=True, exist_ok=True)
+        # Case where path to a filename has been received
+        elif self.validate_path_file(
+            request.path, request.create_path, self.VALID_IMG_EXTENSIONS
+        ):
+            path_dir, _, _ = self.extract_file_path_parts(request.path)
+            if not os.path.isdir(path_dir):
+                pathlib.Path(path_dir).mkdir(parents=True, exist_ok=True)
         else:
-            # Path to a filename has been received
-            #
-            # Make sure that all paths that aren't directories end with a valid
-            # file extension
-            extension = f".{request.path.split('.')[-1]}"
-            if extension not in self.VALID_IMG_EXTENSIONS:
-                response.message = (
-                    "The specified path filename doesn't end with a valid extension."
-                )
-                return response
+            response.message = "The specified path is not valid or doesn't exist."
+            return response
 
         # Ensure that the topic specified exists and publishes messages of a
         # valid type

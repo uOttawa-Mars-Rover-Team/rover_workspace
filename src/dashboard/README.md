@@ -102,14 +102,24 @@ Project structure:
 
 ## Debug
 
-If you get a similar error
+- If an error on the dashboard appears similar to: `Cannot find "general interfaces"`
+
+  - Ensure that the relevant package has been built
+  - Kill the running instance of rosbridge server
+  - Run `source install/setup.bash` at the root of the rover_workspace directory, then, in the same terminal window, start rosbridge server
+
+- If you get a similar error
+
+  ```
+  Error from chokidar (/home/.../dashboard/src/utils): Error: ENOSPC: System limit for number of file watchers reached, watch '/home/.../dashboard/src/utils/Provider.tsx
+  ```
+
+  Run the following command to increase the limit of file watchers ([stackoverflow](https://stackoverflow.com/questions/55763428/react-native-error-enospc-system-limit-for-number-of-file-watchers-reached))
+
+  ```bash
+  echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+  ```
 
 ```
-Error from chokidar (/home/.../dashboard/src/utils): Error: ENOSPC: System limit for number of file watchers reached, watch '/home/.../dashboard/src/utils/Provider.tsx
-```
 
-Run the following command to increase the limit of file watchers ([stackoverflow](https://stackoverflow.com/questions/55763428/react-native-error-enospc-system-limit-for-number-of-file-watchers-reached))
-
-```bash
-echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 ```

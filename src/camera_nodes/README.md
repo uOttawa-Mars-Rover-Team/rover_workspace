@@ -9,4 +9,6 @@
 
 ## Usage
 
-- Once launched, interfacing with these nodes can be done via the dashboard (in the "Camera Controls" section)
+- Launch a node to publish images from the camera to a ROS topic: `ros2 run v4l2_camera v4l2_camera_node`
+- Launched each of the nodes listed above
+- Interfacing with these nodes can be done via the dashboard (in the "Camera Controls" section)

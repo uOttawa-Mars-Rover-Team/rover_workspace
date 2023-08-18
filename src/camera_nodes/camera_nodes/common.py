@@ -202,28 +202,36 @@ class CameraNode(Node):
             ()) if message could not be obtained or shutdown was triggered
             asynchronously on the context.
         """
-        context = self.context
-        wait_set = _rclpy.WaitSet(1, 1, 0, 0, 0, 0, context.handle)
-        wait_set.clear_entities()
+        # Use a try/except, as the wait_for_message method has been observed to
+        # possibly not work as expected at times
+        try:
+            context = self.context
+            wait_set = _rclpy.WaitSet(1, 1, 0, 0, 0, 0, context.handle)
+            wait_set.clear_entities()
 
-        sub = self.create_subscription(msg_type, topic, lambda _: None, 1)
-        wait_set.add_subscription(sub.handle)
-        sigint_gc = SignalHandlerGuardCondition(context=context)
-        wait_set.add_guard_condition(sigint_gc.handle)
+            sub = self.create_subscription(msg_type, topic, lambda _: None, 1)
+            wait_set.add_subscription(sub.handle)
+            sigint_gc = SignalHandlerGuardCondition(context=context)
+            wait_set.add_guard_condition(sigint_gc.handle)
 
-        timeout_nsec = timeout_sec_to_nsec(time_to_wait)
-        wait_set.wait(timeout_nsec)
+            timeout_nsec = timeout_sec_to_nsec(time_to_wait)
+            wait_set.wait(timeout_nsec)
 
-        subs_ready = wait_set.get_ready_entities("subscription")
-        guards_ready = wait_set.get_ready_entities("guard_condition")
+            subs_ready = wait_set.get_ready_entities("subscription")
+            guards_ready = wait_set.get_ready_entities("guard_condition")
 
-        if guards_ready:
-            if sigint_gc.handle.pointer in guards_ready:
-                return (False, None)
+            if guards_ready:
+                if sigint_gc.handle.pointer in guards_ready:
+                    return (False, None)
 
-        if subs_ready:
-            if sub.handle.pointer in subs_ready:
-                msg_info = sub.handle.take_message(sub.msg_type, sub.raw)
-                return (True, msg_info[0])
+            if subs_ready:
+                if sub.handle.pointer in subs_ready:
+                    msg_info = sub.handle.take_message(sub.msg_type, sub.raw)
+                    return (True, msg_info[0])
 
-        return (False, None)
+            return (False, None)
+        except Exception as e:
+            self.get_logger().warn(
+                f"Caught an exception when awaiting single message from topic: {topic}. Error message: {e}."
+            )
+            return False, None

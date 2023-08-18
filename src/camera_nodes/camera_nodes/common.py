@@ -4,6 +4,9 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
+import numpy as np
+from cv_bridge import CvBridge, CvBridgeError
+from numpy.typing import NDArray
 from rclpy.impl.implementation_singleton import rclpy_implementation as _rclpy
 from rclpy.node import Node
 from rclpy.signals import SignalHandlerGuardCondition
@@ -27,6 +30,7 @@ class CameraNode(Node):
     def __init__(self, node_name: str, **kwargs):
         super().__init__(node_name, **kwargs)
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
+        self.bridge = CvBridge()
 
     def validate_image_topic(
         self, img_topic_name: str, valid_topic_types: dict[str, Any] | None = None
@@ -130,6 +134,29 @@ class CameraNode(Node):
                 }:
                     return False
                 return self.validate_path_dir(path_dir, can_create_path)
+
+    def convert_image(
+        self, image: Image | CompressedImage, encoding: str = "bgr8"
+    ) -> NDArray[np.uint8] | None:
+        """
+        Convert an image from a ROS Image/CompressedImage type to a cv2 image.
+
+        :param image: The Image or CompressedImage image to convert.
+        :param encoding: The encoding to use when converting the image. Usually
+            "bgr8" tends to work well and ensures the colour of the converted
+            image is as expected.
+        :return: A cv2 representation of the Image/CompressedImage passed in,
+            or None if the conversion failed.
+        """
+        try:
+            if type(image) is Image:
+                return self.bridge.imgmsg_to_cv2(image, encoding)
+            elif type(image) is CompressedImage:
+                return self.bridge.compressed_imgmsg_to_cv2(image, encoding)
+            else:
+                return None
+        except CvBridgeError:
+            return None
 
     def extract_file_path_parts(
         self, path: str

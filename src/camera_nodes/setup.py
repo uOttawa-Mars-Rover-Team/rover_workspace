@@ -21,6 +21,7 @@ setup(
         "console_scripts": [
             "picture = camera_nodes.picture:main",
             "panorama = camera_nodes.panorama:main",
+            "video = camera_nodes.video:main",
         ],
     },
 )

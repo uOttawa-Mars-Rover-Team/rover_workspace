@@ -4,7 +4,6 @@ import time
 
 import cv2
 import rclpy
-from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import SrvTypeRequest, SrvTypeResponse
 from sensor_msgs.msg import CompressedImage, Image
 
@@ -38,7 +37,6 @@ class PictureNode(CameraNode):
             SaveImage, "save_picture", self.save_picture_callback
         )
         self.get_logger().info(f"Started service: {self.srv.srv_name}")
-        self.bridge = CvBridge()
 
     def save_picture_callback(
         self, request: SrvTypeRequest, response: SrvTypeResponse
@@ -59,18 +57,27 @@ class PictureNode(CameraNode):
         if request.path.endswith(os.path.sep) and self.validate_path_dir(
             request.path, request.create_path
         ):
-            if request.create_path:
-                pathlib.Path(request.path).mkdir(parents=True, exist_ok=True)
+            path_dir = request.path
+            path_to_dir = True
         # Case where path to a filename has been received
         elif self.validate_path_file(
             request.path, request.create_path, self.VALID_IMG_EXTENSIONS
         ):
             path_dir, _, _ = self.extract_file_path_parts(request.path)
-            if not os.path.isdir(path_dir):
-                pathlib.Path(path_dir).mkdir(parents=True, exist_ok=True)
+            path_to_dir = False
         else:
-            response.message = "The specified path is not valid or doesn't exist."
+            response.message = 'The specified path is not valid or doesn\'t exist. Ensure paths to directories end with a "/".'
             return response
+
+        # Create the path if it doesn't already exist
+        if request.create_path:
+            pathlib.Path(path_dir).mkdir(parents=True, exist_ok=True)
+
+        # Create a filename for the picture if necessary
+        if path_to_dir:
+            full_write_path = os.path.join(request.path, f"{int(time.time())}.jpg")
+        else:
+            full_write_path = request.path
 
         # Ensure that the topic specified exists and publishes messages of a
         # valid type
@@ -88,32 +95,25 @@ class PictureNode(CameraNode):
             )
         except Exception as e:
             status = False
-            self.get_logger().info(
+            self.get_logger().warn(
                 f"Caught an exception when awaiting single message from topic: {request.image_topic}. Error message: {e}."
             )
         if not status:
-            response.message = "Could not receive a single message from the topic."
+            response.message = (
+                "Could not receive a single message from the topic. Try again."
+            )
             return response
 
-        # Determine the full path to the image being written
-        if request.path.split("/")[-1] == "":
-            # The path points to a directory Save the image at the specified
-            # path with a default name
-            picture_name = f"{int(time.time())}.jpg"
-            full_path = os.path.join(request.path, picture_name)
-        else:
-            full_path = request.path
-
-        status = self.save_image(image_message, full_path)
+        status = self.save_image(image_message, full_write_path)
         # Check status and make sure the file exists at the specified path
-        if not status or not os.path.isfile(full_path):
+        if not status or not os.path.isfile(full_write_path):
             response.message = (
                 "Failed to convert image from the topic and save to the specified path."
             )
             return response
 
         response.status = True
-        response.message = f"Success. Saved at {full_path}."
+        response.message = f"Success. Saved at {full_write_path}."
 
         return response
 
@@ -121,22 +121,13 @@ class PictureNode(CameraNode):
         """
         Save an image at the specified path
 
-        :param image: The image to save.
+        :param image: The ROS image to save.
         :param path: The path to save the image at, including the name of the
             image.
         :return: Whether the image was saved successfully.
         """
-        # Use the "bgr8" encoding to make sure the colour of the image is as
-        # expected
-        encoding = "bgr8"
-        try:
-            if type(image) is Image:
-                cv2_image = self.bridge.imgmsg_to_cv2(image, encoding)
-            elif type(image) is CompressedImage:
-                cv2_image = self.bridge.compressed_imgmsg_to_cv2(image, encoding)
-            else:
-                return False
-        except CvBridgeError:
+        cv2_image = self.convert_image(image)
+        if cv2_image is None:
             return False
 
         status = cv2.imwrite(path, cv2_image)

@@ -53,6 +53,7 @@ class PictureNode(CameraNode):
         response.status = False
 
         # Validate the path received
+        #
         # Case where path to a directory has been received
         if request.path.endswith(os.path.sep) and self.validate_path_dir(
             request.path, request.create_path
@@ -86,9 +87,9 @@ class PictureNode(CameraNode):
             response.message = f"The requested topic {request.image_topic} was not found or does not have a valid message type."
             return response
 
-        # Await a single message from the specified topic
-        # Use a try/except, as the wait_for_message method has been observed to
-        # possibly not work as expected at times
+        # Await a single message from the specified topic. Use a try/except, as
+        # the wait_for_message method has been observed to possibly not work as
+        # expected at times
         try:
             status, image_message = self.wait_for_message(
                 message_type, request.image_topic

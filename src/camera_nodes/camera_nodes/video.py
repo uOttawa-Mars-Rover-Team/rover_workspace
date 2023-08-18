@@ -17,7 +17,9 @@ class VideoNode(CameraNode):
     VALID_VIDEO_EXTENSIONS = {".mp4"}
     # NOTE: VideoNode.FOURCC and VideoNode.VIDEO_EXTENSION are interdependent
     # Mismatching them may cause videos to not be created
-    # From docs: https://docs.opencv.org/3.4/dd/d43/tutorial_py_video_display.html
+    #
+    # From docs:
+    # https://docs.opencv.org/3.4/dd/d43/tutorial_py_video_display.html
     FOURCC = cv2.VideoWriter_fourcc(*"mp4v")
     VIDEO_EXTENSION = ".mp4"
 
@@ -52,6 +54,7 @@ class VideoNode(CameraNode):
         response.status = False
 
         # Validate the path received
+        #
         # Case where path to a directory has been received
         if request.path.endswith(os.path.sep) and self.validate_path_dir(
             request.path, request.create_path
@@ -86,16 +89,17 @@ class VideoNode(CameraNode):
             response.message = f"The requested topic {request.image_topic} was not found or does not have a valid message type."
             return response
 
-        # Ensure that a video is not already being written at the specified path
+        # Ensure that a video is not already being written at the specified
+        # path
         if full_write_path in self.active_writers:
             response.message = (
                 "Already writing at the specified path. Stop the video to overwrite."
             )
             return response
 
-        # Await a single message from the specified topic
-        # Use a try/except, as the wait_for_message method has been observed to
-        # possibly not work as expected at times
+        # Await a single message from the specified topic. Use a try/except, as
+        # the wait_for_message method has been observed to possibly not work as
+        # expected at times
         try:
             status, image_message = self.wait_for_message(
                 message_type, request.image_topic
@@ -118,10 +122,12 @@ class VideoNode(CameraNode):
                 "Could not successfully convert the image from the topic. Try again."
             )
             return response
-        # Get the size of the cv2 image to specify when creating a new video file
+        # Get the size of the cv2 image to specify when creating a new video
+        # file
         frame_height, frame_width, _ = cv2_image.shape
 
-        # Create a cv2.VideoWriter object to write images to the video at the specified path
+        # Create a cv2.VideoWriter object to write images to the video at the
+        # specified path
         video_writer = cv2.VideoWriter(
             full_write_path,
             self.FOURCC,
@@ -151,9 +157,9 @@ class VideoNode(CameraNode):
         self, request: SrvTypeRequest, response: SrvTypeResponse
     ) -> SrvTypeResponse:
         """
-        Handle a SaveImage request. Verify the request and stop writing writing images
-        to the video at the specified path. If path is "*", then all videos
-        being written are stopped.
+        Handle a SaveImage request. Verify the request and stop writing writing
+        images to the video at the specified path. If path is "*", then all
+        videos currently being written are stopped.
 
         :param request: The service request.
         :param response: The service response.

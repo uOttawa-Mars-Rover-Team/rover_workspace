@@ -38,7 +38,10 @@
         "serviceName": "save_picture"
       },
       "video": {
-        "topicName": "/video_action"
+        "serviceName": {
+          "start": "start_video",
+          "stop": "stop_video"
+        }
       }
     }
   }

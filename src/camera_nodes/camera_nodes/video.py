@@ -14,6 +14,18 @@ from .common import CameraNode
 
 
 class VideoNode(CameraNode):
+    """
+    Initializes a node running 2 SaveImage type services.
+
+    The first service receives a request with an image topic and a path and
+    attempts the continuously write images from the image topic to the video at
+    the path.
+
+    The second services receives a path to a video and stops the video from
+    being written, if it exists. If the path is "*", then all videos being
+    written to are stopped.
+    """
+
     VALID_VIDEO_EXTENSIONS = {".mp4"}
     # NOTE: VideoNode.FOURCC and VideoNode.VIDEO_EXTENSION are interdependent
     # Mismatching them may cause videos to not be created

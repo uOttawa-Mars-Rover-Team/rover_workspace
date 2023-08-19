@@ -8,11 +8,12 @@
   <license>MIT</license>
 
   <exec_depend>general_interfaces</exec_depend>
+  <!-- Used to publish from camera to ROS image topics -->
+  <exec_depend>usb_cam</exec_depend>
 
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
-  <depend>usb_cam</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

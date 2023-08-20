@@ -13,14 +13,16 @@ class CmdVelMuxNode(Node):
         self.get_logger().info(
             f"Publishing messages at: {self.drive_control_publisher.topic}"
         )
+        # Subscribe to human control messages
         self.human_control_subscription = self.create_subscription(
-            Twist, "move_base/cmd_vel", self.human_control_callback, 10
+            Twist, "teleop/cmd_vel", self.human_control_callback, 10
         )
         self.get_logger().info(
             f"Subscribing to messages from: {self.human_control_subscription.topic}"
         )
+        # Subscribe to autonomous control messages
         self.autonomous_control_subscription = self.create_subscription(
-            Twist, "teleop/cmd_vel", self.autonomous_control_callback, 10
+            Twist, "move_base/cmd_vel", self.autonomous_control_callback, 10
         )
         self.get_logger().info(
             f"Subscribing to messages from: {self.autonomous_control_subscription.topic}"
@@ -32,15 +34,19 @@ class CmdVelMuxNode(Node):
         self.current_autonomous_block_duration = self.default_autonomous_block_duration
         self.last_human_control_time = time.time()
 
-    def human_control_callback(self, message: Twist) -> None:
+    def autonomous_control_callback(self, message: Twist) -> None:
+        # Check to see if it's been enough time since the last human control
+        # command was sent
         time_since_human_control = time.time() - self.last_human_control_time
         if time_since_human_control >= self.block_duration:
             # Stop blocking autonomous control
             self.block_duration = 0
             self.drive_control_publisher.publish(message)
 
-    def autonomous_control_callback(self, message: Twist) -> None:
+    def human_control_callback(self, message: Twist) -> None:
         self.last_human_control_time = time.time()
+        # Reset the block duration to prevent autonomous control commands from
+        # taking over
         self.block_duration = self.default_autonomous_block_duration
         self.drive_control_publisher.publish(message)
 

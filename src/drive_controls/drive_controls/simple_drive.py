@@ -13,6 +13,7 @@ class SimpleDriveNode(Node):
         self.subscription = self.create_subscription(
             Twist, "cmd_vel", self.send_data_callback, 10
         )
+        # Get parameters for the serial connection
         serial_device = self.get_parameter("device")
         self.get_logger().info(f"Using serial device: {serial_device}")
         baudrate = self.get_parameter_or("baudrate", 9600)

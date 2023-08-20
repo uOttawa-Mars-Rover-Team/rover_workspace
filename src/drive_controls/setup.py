@@ -32,6 +32,9 @@ setup(
     license=package_license,
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [],
+        "console_scripts": [
+            "simple_drive = drive_controls.simple_drive:main",
+            "cmd_vel_mux = drive_controls.cmd_vel_mux:main",
+        ],
     },
 )

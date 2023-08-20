@@ -7,6 +7,9 @@
   <maintainer email="12845445-bvsam@users.noreply.gitlab.com">Benjamin Sam</maintainer>
   <license>MIT</license>
 
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <depend>python3-serial</depend>
   <depend>teleop_twist_joy</depend>
 
   <test_depend>ament_copyright</test_depend>

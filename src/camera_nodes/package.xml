@@ -10,6 +10,9 @@
   <exec_depend>general_interfaces</exec_depend>
   <!-- Used to publish from camera to ROS image topics -->
   <exec_depend>usb_cam</exec_depend>
+  <!-- Used to make sure launch files can be used and different launch file
+  formats are recognized -->
+  <exec_depend>ros2launch</exec_depend>
 
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>

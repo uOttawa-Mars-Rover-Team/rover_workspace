@@ -3,12 +3,31 @@
 ## Purpose
 
 - This package defines several nodes, each of which have their own purpose
-  - `PanoramaNode` (`camera_nodes/panorama.py`): Allows panoramas to be stitched from pictures.
-  - `PictureNode` (`camera_nodes/picture.py`): Allows pictures to be saved from a ROS image topic.
+  - `PanoramaNode` (`camera_nodes/panorama.py`): Allows panoramas to be stitched from pictures at a path.
+  - `PictureNode` (`camera_nodes/picture.py`): Allows pictures to be read from a ROS image topic and saved to a path.
   - `VideoNode` (`camera_nodes/video.py`) Allows videos to be written from a ROS image topic.
+
+## Installing dependencies
+
+- To install dependencies (for only this package), run the following command at the root of the workspace
+
+```bash
+rosdep install --from-paths src/camera_nodes --ignore-src -r -y
+```
 
 ## Usage
 
-- Launch a node to publish images from the camera to a ROS topic: `ros2 run v4l2_camera v4l2_camera_node`
-- Launched each of the nodes listed above
-- Interfacing with these nodes can be done via the dashboard (in the "Camera Controls" section)
+- Launch a node to publish images from the camera to a ROS topic (requires a usb camera to be connected)
+
+```bash
+ros2 launch camera_nodes cam_launch.py
+```
+
+- Launch all the camera nodes
+
+```bash
+ros2 launch camera_nodes nodes_launch.py
+```
+
+- Interacting with these nodes can be done via the dashboard (in the "Camera Controls" section)
+  - The dashboard can be run using the instructions from `src/dashboard/README.md`

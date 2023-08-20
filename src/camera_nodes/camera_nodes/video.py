@@ -239,8 +239,8 @@ class VideoNode(CameraNode):
 
 def main(args=None):
     rclpy.init(args=args)
-    vide_node = VideoNode()
-    rclpy.spin(vide_node)
+    video_node = VideoNode()
+    rclpy.spin(video_node)
     rclpy.shutdown()
 
 

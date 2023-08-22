@@ -8,6 +8,9 @@
   <license>MIT</license>
 
   <exec_depend>geometry_msgs</exec_depend>
+  <!-- Used to make sure launch files can be used and different launch file
+  formats are recognized -->
+  <exec_depend>ros2launch</exec_depend>
 
   <depend>python3-serial</depend>
   <depend>teleop_twist_joy</depend>

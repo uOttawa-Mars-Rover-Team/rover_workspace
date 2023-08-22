@@ -4,6 +4,7 @@ import rclpy
 import serial
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 
 
 class SimpleDriveNode(Node):
@@ -13,11 +14,23 @@ class SimpleDriveNode(Node):
         self.subscription = self.create_subscription(
             Twist, "cmd_vel", self.send_data_callback, 10
         )
+
         # Get parameters for the serial connection
-        serial_device = self.get_parameter("device")
+        self.declare_parameter("serial_device", rclpy.Parameter.Type.STRING)
+        serial_device = (
+            self.get_parameter("serial_device").get_parameter_value().string_value
+        )
         self.get_logger().info(f"Using serial device: {serial_device}")
-        baudrate = self.get_parameter_or("baudrate", 9600)
+        self.declare_parameter("baudrate", rclpy.Parameter.Type.INTEGER)
+        baudrate = (
+            self.get_parameter_or(
+                "baudrate", Parameter("baud", rclpy.Parameter.Type.INTEGER, 9600)
+            )
+            .get_parameter_value()
+            .integer_value
+        )
         self.get_logger().info(f"Using baud rate: {baudrate}")
+
         # Setup the serial connection and specify the port after initialization
         # to prevent the connection from being opened immediately
         self.serial = serial.Serial(baudrate=baudrate)

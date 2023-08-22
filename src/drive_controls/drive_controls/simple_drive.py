@@ -24,7 +24,7 @@ class SimpleDriveNode(Node):
         self.declare_parameter("baudrate", rclpy.Parameter.Type.INTEGER)
         baudrate = (
             self.get_parameter_or(
-                "baudrate", Parameter("baud", rclpy.Parameter.Type.INTEGER, 9600)
+                "baudrate", Parameter("baudrate", rclpy.Parameter.Type.INTEGER, 9600)
             )
             .get_parameter_value()
             .integer_value

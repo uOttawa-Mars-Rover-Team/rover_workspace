@@ -3,6 +3,7 @@ import time
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 
 
 class CmdVelMuxNode(Node):
@@ -28,8 +29,17 @@ class CmdVelMuxNode(Node):
             f"Subscribing to messages from: {self.autonomous_control_subscription.topic}"
         )
 
-        self.default_autonomous_block_duration = self.get_parameter_or(
-            "block_duration", 5
+        self.declare_parameter("block_duration", rclpy.Parameter.Type.INTEGER)
+        self.default_autonomous_block_duration = (
+            self.get_parameter_or(
+                "block_duration",
+                Parameter("block_duration", rclpy.Parameter.Type.INTEGER, 5),
+            )
+            .get_parameter_value()
+            .integer_value
+        )
+        self.get_logger().info(
+            f"Using block duration: {self.default_autonomous_block_duration}"
         )
         self.current_autonomous_block_duration = self.default_autonomous_block_duration
         self.last_human_control_time = time.time()

@@ -14,6 +14,9 @@ class SimpleDriveNode(Node):
         self.subscription = self.create_subscription(
             Twist, "cmd_vel", self.send_data_callback, 10
         )
+        self.get_logger().info(
+            f"Subscribing to messages from: {self.subscription.topic_name}"
+        )
 
         # Get parameters for the serial connection
         self.declare_parameter("serial_device", rclpy.Parameter.Type.STRING)

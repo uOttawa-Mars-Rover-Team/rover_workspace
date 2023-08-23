@@ -12,21 +12,21 @@ class CmdVelMuxNode(Node):
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
         self.drive_control_publisher = self.create_publisher(Twist, "cmd_vel", 10)
         self.get_logger().info(
-            f"Publishing messages at: {self.drive_control_publisher.topic}"
+            f"Publishing messages at: {self.drive_control_publisher.topic_name}"
         )
         # Subscribe to human control messages
         self.human_control_subscription = self.create_subscription(
             Twist, "teleop/cmd_vel", self.human_control_callback, 10
         )
         self.get_logger().info(
-            f"Subscribing to messages from: {self.human_control_subscription.topic}"
+            f"Subscribing to messages from: {self.human_control_subscription.topic_name}"
         )
         # Subscribe to autonomous control messages
         self.autonomous_control_subscription = self.create_subscription(
             Twist, "move_base/cmd_vel", self.autonomous_control_callback, 10
         )
         self.get_logger().info(
-            f"Subscribing to messages from: {self.autonomous_control_subscription.topic}"
+            f"Subscribing to messages from: {self.autonomous_control_subscription.topic_name}"
         )
 
         self.declare_parameter("block_duration", rclpy.Parameter.Type.INTEGER)

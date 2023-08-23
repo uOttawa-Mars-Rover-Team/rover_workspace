@@ -12,6 +12,7 @@
   formats are recognized -->
   <exec_depend>ros2launch</exec_depend>
 
+  <depend>rclpy</depend>
   <depend>python3-serial</depend>
   <depend>teleop_twist_joy</depend>
 

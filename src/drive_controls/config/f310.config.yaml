@@ -1,3 +1,5 @@
+# Config parameters for the Logitech F310 controller
+#
 # The following parameters are for the node named "teleop_twist_joy"
 teleop_twist_joy:
   ros__parameters:

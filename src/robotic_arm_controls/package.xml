@@ -2,10 +2,15 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>robotic_arm_controls</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>The robotic_arm_controls package</description>
-  <maintainer email="12845445-bvsam@users.noreply.gitlab.com">Benjamin Sam</maintainer>
+  <maintainer email="ocaro009@uottawa.ca">Olivier Caron</maintainer>
+  <maintainer email="jzhan558@uottawa.ca">Justin Zhang</maintainer>
   <license>BSD</license>
+  <url type="website">
+    https://gitlab.com/uorover/rover_workspace/-/wikis/Architecture-and-Design/Robotic-Arm-Software</url>
+
+  <exec_depend>general_interfaces</exec_depend>
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

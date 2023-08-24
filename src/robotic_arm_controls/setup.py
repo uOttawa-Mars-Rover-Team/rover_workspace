@@ -15,6 +15,7 @@ package_maintainers = ", ".join(
 package_maintainer_emails = ", ".join(
     [element.attrib["email"] for element in package_info.findall("maintainer")]
 )
+package_url = package_info.find("url").text
 
 setup(
     name=package_name,
@@ -28,10 +29,13 @@ setup(
     zip_safe=True,
     maintainer=package_maintainers,
     maintainer_email=package_maintainer_emails,
+    url=package_url,
     description=package_description,
     license=package_license,
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [],
+        "console_scripts": [
+            "ik_arm_controls = robotic_arm_controls.IK_arm_controls:main"
+        ],
     },
 )

@@ -14,7 +14,7 @@ class AxesValues(NamedTuple):
 
     y_axis: float
     x_axis: float
-    _: float
+    axis_2: float
     z_axis: float
     wrist_roll: float
     wrist_pitch: float
@@ -27,16 +27,16 @@ class ButtonValues(NamedTuple):
 
     ee_close_btn: int
     ee_open_btn: int
-    _: int
-    _: int
-    _: int
-    _: int
+    btn_2: int
+    btn_3: int
+    btn_4: int
+    btn_5: int
     half_speed_btn: int
     norm_speed_btn: int
     onepfive_speed_btn: int
     double_speed_btn: int
-    _: int
-    _: int
+    btn_10: int
+    btn_11: int
 
 
 class IKArmControllerNode(Node):

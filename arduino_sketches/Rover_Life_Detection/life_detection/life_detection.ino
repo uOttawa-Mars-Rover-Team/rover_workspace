@@ -52,11 +52,11 @@ void hoseCb(std_msgs::UInt8& hose_cmd) {
     return;
   }
   float avgDistance = 0;
-  for (int i = 0; i<=5;i++){
+  for (int i = 0; i<=30;i++){
     float distance = hc.dist();
     avgDistance = avgDistance + distance;
   }
-  avgDistance = avgDistance/6;
+  avgDistance = avgDistance/30 - 5;
   flo_msg.data = avgDistance;
   hoseDistance.publish(&flo_msg);
   for (int x = 0; x < stepsPerRevolution; x++){
@@ -317,7 +317,7 @@ Adafruit_SI1145 uv = Adafruit_SI1145();
 Adafruit_BME280 bme;
 std_msgs::String str_msg;
 ros::Publisher weatherLogger("weather_logger", &str_msg);
-
+int sensor = 13;
 
 void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
   if (collectWeather == true){
@@ -333,9 +333,28 @@ void collectWeatherCb( const std_msgs::String& WeatherCollectionCMD){
       UV /= 100.0;  
       float humidity = bme.readHumidity();
       float temp = bme.readTemperature();
-      float windSpeed = 5.0;
-      float pressure = bme.readPressure();
-      String data1 = String(String(UV) + ";" + String(humidity) + ";" + String(temp) + ";" + String(windSpeed) + ";" + String(pressure));
+      float windSpeed = 0;
+      float average = 0;
+      for (int i = 0; i <= 5; i++){
+        float rpm = 0;
+        int steps = 0;
+        unsigned long start_time=millis();
+        unsigned long end_time=start_time+200;
+        while(millis()<end_time)
+        {
+          if(digitalRead(sensor))
+          {
+          steps=steps+1; 
+          while(digitalRead(sensor));
+          }
+        }
+        rpm = steps/20*300.0;
+        average = average + rpm;
+      }
+      windSpeed = average/5;
+      windSpeed = average/10;
+      float visible = uv.readVisible();
+      String data1 = String("UV: " + String(UV) + "; Humidity: " + String(humidity) + "; Tempertature: " + String(temp) + "; Wind Speed: " + String(windSpeed) + "; Visible Light: " + String(visible));
       int len = data1.length() + 1;
       char data[len];
       data1.toCharArray(data, len);
@@ -387,6 +406,8 @@ void setup() {
 
   bme.begin();
   uv.begin();
+
+  pinMode(13,INPUT_PULLUP);
 }
 
 void loop() {

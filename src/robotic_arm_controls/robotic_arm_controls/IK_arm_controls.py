@@ -9,7 +9,8 @@ from general_interfaces.msg import ArmControl
 
 class AxesValues(NamedTuple):
     """
-    Define properties for each of the 6 axes on the joystick
+    Define properties for each of the 6 axes on the joystick. Use default
+    property names for unused values.
     """
 
     y_axis: float
@@ -22,7 +23,8 @@ class AxesValues(NamedTuple):
 
 class ButtonValues(NamedTuple):
     """
-    Define properties for each of the 12 buttons on the joystick
+    Define properties for each of the 12 buttons on the joystick. Use default
+    property names for unused values.
     """
 
     ee_close_btn: int
@@ -43,7 +45,7 @@ class IKArmControllerNode(Node):
     """
     Initializes a node to receive Joy messages from the joystick, which are
     published as ArmControl messages to a topic and eventually used to perform
-    inverse kinematics for the robot arm.
+    inverse kinematics (ik) for the robot arm.
     """
 
     # Default Constants

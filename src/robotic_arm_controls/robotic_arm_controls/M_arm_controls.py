@@ -100,8 +100,8 @@ class MArmControllerNode(Node):
 
         signal.signal(signal.SIGINT, self.graceful_shutdown)
         self.run = True  # threads will stop running if false
-        self.executor = ThreadPoolExecutor(max_workers=2)
-        self.reader = self.executor.submit(self.read_loop)
+        self.tp_executor = ThreadPoolExecutor(max_workers=2)
+        self.reader = self.tp_executor.submit(self.read_loop)
 
         self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING)
         self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 115200)
@@ -164,7 +164,7 @@ class MArmControllerNode(Node):
         """
         self.get_logger().info("Terminating all threads...")
         self.run = False
-        self.executor.shutdown()
+        self.tp_executor.shutdown()
         self.get_logger().info("Shutting node down...")
         raise SystemExit
 
@@ -362,7 +362,7 @@ class MArmControllerNode(Node):
         self,
         param_name: str,
         param_type: rclpy.Parameter.Type,
-        default_val: T | None,
+        default_val: T | None = None,
         logging: bool = True,
     ) -> T:
         self.declare_parameter(param_name, param_type)

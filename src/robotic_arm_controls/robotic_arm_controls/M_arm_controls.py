@@ -48,6 +48,12 @@ class ButtonValues(NamedTuple):
 
 
 class MArmControllerNode(Node):
+    """
+    Initializes a node used to receive Joy messages from the joystick and send
+    messages associated with these control commands to the robotic arm Arduino,
+    allowing for manual control of the robotic arm.
+    """
+
     # Define constants
     ROUND_PRECISION = 3
     SPEED_DEADBAND = 0.05

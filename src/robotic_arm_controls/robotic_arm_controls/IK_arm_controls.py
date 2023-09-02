@@ -45,7 +45,7 @@ class IKArmControllerNode(Node):
     """
     Initializes a node to receive Joy messages from the joystick, which are
     published as ArmControl messages to a topic and eventually used to perform
-    inverse kinematics (ik) for the robot arm.
+    inverse kinematics (ik) for the robotic arm.
     """
 
     # Default Constants

@@ -1,4 +1,4 @@
-FROM node:14.17.3-alpine3.14
+FROM node:18.17-alpine
 
 # Set working directory
 RUN mkdir /rover-dashboard
@@ -14,4 +14,6 @@ RUN npm install
 COPY . .
 
 # Runs start script
-CMD npm start
+CMD ["npm", "run", "dev"]
+
+EXPOSE 5173

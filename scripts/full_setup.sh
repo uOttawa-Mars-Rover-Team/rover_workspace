@@ -10,6 +10,3 @@ echo -e "Setting up your development environment of uOttawa Mars Rover's workspa
 ./install_ros_humble.sh
 ./install_external_packages.sh
 ./build_project.sh
-
-echo "If you get an error saying catkin_make command not found, please copy/paste the next line in your terminal"
-echo "source ~/.bashrc && cd .. && catkin_make"

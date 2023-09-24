@@ -1,7 +1,9 @@
 #!/bin/bash
 
-SCRIPTS_DIR=$(pwd)/$(dirname "$0")
-source $SCRIPTS_DIR/common.sh
+completed() { echo -e "\e[1m\e[32mComplete.\e[0m\n"; }
+title() { echo -e "\e[1m\e[44m $1 \e[0m"; }
+
+ROVER_WS=~/rover_workspace
 
 title "---- Installing and setting up ROS2 Humble ----"
 
@@ -38,6 +40,8 @@ completed
 
 title "Sourcing .bashrc - Environment setup"
 echo "source /opt/ros/humble/setup.bash" >>~/.bashrc
-echo "source ~/rover_workspace/install/setup.bash" >>~/.bashrc
+SCRIPT_PATH="~/rover_workspace/install/setup.bash"
+SOURCE_CMD="[ -f ~/rover_workspace/install/setup.bash ] && source ${SCRIPT_PATH}"
+echo $SOURCE_CMD >>~/.bashrc
 source ~/.bashrc
 completed

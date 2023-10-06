@@ -10,25 +10,29 @@ Gives you an overview of the sensors, images, and other ROS information (topics,
 
 ### Install Node.js and NPM
 
-To install Node.js (using a NodeSource PPA ), run the following commands:
+To install Node.js (using a NodeSource PPA), run the following commands:
 
 1. Update existing packages
 
 ```bash
-sudo apt update
-sudo apt upgrade
+sudo apt-get update
+sudo apt-get upgrade
 ```
 
 2. Install Node.js
 
 ```bash
-cd ~
-curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
-sudo bash nodesource_setup.sh
-sudo apt install nodejs
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+NODE_MAJOR=18
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+sudo apt-get update
+sudo apt-get install nodejs -y
 ```
 
-[Source](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04)
+[Source](https://github.com/nodesource/distributions#installation-instructions)
 
 Make sure to check your node and npm versions, as described above, after installation to ensure that it was successful.
 

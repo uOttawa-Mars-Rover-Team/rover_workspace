@@ -25,5 +25,6 @@ title "Installing project ROS dependencies using rosdep"
 cd $ROVER_WS
 # Rosdep will read each package in src/ and install dependencies listed in each
 # package's package.xml file
+sudo rosdep update
 sudo rosdep install --from-paths src --ignore-src -r -y
 complete

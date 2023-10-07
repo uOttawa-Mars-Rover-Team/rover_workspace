@@ -21,6 +21,18 @@ sudo apt-get update
 sudo apt-get install nodejs -y
 complete
 
+title "Installing pip (for Python)"
+sudo apt update
+sudo apt install python3-pip
+complete
+
+title "Installing colcon"
+sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+sudo apt update
+sudo apt install python3-colcon-common-extensions
+complete
+
 title "Installing project ROS dependencies using rosdep"
 cd $ROVER_WS
 # Rosdep will read each package in src/ and install dependencies listed in each

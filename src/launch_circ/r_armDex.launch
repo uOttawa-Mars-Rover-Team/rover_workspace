@@ -1,0 +1,7 @@
+<launch>
+    <!-- launch drive -->
+    <include file="$(find teleop_twist_joy-melodic-devel)/launch/roverPC.launch" pass_all_args="true" />
+
+    <!-- launch arm -->
+    <include file="$(find robotic_arm_package)/launch/manual.launch" pass_all_args="true"/>
+</launch>

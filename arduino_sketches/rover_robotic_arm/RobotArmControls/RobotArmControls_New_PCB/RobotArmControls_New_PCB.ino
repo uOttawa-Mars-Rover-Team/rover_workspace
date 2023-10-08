@@ -4,7 +4,7 @@
 #include <MultiStepper.h>
 #include <JrkG2.h>
 
-//we initialize the two Wrist Limit switches objects
+//we initialize the Wrist Limit switches objects
 ezButton LS1(43);
 ezButton LS2(44);
 ezButton LS3(45);
@@ -19,44 +19,54 @@ AccelStepper endEffector(AccelStepper::DRIVER, 13, 12);
 //we set up the multistepper
 MultiStepper wristEE;
 
-// we declare objects for the Linear Actuator drivers
-// TODO: set the device number for LA2 to 12
+//we declare objects for the Linear Actuator drivers
+//TODO: set the device number for LA2 to 12
 JrkG2I2C LA1(11);
 JrkG2I2C LA2(12);
 
-// declare pin numbers for the linear actuator optical encoders
-int LA1_EncoderPin = 2;
-int LA2_EncoderPin = 3;
+//declare pin numbers for the linear actuator optical encoders
+const int L1_ENCODERPIN = 2;
+const int L2_ENCODERPIN = 3;
 
-// Timers to remove false positive counts from encoder pulse count
+//we set up the max range constants/variables for the diffrents motors/Steppers
+//TODO: make sure that these values are accurate and or are updated during the init sequence
+//const long WRISTMAXRANGE = 2500;
+constexpr long WRISTPITCHMAXRANGE = 2500;
+const long WRISTROLLMAXRANGE = 17500;
+const long ENDEFFECTORMAXRANGE = 861;
+const long TOWERMAXRANGE = 2500;
+
+//Timers to remove false positive counts from encoder pulse count
 unsigned long trigDelay_LA1 = millis();
 unsigned long trigDelay_LA2 = millis();
 
-int timeBetweenPulses = 60; // time between pulses at 125 speed
+int timeBetweenPulses = 60; //time between pulses at 125 speed
 
-// LA Encoder count variables
+//LA Encoder count variables
 int count[] = {0,0}; //count[0] tracks LA1 encoder pulses and count[1] tracks LA2 encoder pulses
 
 //direction array to track the direction the Linear Actuators are moving in
 //directionLA[0] tracks the direction of LA1 and directionLA[1] tracks the direction of LA2
 int directionLA[2]; 
 
-//we set up the max range constants/variables for the diffrents motors/Steppers
-//TODO: make sure that these values are accurate and or are updated during the init sequence
-//const long wristMaxRange = 2500;
-constexpr long wristPitchMaxRange = 2500;
-const long wristRollMaxRange = 17500;
-
-const long endEffectorMaxRange = 861;
-const long towerMaxRange = 2500;
-
-//stop var for Wrist
-bool wristStop = true;
-
 //input size var
 const int INPUT_SIZE = 12;
+char input[INPUT_SIZE + 1];
+char* tmp;     //stores chars as we tokenize
+char* command; //cmd type; stop, EE, etc
+int dir;       //1 or -1
+int speed;     //0-1000 for motors, 0-600 for LA's (new PCB)
 
-//we set up the motor and button variables and
+//stop vars
+int EEStopClose = 0;
+int EEStopOpen = 0;
+int wristStopUp = 0;
+int wristStopDown = 0;
+bool wristStop = true;
+
+//used to limit serial output from encoder feedback (every 50ms)
+static uint32_t start = millis();
+
 void setup() {
   //we start the serial comms
   Serial.begin(115200);
@@ -65,7 +75,7 @@ void setup() {
   Wire.begin();
 
   //we set the debounce time of the limitSwitches, that is the amount of time the program is going to wait until it accepts another input from the switches
-  LS1.setDebounceTime(50); // set debounce time to 50 milliseconds
+  LS1.setDebounceTime(50); //set debounce time to 50 milliseconds
   LS2.setDebounceTime(50);
   LS3.setDebounceTime(50);
   LS4.setDebounceTime(50);
@@ -82,23 +92,23 @@ void setup() {
   //TODO: decide if we want to add acceleration to the motors when using them
 
   //we add the wristSteppers to the multiStepper object
-  // Then give them to MultiStepper to manage
+  //Then give them to MultiStepper to manage
   wristEE.addStepper(wristRight);
   wristEE.addStepper(wristLeft);
 
-  // set up the optical encoder pins with pullup resistors
-  pinMode(LA1_EncoderPin, INPUT_PULLUP);
-  pinMode(LA2_EncoderPin, INPUT_PULLUP);
-  // set up interrupt pins for the LA encoders
-  attachInterrupt(digitalPinToInterrupt(LA1_EncoderPin),counter_LA1,RISING);
-  attachInterrupt(digitalPinToInterrupt(LA2_EncoderPin),counter_LA2,RISING);
+  //set up the optical encoder pins with pullup resistors
+  pinMode(L1_ENCODERPIN, INPUT_PULLUP);
+  pinMode(L2_ENCODERPIN, INPUT_PULLUP);
+  //set up interrupt pins for the LA encoders
+  attachInterrupt(digitalPinToInterrupt(L1_ENCODERPIN),counter_LA1,RISING);
+  attachInterrupt(digitalPinToInterrupt(L2_ENCODERPIN),counter_LA2,RISING);
 
-  // // zero LA1 to the most retracted position
-  // trigDelay_LA1 = millis();
-  // zeroActuators("LA1", 125);
-  // // zero LA2 to the most retracted position
-  // trigDelay_LA2 = millis();
-  // zeroActuators("LA2",125);
+  ////zero LA1 to the most retracted position
+  //trigDelay_LA1 = millis();
+  //zeroActuators("L1", 125);
+  ////zero LA2 to the most retracted position
+  //trigDelay_LA2 = millis();
+  //zeroActuators("L2",125);
 
   //zeroEndEffector();
 
@@ -106,88 +116,102 @@ void setup() {
   stop();
 }
 
-
 void loop() {
   //we do some of the needed setup to get the limitSwitches working
-  LS1.loop(); // MUST call the loop() function first
+  LS1.loop(); //MUST call the loop() function first
   LS2.loop();
   LS3.loop();
   LS4.loop();
 
+  //when LS's are pressed the states are toggled to allow/disallow movement to a direction
+  if (EEStopClose == LS1.getState()) {
+    if (LS1.getState()) {
+      Serial.print("\nLS1 unpressed; EE may close!");
+    } else {
+      Serial.print("\nLS1 pressed; no EE closing!");
+    }
+    EEStopClose = !LS1.getState();
+  }
+  if (EEStopOpen == LS2.getState()) {
+    if (LS2.getState()) {
+      Serial.print("\nLS2 unpressed; EE may open!");
+    } else {
+      Serial.print("\nLS2 pressed; no EE opening!");
+    }
+    EEStopOpen = !LS2.getState();
+  }
+  if (wristStopUp == LS3.getState()) {
+    if (LS3.getState()) {
+      Serial.print("\nLS4 unpressed; wrist may pitch up!");
+    } else {
+      wristStop = true;
+      Serial.print("\nLS3 pressed; no pitching up!");
+    }
+    wristStopUp = !LS3.getState();
+  }
+  if (wristStopDown == LS4.getState()) {
+    if (LS4.getState()) {
+      Serial.print("\nLS4 unpressed; wrist may pitch down!");
+    } else {
+      wristStop = true;
+      Serial.print("\nLS4 pressed; no pitching down!");
+    }
+    wristStopDown = !LS4.getState();
+  }
+  
   //we need to add a timeout function which stops everything if we haven't gotten a new instruction in a set ammount of time
   //that being said, this could probably be done on the python side of things and then we just send the stop command here, YES!
 
-  //Typical command example:
-  //"EE;OP;1000;!"
-
   //we check if a command has been given and then interpret it
   if (Serial.available()) {
-    //Serial.println("\nA New command was sent");
-    Serial.println("\nNew Command Received");
+    
+    //use memset to 'empty' input buffer; may not be necessary,
+    //but ensures that input is in a well-defined state
+    memset(input, 0, sizeof(input));
 
-    
-    //char tmp = Serial.read();
-    //int tmpSize = atoi(tmp);
-    //Serial.print("Tmp:");
-    //Serial.println(tmp);
-    
-    //New potential way to read input
-    // Get next command from Serial (add 1 for final 0)
-    char input[INPUT_SIZE + 1];
-    // characters from the serial input are read into the input array
-    // readBytesUntil returns the number of characters read to the size variable
+    //characters from the serial input are read into the input array
+    //readBytesUntil returns the number of characters read to the size variable
     byte size = Serial.readBytesUntil('!',input, INPUT_SIZE);
-    // Add the final 0 to end the C string
+
+    //Add the final 0 to end the C string
     input[size] = 0;
 
-    //we print the input
+    //Typical command example:
+    //"EE;OP;1000;!"
+    Serial.print("\nNew command received: ");
     Serial.println(input);
 
-    //we create all of the necessary variables for the command information
-    //String type;
-    String command;
-    int dir = 0; //setting default value, in theory it's impossible for the direction to be 0
-    int speed = 0; //setting the default value, whenever this variable will be assigned, it is in theory impossible that the speed will be 0
-
-    // Read each command pair
+    //Read each command pair
     //we get the first part of the command and we assign it to a variable
-    char* inputStr = strtok(input, ";");
-    //we extract the command type from inputStr
-    //type = inputStr;
-    command = inputStr;
+    tmp = strtok(input, ";");
+    command = tmp;
+    dir = 0;
+    speed = 0;
+
+    //we print all of the data which was extracted
+    //Serial.println("Here is the extracted information from the command");
+    Serial.print("Command: ");
+    Serial.println(command);
 
     //use only one if which checks if the type is motor, if that's the case we get all of the required motor information
     //in theory we don't need a more complicated if because some of the lines are repeated and can be extracted, and we will make sure that the only valid inputs are send by the python code
 
-    //we get the command from the input data, this block is exectued regardless of if we're doing M or C commands
-    //inputStr = strtok(NULL, ";");
-    //command = inputStr;
-
     //if to check which type of command was entered
-    if (!command.equals("stop")){
-      //Serial.println("The Motor command type was entered");
-      Serial.println("Motor Command Entered");
+    if (strcmp(command, "stop")) {
       //we get the rest of the inforation needed for the motors
+      tmp = strtok(NULL, ";");
+      dir = atoi(tmp);
 
-      //we get the dir
-      //Serial.println("input str: " + inputStr;
-      inputStr = strtok(NULL, ";"); // tokenizes the next part of the input string
-      dir = atoi(inputStr); // converts the string to an integer value
+      tmp = strtok(NULL, ";");
+      speed = atoi(tmp);
 
-      //we get the speed
-      inputStr = strtok(NULL, ";");
-      speed = atoi(inputStr);
+      Serial.print("Dir: ");
+      Serial.println(dir);
+      Serial.print("Speed: ");
+      Serial.print(speed);
+      Serial.print("!");//add ! delimiter for receiving node
     } //end of if
 
-    //we print all of the data which was extracted
-    //Serial.println("Here is the extracted information from the command");
-    Serial.println("Command Info");
-    //Serial.println("command Type: " + type);
-    Serial.println("Command: " + command);
-    Serial.print("Dir: ");
-    Serial.println(dir);
-    Serial.print("Speed: ");
-    Serial.println(speed);
 
     //we do some string manipulation to extract the different parts of the string
     //either we have an if which checks if there is a space character/a seperation character deoending on what the command format is
@@ -204,8 +228,7 @@ void loop() {
 
     */
 
-    
-    if (command.equals("stop")) {
+    if (!strcmp(command, "stop")) {
       //we stop every motor exaclty where it is
       //this command could also be the one sent when the joystick comes back to it's neutral position
       //Serial.println("The stop command was entered");
@@ -215,19 +238,20 @@ void loop() {
       stop();
 
     }
-    else if (command.equals("EE")) {
+    else if (!strcmp(command, "EE")) {
       //Serial.println("The EE command was entered");
-      stop();
+      //stop();
+      wristStop = true;
 
-      //we set the speed for the motor and then set it's target destination
       endEffector.setMaxSpeed(speed);
-      endEffector.moveTo(dir*endEffectorMaxRange);
+      endEffector.moveTo(dir*ENDEFFECTORMAXRANGE);
+      
     }
-    else if (command.equals("WR")) {
+    else if (!strcmp(command, "WR")) {
       //here we control the roll of the wrist
-      //We might need to have a different variable than wristMaxRange, because when doing the roll motion, i think the wrist doesn't have any limits
+      //We might need to have a different variable than WRISTMAXRANGE, because when doing the roll motion, i think the wrist doesn't have any limits
       //Serial.println("The WR command was entered");
-      stop();
+      //stop();
 
       //we set the wristStop bool to false so that the motors can move
       wristStop = false;
@@ -237,61 +261,67 @@ void loop() {
       wristLeft.setMaxSpeed(speed);
 
       //we set the target of the motors
-      long tmpPositions[2] = {dir*wristRollMaxRange, dir*wristRollMaxRange};
+      long tmpPositions[2] = {dir*WRISTROLLMAXRANGE, dir*WRISTROLLMAXRANGE};
       wristEE.moveTo(tmpPositions);
     }
-    else if (command.equals("WP")){
+    else if (!strcmp(command, "WP")) {
       //here we control the pitch of the wrist
       //Serial.println("The WP command was entered");
-      stop();
-
-      //we set the wristStop bool to false so that the motors can move
+      //stop();
       wristStop = false;
 
-      //we set the speed of the motors
       wristRight.setMaxSpeed(speed);
       wristLeft.setMaxSpeed(speed);
 
-      //we set the target of the motors
-      //we multiply the direction by the maxRange, in the case of the second item, we also multiply it by -1 because it's supposed to be the opposite of item 1
-      long tmpPositions[2] = {dir*wristPitchMaxRange, -1*dir*wristPitchMaxRange};
+      long tmpPositions[2] = {dir*WRISTPITCHMAXRANGE, -dir*WRISTPITCHMAXRANGE};
       wristEE.moveTo(tmpPositions);
+    
     }
-    else if (command.equals("TW")) {
+    else if (!strcmp(command, "TW")) {
       //Serial.println("The TW command was entered");
-      stop();
+      //stop();
+      wristStop = true;
 
       //we set the speed for the motor and then set it's target destination
       tower.setMaxSpeed(speed);
-      tower.moveTo(dir*towerMaxRange);
+      tower.moveTo(dir*TOWERMAXRANGE);
     }
     //consider using or instead of separate ifs for L1 and L2
-    else if (command.equals("L1")) {
+    else if (!strcmp(command, "L1")) {
       //Serial.println("The L1 command was entered");
-      moveActuators(command, dir, speed);
+      //stop();
+      wristStop = true;
+      moveActuators(&command, &dir, &speed);
     }
-    else if (command.equals("L2")) {
+    else if (!strcmp(command, "L2")) {
       //Serial.println("The L2 command was entered");
-      moveActuators(command, dir, speed);
+      //stop();
+      wristStop = true;
+      moveActuators(&command, &dir, &speed);
     }
     else {
-      Serial.println("Invalid command");
+      Serial.print("\nInvalid command!");//add ! delimiter for receiving node
     }
 
   } //end of if serial available
 
   //we make the steppers move, that is that we call the run functions for all of the stepper funcs
-  //wristEE.run();
-
   //if which checks if wristStop is true or false. if false, the run function is called permitting the motors to move.
   if (!wristStop) {
-    wristEE.run();
+    if ((LS3.getState() and dir == -1) | (LS4.getState() and dir == 1)) {
+      wristEE.run();
+    }
   }
   tower.run();
-  endEffector.run();
+  if ((LS1.getState() and dir == -1) | (LS2.getState() and dir == 1)) {
+    endEffector.run();
+  }
 
-  // send the current linear actuator positions over serial
-  //sendLinearActuatorPositions();
+  //send the current linear actuator positions over serial
+  /*if (millis() - start >= 50) {
+    sendLinearActuatorPositions();
+    start = millis();
+  }*/
 } //end of loop()
 
 //we create the stop function since it's functionality can be used multiple times
@@ -301,8 +331,7 @@ void stop() {
 
   //we stop every motor exaclty where it is
   //this command could also be the one sent when the joystick comes back to it's neutral position
-  //Serial.println("The stop function was entered");
-  Serial.println("Stopping all motors");
+  Serial.print("\nStopping all motors!");//add ! delimiter for receiving node
 
   //we stop the EE
   endEffector.stop();
@@ -328,31 +357,30 @@ void stop() {
 } //end of stop
 
 //this function is the one which moves the linear actuators
-void moveActuators(String command, int dir, int speed) {
-  stop();
-
+void moveActuators(char* *command, int *dir, int *speed) {
+  
   //we check to see which actuator needs to move and then extend it 
-  if (command.equals("L1")) {
+  if (!strcmp(*command, "L1")) {
     //if dir is 1 extend, if -1 retract
-    // The linear actuator driver sets the speed by subtracting 2048 from the given value so a value of 2048 corresponds to 0 speed
-    LA1.setTarget(2048+(dir*speed));
-    directionLA[0] = dir;
+    //The linear actuator driver sets the speed by subtracting 2048 from the given value so a value of 2048 corresponds to 0 speed
+    LA1.setTarget(2048+((*dir)*(*speed)));
+    directionLA[0] = *dir;
   }
   else {
     //we extend or retract L2
-    LA2.setTarget(2048+(dir*speed));
-    directionLA[1] = dir;
+    LA2.setTarget(2048+((*dir)*(*speed)));
+    directionLA[1] = *dir;
   } //end of else
 
 } //end of moveActuators()
 
-// Method to set Linear Actuators at 0 in stroke position
-void zeroActuators(String actuator, int speed){
+//Method to set Linear Actuators at 0 in stroke position
+void zeroActuators(char* actuator, int speed){
   stop(); // stop all motors
   
   int index = 0;
 
-  if (actuator.equals("LA2")){
+  if (!strcmp(actuator, "L2")){
     index = 1;
   }
 
@@ -362,7 +390,7 @@ void zeroActuators(String actuator, int speed){
   int prevCount = 0;
 
   while(homeFlag == 0){
-    moveActuators(actuator, 1, speed); // retracts the actuator
+    moveActuators(&actuator, 1, &speed); // retracts the actuator
     
     if(prevCount == count){ // if the previous count hasn't updated the actuator might have stopped
       if(millis() - prevTimer > timeBetweenPulses){ // if it has stopped for the time indicated by timeBetweenPulses it's done retracting
@@ -379,47 +407,46 @@ void zeroActuators(String actuator, int speed){
 }
 
 
-// Zero End Effector to middle position 
+//Zero End Effector to middle position 
 //***CHECK SIGNS IN MOVETO FUNCTIONS***
 void zeroEndEffector(){
   stop();
-  
-  int homeFlag = 0; //condition for while loop
+  Serial.print("\nZeroing EE!");//add ! delimiter for receiving node
   
   // set max speed and acceleration, we could alternatively set these values based on function inputs
   endEffector.setMaxSpeed(50.0);
   endEffector.setAcceleration(1000.0);
   //set target position for max range, this target accounts for the worst case scenario of the initial stepper position
-  endEffector.moveTo(endEffectorMaxRange*2); 
+  endEffector.moveTo(ENDEFFECTORMAXRANGE*2);
 
-  while (homeFlag == 0){
+  while (LS1.getState() == HIGH){
     endEffector.run(); //moves motor towards target position
-    
-    if(LS1.getState() == LOW){ //if limit switch is pressed
-      endEffector.stop(); //stop motor
-      homeFlag = 1; //break out of while loop
-    }
+    Serial.print(LS1.getState());//add ! delimiter for receiving node
+    Serial.print("!");//add ! delimiter for receiving node
   }
+  endEffector.stop(); //stop motor
+  Serial.print("\nEE STOPPING!");//add ! delimiter for receiving node
 
-  endEffector.move(-endEffectorMaxRange); //relative position, should move stepper to the middle
+  endEffector.move(-ENDEFFECTORMAXRANGE); //relative position, should move stepper to the middle
   // run the motor until the distance from the target position is 0.
-  while(endEffector.distanceToGo() != 0){
+  while (endEffector.distanceToGo() != 0){
     endEffector.run();
   }
 
   long numSteps = endEffector.currentPosition(); // returns our position relative to our initial point
   endEffector.setCurrentPosition(numSteps); //sets current position to be the absolute zero position
+  Serial.print("\nEE zeroing complete!");//add ! delimiter for receiving node
 }
 
-// Zero wrist to middle position
-// ***CHECK SIGNS***
-// INCOMPLETE
+//Zero wrist to middle position
+//***CHECK SIGNS***
+//INCOMPLETE
 void zeroWristPitch(){
   stop();
   // condition for while loop
   int homeFlag = 0;
   // positions
-  long positions[2] = {wristPitchMaxRange, -1*wristPitchMaxRange};
+  long positions[2] = {WRISTPITCHMAXRANGE, -1*WRISTPITCHMAXRANGE};
   // set speeds and target positions
   wristRight.setMaxSpeed(500.0);
   wristLeft.setMaxSpeed(500.0);
@@ -457,6 +484,6 @@ void sendLinearActuatorPositions(){
   float positionInMM_LA2 = count[1]/100 * 25.4;
   Serial.print(positionInMM_LA1);
   Serial.print(";");
-  Serial.println(positionInMM_LA2);
+  Serial.print(positionInMM_LA2);
+  Serial.print("!"); //add ! delimiter for receiving node
 }
-

@@ -1,0 +1,14 @@
+<launch>
+   <include file="$(find video_stream_opencv)/launch/camera.launch" >
+        <arg name="camera_name" value="webcam" />
+        <arg name="video_stream_provider" value="0" />
+        <arg name="set_camera_fps" value="30"/>
+        <arg name="buffer_queue_size" value="100" />
+        <arg name="fps" value="30" />
+        <arg name="frame_id" value="webcam" />
+        <arg name="flip_horizontal" value="false" />
+        <arg name="flip_vertical" value="false" />
+        <arg name="visualize" value="true" />
+   </include>
+</launch>
+

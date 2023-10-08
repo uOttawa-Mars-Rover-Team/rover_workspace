@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet";
 
-import { Layout } from "../../components";
+import { Layout, Header, Navigation } from "../../components";
+import { CompassOutlined } from "@ant-design/icons";
 
 const AutonomousNavigationMission: React.FC = () => (
   <>
@@ -10,7 +11,10 @@ const AutonomousNavigationMission: React.FC = () => (
     <Layout
       title="Autonomous Navigation Mission"
       menuKey="autonomousNavigationMission"
-    />
+    >
+      <Header title="Navigation" icon={<CompassOutlined />} />
+      <Navigation />
+    </Layout>
   </>
 );
 

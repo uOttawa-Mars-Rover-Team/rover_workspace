@@ -6,3 +6,4 @@ src/CMakeLists.txt
 **/.vs/
 **.pyc
 **.pyi
+.DS_Store

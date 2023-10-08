@@ -1,0 +1,270 @@
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---
+fix: 1
+satellites: 10
+latitude: 4531.08105469
+longitude: -7323.60546875
+---

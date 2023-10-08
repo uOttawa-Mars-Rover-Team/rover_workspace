@@ -12,4 +12,3 @@ KERNEL=="ttyUSB*", ATTRS{idProduct}=="7523", SYMLINK+="drive_nano"
 # Joysticks
 ATTRS{idProduct}=="c215", ATTRS{idVendor}=="046d", ATTRS{manufacturer}=="Logitech", ATTRS{product}=="Extreme 3D pro", SYMLINK+="arm_joystick"
 ATTRS{idProduct}=="c216", ATTRS{idVendor}=="046d", ATTRS{manufacturer}=="Logitech", ATTRS{product}=="Logitech Dual Action", SYMLINK+="drive_joystick"
-

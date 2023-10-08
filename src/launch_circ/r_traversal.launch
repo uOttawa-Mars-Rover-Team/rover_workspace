@@ -1,0 +1,31 @@
+<launch>
+    <!-- launch drive -->
+    <include file="$(find teleop_twist_joy-melodic-devel)/launch/roverPC.launch" pass_all_args="true" />
+
+    <!-- launch GPS -->
+    <include file="$(find gps_node)/launch/gps_node.launch" pass_all_args="true" />
+
+    <!-- launch arm -->
+    <include file="$(find robotic_arm_package)/launch/manual.launch" pass_all_args="true"/>
+
+    <!-- launch drive camera -->
+    <include file="$(find camera_nodes)/launch/cam.launch" pass_all_args="true">
+        <arg name="camera_name" value="drive_cam" /> <!-- Name that the ros topics will be associated with. Should be unique. -->
+        <arg name="video_stream_provider" value="0" /> <!-- the number of the video device being used under /dev -->
+        <arg name="frame_id" value="drive_cam" />
+    </include>
+
+    <!-- launch arm camera 1 -->
+    <include file="$(find camera_nodes)/launch/cam.launch" pass_all_args="true">
+        <arg name="camera_name" value="arm_cam1" />
+        <arg name="video_stream_provider" value="1" />
+        <arg name="frame_id" value="arm_cam1" />
+    </include>
+
+    <!-- launch arm camera 2 -->
+    <!-- <include file="$(find camera_nodes)/launch/cam.launch" pass_all_args="true">
+        <arg name="camera_name" value="arm_cam2" />
+        <arg name="video_stream_provider" value="2" />
+        <arg name="frame_id" value="arm_cam2" />
+    </include> -->
+</launch>

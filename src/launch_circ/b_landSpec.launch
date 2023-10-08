@@ -1,0 +1,13 @@
+<launch>
+    <!-- launch drive -->
+    <include file="$(find teleop_twist_joy-melodic-devel)/launch/baseStationPC.launch" pass_all_args="true" />
+
+    <!-- run keyboard control -->
+    <node pkg="life_detection_node" type="keyboardControl.py" name="LD_keyboard_control" />
+
+    <!-- run GPS waypoint recorder -->
+    <node pkg="gps_node" type="GPS_Waypoint_Recorder.py" name="GPS_waypoint_recorder" />
+
+    <!-- launch websocket for dashboard -->
+    <include file="$(find dashboard)/websocket.launch" pass_all_args="true" />
+</launch>

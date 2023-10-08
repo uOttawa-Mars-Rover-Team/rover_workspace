@@ -1,0 +1,20 @@
+<launch>
+    <!-- launch drive -->
+    <include file="$(find teleop_twist_joy-melodic-devel)/launch/baseStationPC.launch" pass_all_args="true" />
+
+    <!-- launch arm joy node -->
+    <arg name="joy_dev" default="/dev/input/js3" />
+
+    <node pkg="joy" type="joy_node" name="joy_node_arm">
+        <param name="dev" value="$(arg joy_dev)" />
+        <param name="deadzone" value="0" />
+    </node>
+
+    <!-- launch arUco reader -->
+    <node pkg="aruco_decoder_node" type="aruco_decoder_node.py" name="aruco_decoder_feed">
+        <param name="cam_feed" value="/drive_cam/image_raw"/>
+    </node>
+
+    <!-- launch websocket for dashboard -->
+    <include file="$(find dashboard)/websocket.launch" pass_all_args="true" />
+</launch>

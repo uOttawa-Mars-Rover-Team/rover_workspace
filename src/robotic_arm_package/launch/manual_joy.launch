@@ -3,6 +3,14 @@ Launch file for the M_arm_controls.py node
 -->
 <launch>
 	
+
+	<!-- Joystick Node -->
+	<node pkg="joy" type="joy_node" name="joy_node">
+		<param name="dev" value="/dev/input/js2" />
+		<param name="deadzone" value="0.0" />
+		<param name="autorepeat_rate" value="20" />
+	</node>
+
 	<!-- Manual Arm Controls Node -->
 	<node pkg="robotic_arm_package" type="M_arm_controls.py" name="M_arm_controls" clear_params="true" output="screen" respawn="true">
     		<param name="serial_dev" value="/dev/arm_mega" />

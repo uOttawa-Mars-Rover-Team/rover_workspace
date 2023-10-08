@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="camera_nodes" type="picture.py" name="picture" output="screen">
+        <param name="picture_topic" type="str" value="/picture_topic" />
+    </node>
+</launch>

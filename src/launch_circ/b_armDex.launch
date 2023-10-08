@@ -1,0 +1,12 @@
+<launch>
+    <!-- launch drive -->
+    <include file="$(find teleop_twist_joy-melodic-devel)/launch/baseStationPC.launch" pass_all_args="true" />
+
+    <!-- launch arm joy node -->
+    <!-- <arg name="joy_dev" default="/dev/input/js3" /> -->
+
+    <include file="$(find robotic_arm_package)/launch/arm_joy.launch" pass_all_args="true"/>
+
+    <!-- launch websocket for dashboard -->
+    <!-- <include file="$(find dashboard)/websocket.launch" pass_all_args="true" /> -->
+</launch>

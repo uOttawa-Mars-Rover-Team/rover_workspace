@@ -1,4 +1,4 @@
-import ROSLIB, { Ros } from "roslib";
+import ROSLIB, { Ros, Topic } from "roslib";
 import { Node } from "../hooks/useNodes";
 import { Param } from "../hooks/useParams";
 
@@ -74,6 +74,19 @@ export const getNode = (ros: Ros, name: string): Promise<Node> =>
       ros.getNodeDetails(name, ({ publishing, subscribing, services }) =>
         resolve({ publishing, subscribing, services, name })
       );
+    } catch (e) {
+      reject(e);
+    }
+  });
+
+export const subscribeTopic = (ros: Ros, name: string, messageType: string, funct: (message: ROSLIB.Message) => void): Promise<Topic> =>
+  new Promise((resolve, reject) => {
+    try{
+      new ROSLIB.Topic({
+        ros: ros,
+        name: name,
+        messageType: messageType
+      }).subscribe(funct);
     } catch (e) {
       reject(e);
     }

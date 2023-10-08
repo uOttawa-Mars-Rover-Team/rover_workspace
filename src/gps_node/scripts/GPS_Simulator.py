@@ -4,13 +4,13 @@ from gps_node.msg import gps
 import random
 
 #Constants
-BaseLat = 45.420593
-BaseLon = -75.680621
-MinCoordError = -1
-MaxCoordError = 1
+BaseLat = 51.46696 #45.420593
+BaseLon = -112.70592 #-75.680621
+MinCoordError = -0.00001
+MaxCoordError = 0.00001
 
 def executeNode():
-    rate = rospy.Rate(2)
+    rate = rospy.Rate(0.25)
     gps_pub = rospy.Publisher("GPS", gps, queue_size=10)
 
     print("Started outputing simulated GPS coordinates...")

@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="aruco_decoder_node" type="aruco_decoder_node.py" name="aruco_decoder_feed">
+        <param name="cam_feed" value="/drive_cam/image_raw"/>
+    </node>
+</launch>

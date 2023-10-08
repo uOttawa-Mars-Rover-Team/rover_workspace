@@ -8,8 +8,8 @@
 //PINOUT
 // Connect the GPS VIN to 5V
 // Connect the GPS GND pin to ground
-// Connect the GPS TX (transmit) pin to Digital 8
-// Connect the GPS RX (receive) pin to Digital 7
+// Connect the GPS TX (transmit) pin to Digital 8/9/13
+// Connect the GPS RX (receive) pin to Digital 7/8/12
 
 // Connect the IMU GND pin to ground
 // Connect the IMU VDD pin to 3V
@@ -42,7 +42,7 @@ LSM9DS1 imu;
 
 
 // you can change the pin numbers to match your wiring:
-SoftwareSerial mySerial(8, 7);
+SoftwareSerial mySerial(9, 8);
 Adafruit_GPS GPS(&mySerial);
 
 // Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
@@ -235,12 +235,12 @@ void setup()
   mySerial.println(PMTK_Q_RELEASE);
 
   //IMU
-  Wire.begin();
-
-  if (imu.begin() == false) // with no arguments, this uses default addresses (AG:0x6B, M:0x1E) and i2c port (Wire).
-  {
-    while (1);
-  }
+//  Wire.begin();
+//
+//  if (imu.begin() == false) // with no arguments, this uses default addresses (AG:0x6B, M:0x1E) and i2c port (Wire).
+//  {
+//    while (1);
+//  }
 }
 
 //uint32_t timer = millis();

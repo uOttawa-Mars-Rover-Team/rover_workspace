@@ -1,10 +1,14 @@
 import { Collapse, Button, Tooltip, Form, Input } from "antd";
 import { AimOutlined } from "@ant-design/icons";
 
-import L, { Map } from "leaflet";
+import Leaflet, { Map } from "leaflet";
 import { MapContainer } from "react-leaflet";
 import React, { useState, useEffect, useRef } from "react";
 import "leaflet.offline";
+import { subscribeTopic } from "../../utils/ros";
+import { useContext } from "react";
+import { RosContext } from "../../contexts";
+
 
 // tiles are stored in the browser storage. They remain there unless you clear the browser's cache
 // to see the database (firefox), right click on the screen -> inspect -> storage -> indexed DB ->
@@ -18,13 +22,15 @@ const Navigation: React.FC = () => {
 
   // map properties
   const center = {
-    lat: 45.4203222,
-    lng: -75.6803941,
+    // lat: 45.4203222,\
+    lat: 51.46696,
+    // lng: -75.6803941,
+    lng: -112.70592,
   };
   const zoom = 18;
 
   // // icon for the moving rover
-  var rover = L.divIcon({
+  var rover = Leaflet.divIcon({
     html: '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="16" height="16" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000"/></svg>',
     className: "",
     iconSize: [16, 16],
@@ -32,25 +38,45 @@ const Navigation: React.FC = () => {
   });
 
   // state holding the position of the rover
-  const [pos, setPos] = useState<L.Marker>(
-    new L.Marker(center, { icon: rover })
+  const [pos, setPos] = useState<Leaflet.Marker>(
+    new Leaflet.Marker(center, { icon: rover })
   );
+
+  const { rosClient } = useContext(RosContext);
+  if(rosClient)
+  {
+    const gpsListener = subscribeTopic(rosClient, "/GPS", "gps_node/gps", function(message) {
+      // console.log("received" + JSON.parse(JSON.stringify(message)).latitude);
+      var gpsData = JSON.parse(JSON.stringify(message));
+      // pos.setLatLng({lat: gpsData.latitude, lng: gpsData.longitude});
+      if(gpsData.fix == 1)
+      {
+        let newCoords = {
+          lat: gpsData.latitude,
+          lng: gpsData.longitude,
+        };
+        pos.setLatLng(newCoords);
+        setPos(pos);//new L.Marker(newCoords, { icon: rover }));
+      }
+    });
+  }
+
   const prevPos = usePrevious(pos);
 
   // default marker position, change to the default location of the map as well
-  const [marker, setMarker] = useState<L.Marker>(
-    new L.Marker(center, { draggable: true })
+  const [marker, setMarker] = useState<Leaflet.Marker>(
+    new Leaflet.Marker(center, { draggable: true })
   );
   const prevMarker = usePrevious(marker);
 
-  const [line, setLine] = useState<L.Polyline>(
-    new L.Polyline([marker.getLatLng(), pos.getLatLng()], {
+  const [line, setLine] = useState<Leaflet.Polyline>(
+    new Leaflet.Polyline([marker.getLatLng(), pos.getLatLng()], {
       color: "red",
     })
   );
 
-  function usePrevious(value: L.Marker) {
-    const markerRef = useRef<L.Marker>(new L.Marker(center));
+  function usePrevious(value: Leaflet.Marker) {
+    const markerRef = useRef<Leaflet.Marker>(new Leaflet.Marker(center));
 
     useEffect(() => {
       markerRef.current = value; //assign the value of ref to the argument
@@ -59,7 +85,7 @@ const Navigation: React.FC = () => {
   }
 
   // @ts-ignore
-  const tileLayerOffline = L.tileLayer.offline(
+  const tileLayerOffline = Leaflet.tileLayer.offline(
     "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", // satellite map
     // "http://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}", // terrain map
     { minZoom: 13, maxNativeZoom: 22, maxZoom: 22 }
@@ -77,7 +103,7 @@ const Navigation: React.FC = () => {
   // @ts-ignore
   // handles saving, removing of tiles
   // saves the tiles in indexedDB which stores them until the database is cleared
-  const controlSaveTiles = L.control.savetiles(tileLayerOffline, {
+  const controlSaveTiles = Leaflet.control.savetiles(tileLayerOffline, {
     zoomlevels: [18, 19, 20, 21, 22], // optional zoomlevels to save, default current zoomlevel
     confirm(layer: any, successCallback: any) {
       if (
@@ -106,7 +132,7 @@ const Navigation: React.FC = () => {
 
       tileLayerOffline.addTo(map);
       controlSaveTiles.addTo(map!);
-      L.control.scale().addTo(map);
+      Leaflet.control.scale().addTo(map);
 
       map.addLayer(pos);
       pos.setZIndexOffset(100);
@@ -125,7 +151,7 @@ const Navigation: React.FC = () => {
           lat: pos.getLatLng().lat,
           lng: pos.getLatLng().lng,
         };
-        setPos(new L.Marker(newCoords, { icon: rover }));
+        setPos(new Leaflet.Marker(newCoords, { icon: rover }));
         pos.setZIndexOffset(100);
       }, 100);
 
@@ -152,7 +178,7 @@ const Navigation: React.FC = () => {
 
   // // when a new marker is placed, the old one gets deleted
   // function onMapClick (e:any) {
-  //   let newMarker = new L.Marker(e.latlng);
+  //   let newMarker = new Leaflet.Marker(e.latlng);
   //   setMarker(newMarker);
   // }
 
@@ -165,15 +191,15 @@ const Navigation: React.FC = () => {
 
   // changes the marker position based on the textboxes
   function onChangeLat(e: React.FormEvent<HTMLInputElement>): void {
-    let newMarker = new L.Marker(
-      L.latLng(Number(e.currentTarget.value), marker.getLatLng().lng)
+    let newMarker = new Leaflet.Marker(
+      Leaflet.latLng(Number(e.currentTarget.value), marker.getLatLng().lng)
     );
     setMarker(newMarker);
   }
 
   function onChangeLng(e: React.FormEvent<HTMLInputElement>): void {
-    let newMarker = new L.Marker(
-      L.latLng(marker.getLatLng().lat, Number(e.currentTarget.value))
+    let newMarker = new Leaflet.Marker(
+      Leaflet.latLng(marker.getLatLng().lat, Number(e.currentTarget.value))
     );
     setMarker(newMarker);
   }

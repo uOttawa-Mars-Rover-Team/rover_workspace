@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="camera_nodes" type="panorama.py" name="panorama" output="screen">
+        <param name="path_topic" type="str" value="/panorama_path" />
+    </node>
+</launch>

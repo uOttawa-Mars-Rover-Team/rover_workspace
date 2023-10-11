@@ -44,6 +44,13 @@ class GPSNode(Node):
         ).value
         self.get_logger().info(f"Using serial port: {self.serial_port}")
 
+        # Accept a launch parameter specifying the baud rate of the serial port
+        # being connected to
+        self.declare_parameter("baud_rate", rclpy.Parameter.Type.INTEGER)
+        default_baud_rate = Parameter("baud_rate", rclpy.Parameter.Type.INTEGER, 115200)
+        self.baud_rate = self.get_parameter_or("baud_rate", default_baud_rate).value
+        self.get_logger().info(f"Using baud rate: {self.baud_rate}")
+
         # Set a timer to call publish_serial_data() every 0.5 seconds (2Hz).
         timer_period = 0.5
         self.timer = self.create_timer(timer_period, self.publish_serial_data)
@@ -54,7 +61,7 @@ class GPSNode(Node):
         values from the Arduino, then publish them separately on topics for GPS
         and IMU data.
         """
-        with serial.Serial(self.serial_port, 115200, timeout=1) as ser:
+        with serial.Serial(self.serial_port, self.baud_rate, timeout=1) as ser:
             # read all the data from the serial port until the message is
             # received
             info = ""

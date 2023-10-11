@@ -79,56 +79,86 @@ class GPSNode(Node):
                     if data_entry not in info:
                         missing_data = True
 
-            # make the messages
-            gps_data = GPS()
-            imu_data = IMU()
-
-            # find 'fix' in the data and update the GPS message
-            # (constant is length of 'fix' plus 2 for the ':' and space)
-            fix_loc = info.find("fix") + 5
-            gps_data.fix = int(info[fix_loc : fix_loc + 1])
-
-            # find 'sats' in the data and update the GPS message
-            sat_loc = info.find("sats") + 6
-            gps_data.satellites = int(info[sat_loc : info.find(",", sat_loc)])
-
-            # if the GPS doesn't have a fix ignore the latitude and longitude in the data
-            if gps_data.fix == 0:
-                gps_data.latitude = 0.0
-                gps_data.longitude = 0.0
-            else:
-                # find the latitude and longitude in the data
-                lat_end = info.find(",", sat_loc + 2)
-                lat = info[info.find("lat:") + 5 : lat_end]
-                lon = info[info.find("lon:") + 5 : info.find(",", lat_end + 2)]
-
-                # set the sign of the float based on the direction (N vs S and W vs E)
-                if "S" in lat:
-                    gps_data.latitude = -1 * float(lat[: lat.find("S")])
-                else:
-                    gps_data.latitude = float(lat[: lat.find("N")])
-                if "W" in lon:
-                    gps_data.longitude = -1 * float(lon[: lon.find("W")])
-                else:
-                    gps_data.longitude = float(lon[: lon.find("E")])
-
-            # find 'roll' in the data and update the IMU message
-            roll_loc = info.find("roll") + 6
-            imu_data.roll = float(info[roll_loc : info.find(",", roll_loc)])
-
-            # find 'pitch' in the data and update the IMU message
-            pitch_loc = info.find("pitch") + 7
-            imu_data.pitch = float(info[pitch_loc : info.find(",", pitch_loc)])
-
-            # find 'yaw' in the data and update the IMU message
-            yaw_loc = info.find("yaw") + 5
-            imu_data.yaw = float(info[yaw_loc : info.find(",", yaw_loc)])
+            # Extract the data from the serial data, and convert them into ROS
+            # messages
+            gps_data = self.parse_gps_data(info)
+            imu_data = self.parse_imu_data(info)
 
             # publish the ros messages
             self.get_logger().info(f"Publishing gps data: {gps_data}")
             self.gps_publisher.publish(gps_data)
             self.get_logger().info(f"Publishing imu data: {imu_data}")
             self.imu_publisher.publish(imu_data)
+
+    def parse_imu_data(self, serial_data: str) -> IMU:
+        """
+        A helper method to parse IMU data read from a serial port, and convert
+        it to a ROS message.
+
+        :param serial_data: A string containing the data read from the serial
+            port.
+        :return: A ROS IMU message (custom defined) containing the extracted IMU data.
+        """
+        imu_data = IMU()
+
+        # find 'roll' in the data and update the IMU message
+        roll_loc = serial_data.find("roll") + 6
+        imu_data.roll = float(serial_data[roll_loc : serial_data.find(",", roll_loc)])
+
+        # find 'pitch' in the data and update the IMU message
+        pitch_loc = serial_data.find("pitch") + 7
+        imu_data.pitch = float(
+            serial_data[pitch_loc : serial_data.find(",", pitch_loc)]
+        )
+
+        # find 'yaw' in the data and update the IMU message
+        yaw_loc = serial_data.find("yaw") + 5
+        imu_data.yaw = float(serial_data[yaw_loc : serial_data.find(",", yaw_loc)])
+
+        return imu_data
+
+    def parse_gps_data(self, serial_data: str) -> GPS:
+        """
+        A helper method to parse GPS data read from a serial port, and convert
+        it to a ROS message.
+
+        :param serial_data: A string containing the data read from the serial
+            port.
+        :return: A ROS GPS message (custom defined) containing the extracted GPS data.
+        """
+        gps_data = GPS()
+        # find 'fix' in the data and update the GPS message
+        # (constant is length of 'fix' plus 2 for the ':' and space)
+        fix_loc = serial_data.find("fix") + 5
+        gps_data.fix = int(serial_data[fix_loc : fix_loc + 1])
+
+        # find 'sats' in the data and update the GPS message
+        sat_loc = serial_data.find("sats") + 6
+        gps_data.satellites = int(serial_data[sat_loc : serial_data.find(",", sat_loc)])
+
+        # if the GPS doesn't have a fix ignore the latitude and longitude in the data
+        if gps_data.fix == 0:
+            gps_data.latitude = 0.0
+            gps_data.longitude = 0.0
+        else:
+            # find the latitude and longitude in the data
+            lat_end = serial_data.find(",", sat_loc + 2)
+            lat = serial_data[serial_data.find("lat:") + 5 : lat_end]
+            lon = serial_data[
+                serial_data.find("lon:") + 5 : serial_data.find(",", lat_end + 2)
+            ]
+
+            # set the sign of the float based on the direction (N vs S and W vs E)
+            if "S" in lat:
+                gps_data.latitude = -1 * float(lat[: lat.find("S")])
+            else:
+                gps_data.latitude = float(lat[: lat.find("N")])
+            if "W" in lon:
+                gps_data.longitude = -1 * float(lon[: lon.find("W")])
+            else:
+                gps_data.longitude = float(lon[: lon.find("E")])
+
+        return gps_data
 
 
 def main(args=None):

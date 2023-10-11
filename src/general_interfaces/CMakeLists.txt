@@ -21,6 +21,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SaveImage.srv"
   "srv/CreatePanorama.srv"
   "msg/ArmControl.msg"
+  "msg/GPS.msg"
+  "msg/IMU.msg"
 )
 
 if(BUILD_TESTING)

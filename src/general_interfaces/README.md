@@ -4,6 +4,11 @@
 
 - Define messages, services, and actions that will be used throughout the rest of the workspace
 
+## Adding a new interface
+
+1. Add a message (under `./msg/`), service (under `./srv/`), or action (under `./action/`) definition within this package
+2. Add the path to the new interface definition inside the `CMakeLists.txt` file for this package to allow it to be built
+
 ## Q&A
 
 - How can I learn more about how to create a custom interface (message/service/action) and about what this package does?

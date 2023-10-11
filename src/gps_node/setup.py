@@ -37,5 +37,9 @@ setup(
     description=package_description,
     license=package_license,
     tests_require=["pytest"],
-    entry_points={},
+    entry_points={
+        "console_scripts": [
+            "gps_node = gps_node.gps_node:main",
+        ],
+    },
 )

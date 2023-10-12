@@ -42,6 +42,7 @@ setup(
             "picture = camera_nodes.picture:main",
             "panorama = camera_nodes.panorama:main",
             "video = camera_nodes.video:main",
+            "aruco = camera_nodes.aruco:main",
         ],
     },
 )

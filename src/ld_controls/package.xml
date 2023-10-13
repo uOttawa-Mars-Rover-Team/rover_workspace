@@ -7,6 +7,10 @@
   <maintainer email="12845445-bvsam@users.noreply.gitlab.com">ben</maintainer>
   <license>TODO: License declaration</license>
 
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>pynput-pip</depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>

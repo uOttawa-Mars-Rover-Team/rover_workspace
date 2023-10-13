@@ -18,29 +18,29 @@ class KeyboardControlNode(Node):
 
         # Setup publishers
         # VacHose
-        self.vac_hose_pub = self.create_publisher(UInt8, "vac_hose_cmd", 100)
+        self.vac_hose_pub = self.create_publisher(UInt8, "VacHoseCMD", 100)
         self.get_logger().info(
             f"Publishing messages at: {self.vac_hose_pub.topic_name}"
         )
         # FunnelFlap
-        self.funnel_flap_pub = self.create_publisher(Empty, "funnel_flap_cmd", 100)
+        self.funnel_flap_pub = self.create_publisher(Empty, "FunnelFlapCMD", 100)
         self.get_logger().info(
             f"Publishing messages at: {self.funnel_flap_pub.topic_name}"
         )
         # VacMotor
-        self.vac_motor_pub = self.create_publisher(UInt8, "vac_motor_cmd", 100)
+        self.vac_motor_pub = self.create_publisher(UInt8, "VacMotorCMD", 100)
         self.get_logger().info(
             f"Publishing messages at: {self.vac_motor_pub.topic_name}"
         )
         # Beaker
-        self.beaker_pub = self.create_publisher(UInt8, "beaker_cmd", 100)
+        self.beaker_pub = self.create_publisher(UInt8, "BeakerCMD", 100)
         self.get_logger().info(f"Publishing messages at: {self.beaker_pub.topic_name}")
         # Agitate
-        self.agitate_pub = self.create_publisher(UInt8, "agitate_cmd", 100)
+        self.agitate_pub = self.create_publisher(UInt8, "AgitateCMD", 100)
         self.get_logger().info(f"Publishing messages at: {self.agitate_pub.topic_name}")
         # WeatherCollection
         self.weather_collection_pub = self.create_publisher(
-            Empty, "weather_collection_cmd", 100
+            Empty, "WeatherCollectionCMD", 100
         )
         self.get_logger().info(
             f"Publishing messages at: {self.weather_collection_pub.topic_name}"

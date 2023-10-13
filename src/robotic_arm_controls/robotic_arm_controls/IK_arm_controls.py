@@ -70,6 +70,9 @@ class IKArmControllerNode(Node):
 
         # Publish messages to the inverse kinematics (ik) topic
         self.ik_control_publisher = self.create_publisher(ArmControl, "ik_msg", 1000)
+        self.get_logger().info(
+            f"Publishing messages at: {self.ik_control_publisher.topic_name}"
+        )
 
         # Serial settings
         #

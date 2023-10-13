@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>ld_controls</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="12845445-bvsam@users.noreply.gitlab.com">ben</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.1.0</version>
+  <description>The ld_controls package</description>
+  <maintainer email="rbhar017@uottawa.ca">Raghav Bhargava</maintainer>
+  <license>MIT</license>
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

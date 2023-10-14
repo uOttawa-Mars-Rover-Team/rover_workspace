@@ -6,6 +6,7 @@ ROVER_WS=~/rover_workspace
 
 title "----- Installing external packages -----"
 
+title "Installing Node.js"
 # Installation instructions should match the ones listed in the dashboard's
 # README.md
 echo "Adding Node.js PPA and installing Node.js v18 (for dashboard)"

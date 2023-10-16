@@ -6,6 +6,7 @@ ROVER_WS=~/rover_workspace
 
 title "----- Installing external packages -----"
 
+title "Installing Node.js"
 # Installation instructions should match the ones listed in the dashboard's
 # README.md
 echo "Adding Node.js PPA and installing Node.js v18 (for dashboard)"
@@ -22,8 +23,9 @@ sudo apt-get install nodejs -y
 complete
 
 title "Installing pip (for Python)"
-sudo apt update
-sudo apt install python3-pip
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt install -y python3-pip
 complete
 
 title "Installing colcon"
@@ -37,6 +39,7 @@ title "Installing project ROS dependencies using rosdep"
 cd $ROVER_WS
 # Rosdep will read each package in src/ and install dependencies listed in each
 # package's package.xml file
+source /opt/ros/humble/setup.bash
 rosdep update
-sudo rosdep install --from-paths src --ignore-src -r -y
+rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 complete

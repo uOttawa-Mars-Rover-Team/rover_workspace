@@ -352,6 +352,11 @@ class MArmControllerNode(Node):
         default_val: T | None = None,
         logging: bool = True,
     ) -> T:
+        """
+        Helper function to declare and get the value of a ROS launch parameter,
+        including support for default values.
+        """
+
         self.declare_parameter(param_name, param_type)
 
         if default_val is None:

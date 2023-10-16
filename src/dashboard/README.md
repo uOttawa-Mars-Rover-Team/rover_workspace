@@ -56,10 +56,10 @@ npm install
 
 ### Development
 
-To run the React app:
+To run the React/Vite app:
 
 ```bash
-npm start
+npm run dev
 ```
 
 ### Production (or when we want optimal performance)
@@ -70,10 +70,10 @@ Build the application:
 npm run build
 ```
 
-Then serve the application (run a local HTTP server serving the build):
+Then serve the application (run a local HTTP server serving the build - **this is meant to preview the build, it's not meant to act as a production server**):
 
 ```bash
-npm run serve
+npm run preview
 ```
 
 ### Docker
@@ -88,7 +88,7 @@ docker-compose up
 
 ## Development
 
-A [React](https://reactjs.org/) web application communicating with ROS ([ROSLIBjs documentation](http://robotwebtools.org/jsdoc/roslibjs/current/index.html)) using the Ant Design ([Ant Design documentation](https://ant.design/components/overview/)) React UI library.
+A [React](https://react.dev/) web application communicating with ROS ([ROSLIBjs documentation](http://robotwebtools.org/jsdoc/roslibjs/current/index.html)) using the Ant Design ([Ant Design documentation](https://ant.design/components/overview/)) React UI library.
 
 Project structure:
 
@@ -123,7 +123,3 @@ Project structure:
   ```bash
   echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
   ```
-
-```
-
-```

@@ -2,16 +2,20 @@ import os
 import pathlib
 import re
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TypeVar
 
 import numpy as np
+import rclpy
 from cv_bridge import CvBridge, CvBridgeError
 from numpy.typing import NDArray
 from rclpy.impl.implementation_singleton import rclpy_implementation as _rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.signals import SignalHandlerGuardCondition
 from rclpy.utilities import timeout_sec_to_nsec
 from sensor_msgs.msg import CompressedImage, Image
+
+T = TypeVar("T")
 
 
 class CameraNode(Node):
@@ -235,3 +239,30 @@ class CameraNode(Node):
                 f"Caught an exception when awaiting single message from topic: {topic}. Error message: {e}."
             )
             return False, None
+
+    def get_param(
+        self,
+        param_name: str,
+        param_type: rclpy.Parameter.Type,
+        default_val: T | None = None,
+        logging: bool = True,
+    ) -> T:
+        """
+        Helper function to declare and get the value of a ROS launch parameter,
+        including support for default values.
+        """
+
+        self.declare_parameter(param_name, param_type)
+
+        if default_val is None:
+            param_val = self.get_parameter(param_name).value
+        else:
+            default_param = Parameter(param_name, param_type, default_val)
+            param_val = self.get_parameter_or(param_name, default_param).value
+
+        assert param_val is not None, "The parameter received was None."
+
+        if logging:
+            self.get_logger().info(f"Using {param_name}: {param_val}")
+
+        return param_val

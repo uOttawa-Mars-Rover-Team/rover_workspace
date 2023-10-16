@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import signal
 import threading
 import time
@@ -78,7 +80,7 @@ class MArmControllerNode(Node):
 
         # Joy subscriber
         self.joy_subscriber = self.create_subscription(
-            Joy, "arm_joy", self.joy_control_callback, 10
+            Joy, "arm_joy", self.joy_control_callback, 20
         )
         self.get_logger().info(
             f"Subscribing to messages from: {self.joy_subscriber.topic_name}"
@@ -113,7 +115,6 @@ class MArmControllerNode(Node):
         try:
             self.connecting = True
             self.get_logger().info("Establishing serial connection...")
-            signal.setitimer(signal.ITIMER_REAL, 0, 0)
             signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
             self.ARDUINO = serial.Serial(
                 port=self.serial_device,
@@ -143,14 +144,12 @@ class MArmControllerNode(Node):
         Emergency stop
         """
         try:
-            signal.setitimer(signal.ITIMER_REAL, 0, 0)
             signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
-            # self.ARDUINO.write("stop;!")
+            self.ARDUINO.write(bytes("stop;!",'utf-8'))
             signal.setitimer(signal.ITIMER_REAL, 0, 0)
 
             self.get_logger().info("Movement msg to serial: stop;!")
             self.connecting = False
-            self.ARDUINO.close()
         except:
             self.get_logger().warn(
                 f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s"
@@ -174,29 +173,18 @@ class MArmControllerNode(Node):
         """
         while self.run:
             if not self.connecting and self.ARDUINO.in_waiting:
-                byte_chunk = self.ARDUINO.read_until("!")
-                self.get_logger().info(f"READ: {byte_chunk[:-1]}")
-        # os.kill(os.getpid(), 9)
-
-    def read_serial(self):
-        """
-        Reads all characters on the serial port and returns them
-        """
-        # read_buffer = b""
-        while not self.connecting:
-            byte_chunk = self.ARDUINO.read_until("!")
-            break
-        return byte_chunk[:-1]  # slice last delimiter byte
+                byte_chunk = self.ARDUINO.read_until(b'!')
+                self.get_logger().info(byte_chunk[:-1])
+        os.kill(os.getpid(), 9)
 
     def write_serial(self):
         """
         Executes derived movement from the Joy (usually "/joy") topic
         """
-        if not self.connecting and self.ARDUINO.writable():
+        if not self.connecting:
             try:
-                signal.setitimer(signal.ITIMER_REAL, 0, 0)
                 signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
-                self.ARDUINO.write(self.movement)
+                self.ARDUINO.write(bytes(self.movement,'utf-8'))
                 self.get_logger().info(f"Movement msg to serial: {self.movement}")
                 signal.setitimer(signal.ITIMER_REAL, 0, 0)
             except:
@@ -204,7 +192,6 @@ class MArmControllerNode(Node):
                 self.get_logger().warn("Connection Error: could not write serial")
                 signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
         else:
-            signal.setitimer(signal.ITIMER_REAL, 0, 0)
             signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
 
     def joy_control_callback(self, message: Joy) -> None:
@@ -222,25 +209,25 @@ class MArmControllerNode(Node):
         elif not self.connecting:
             # Map: [-1.0, 1.0] -> [0.0, 2.0]
             if axes_values.speed_axis < 0:
-                self.SPEED = 1 - round(
+                self.speed = 1 - round(
                     abs(axes_values.speed_axis), self.ROUND_PRECISION
                 )
             else:
-                self.SPEED = 1 + round(axes_values.speed_axis, self.ROUND_PRECISION)
-            self.SPEED /= 2
+                self.speed = 1 + round(axes_values.speed_axis, self.ROUND_PRECISION)
+            self.speed /= 2
 
             # Speed toggles, 50%, 100%, 150% & 200%
-            if btn_values.lowest_speed_btn and self.MULTIPLIER != 0.25:
-                self.MULTIPLIER = 0.25
+            if btn_values.lowest_speed_btn and self.multiplier != 0.25:
+                self.multiplier = 0.25
                 self.get_logger().info("Speed multiplier changed to 25%")
-            elif btn_values.second_speed_btn and self.MULTIPLIER != 0.5:
-                self.MULTIPLIER = 0.5
+            elif btn_values.second_speed_btn and self.multiplier != 0.5:
+                self.multiplier = 0.5
                 self.get_logger().info("Speed multiplier changed to 50%")
-            elif btn_values.third_speed_btn and self.MULTIPLIER != 0.75:
-                self.MULTIPLIER = 0.75
+            elif btn_values.third_speed_btn and self.multiplier != 0.75:
+                self.multiplier = 0.75
                 self.get_logger().info("Speed multiplier changed to 75%")
-            elif btn_values.norm_speed_btn and self.MULTIPLIER != 1.0:
-                self.MULTIPLIER = 1.0
+            elif btn_values.norm_speed_btn and self.multiplier != 1.0:
+                self.multiplier = 1.0
                 self.get_logger().info("Speed multiplier changed to 100%")
 
             # Checking all axes are stationary (less than deadband)
@@ -248,7 +235,7 @@ class MArmControllerNode(Node):
             for name, value in axes_values._asdict().items():
                 axes_values.speed_axis
                 # Ignore speed axis
-                if name != "speed_axis" and abs(value) > self.DEADBAND:
+                if name != "speed_axis" and abs(value) > self.deadband:
                     axes_stationary = False
                     break
 
@@ -263,7 +250,7 @@ class MArmControllerNode(Node):
             # If both axes & buttons are untouched or if speed dial's low, send the stop cmd
             # Or ignore all conditions and send stop if the force stop button is pressed
             stop_condition = (axes_stationary and buttons_unpressed) or (
-                self.SPEED <= self.SPEED_DEADBAND
+                self.speed <= self.SPEED_DEADBAND
             )
             if ((self.partsInMotion[-1] != "stop;!") & stop_condition) or (
                 axes_stationary and btn_values.force_stop_btn
@@ -273,13 +260,13 @@ class MArmControllerNode(Node):
                 self.write_serial()
 
             # At least an axis or button pressed while speed > speed threshold
-            elif self.SPEED > self.SPEED_DEADBAND:
-                self.SPEED *= self.MULTIPLIER
-                tmp_speed = int(self.ACTUATOR_CAP * self.SPEED)
+            elif self.speed > self.SPEED_DEADBAND:
+                self.speed *= self.multiplier
+                tmp_speed = int(self.actuator_cap * self.speed)
 
                 # Arm & forearm
                 tmp_axis = axes_values.actuator
-                if abs(tmp_axis) > self.DEADBAND:
+                if abs(tmp_axis) > self.deadband:
                     if btn_values.actuator_hold_btn:
                         self.movement = "L1;"
                     else:
@@ -298,14 +285,14 @@ class MArmControllerNode(Node):
                             self.movement += str(int(tmp_speed)) + ";!"
                         self.write_serial()
 
-                self.SPEED *= self.MOTOR_CAP  # All below parts have motor cap
+                self.speed *= self.MOTOR_CAP  # All below parts have motor cap
                 tmp_speed = (
-                    int(self.SPEED) >> 1
+                    int(self.speed) >> 1
                 )  # WR has ~1/2 speed mult.; equiv to >> 1
 
                 # Wrist Roll
                 tmp_axis = axes_values.wrist_roll
-                if abs(tmp_axis) > self.DEADBAND:
+                if abs(tmp_axis) > self.deadband:
                     self.movement = "WR;"
                     if self.movement not in self.partsInMotion:
                         self.partsInMotion.append(self.movement)
@@ -322,7 +309,7 @@ class MArmControllerNode(Node):
 
                 # Wrist Pitch
                 tmp_axis = axes_values.wrist_pitch
-                if abs(tmp_axis) > self.DEADBAND:
+                if abs(tmp_axis) > self.deadband:
                     self.movement = "WP;"
                     if self.movement not in self.partsInMotion:
                         self.partsInMotion.append(self.movement)
@@ -347,7 +334,7 @@ class MArmControllerNode(Node):
 
                 # Tower
                 tmp_axis = axes_values.tower
-                if abs(tmp_axis) > self.DEADBAND:
+                if abs(tmp_axis) > self.deadband:
                     self.movement = "TW;"
                     if self.movement not in self.partsInMotion:
                         self.partsInMotion.append(self.movement)

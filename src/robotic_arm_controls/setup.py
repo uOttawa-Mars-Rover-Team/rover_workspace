@@ -41,8 +41,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "ik_arm_controls = robotic_arm_controls.IK_arm_controls:main",
-            "m_arm_controls = robotic_arm_controls.M_arm_controls:main",
+            "ik_arm_controls = robotic_arm_controls.ik_arm_controls:main",
+            "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
         ],
     },
 )

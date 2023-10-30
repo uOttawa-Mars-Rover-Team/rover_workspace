@@ -21,7 +21,7 @@ import {
   NodeIndexOutlined,
 } from "@ant-design/icons";
 import { useContext, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import LogoImage from "../../../assets/images/logo.png";
 import { RosContext, DashboardContext } from "../../../contexts";
@@ -39,7 +39,7 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
     useContext(RosContext);
   const { dashboardConfig } = useContext(DashboardContext);
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const updateWidth = () => setWindowWidth(window.innerWidth);
@@ -87,7 +87,7 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
               <Menu
                 style={{ borderRadius: 6, borderWidth: 0 }}
                 onClick={({ key }) => {
-                  history.push(`/${key}`);
+                  navigate(`/${key}`);
                 }}
                 selectedKeys={[menuKey]}
               >

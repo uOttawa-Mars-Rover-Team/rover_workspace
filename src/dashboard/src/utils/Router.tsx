@@ -1,4 +1,4 @@
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import {
   Overview,
   ScienceMission,
@@ -9,26 +9,20 @@ import {
 
 const Router: React.FC = () => (
   <BrowserRouter>
-    <Switch>
-      <Route path="/autonomousNavigationMission">
-        <AutonomousNavigationMission />
-      </Route>
-      <Route path="/equipmentServicingMission">
-        <EquipmentServicingMission />
-      </Route>
-      <Route path="/deliveryMission">
-        <DeliveryMission />
-      </Route>
-      <Route path="/scienceMission">
-        <ScienceMission />
-      </Route>
-      <Route path="/overview">
-        <Overview />
-      </Route>
-      <Route path="/">
-        <Redirect to="/overview" />
-      </Route>
-    </Switch>
+    <Routes>
+      <Route
+        path="/autonomousNavigationMission"
+        element={<AutonomousNavigationMission />}
+      />
+      <Route
+        path="/equipmentServicingMission"
+        element={<EquipmentServicingMission />}
+      />
+      <Route path="/deliveryMission" element={<DeliveryMission />} />
+      <Route path="/scienceMission" element={<ScienceMission />} />
+      <Route path="/overview" element={<Overview />} />
+      <Route path="/" element={<Navigate to="/overview" replace />} />
+    </Routes>
   </BrowserRouter>
 );
 

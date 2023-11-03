@@ -18,6 +18,7 @@ import { MapContainer } from "react-leaflet";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { DraggableMarker } from "./Markers";
 import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
+import * as config from "../../dashboardConfig.json";
 
 type NavigationType = {
   precision?: number;
@@ -31,7 +32,8 @@ export const defaultPrecision = 5;
 const Navigation: React.FC<NavigationType> = ({
   precision = defaultPrecision,
 }) => {
-  const initPosition = new Leaflet.LatLng(45.4203222, -75.6803941);
+  const { latitude, longitude } = config.overview.baseStationInitPosition;
+  const initPosition = new Leaflet.LatLng(latitude, longitude);
   const initZoom = 18;
   // Define URL templates according to the Leaflet TileLayer style to get map
   // tile data from Google Maps

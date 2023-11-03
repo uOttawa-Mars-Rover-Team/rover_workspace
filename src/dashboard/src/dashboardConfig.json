@@ -43,6 +43,10 @@
           "stop": "stop_video"
         }
       }
+    },
+    "baseStationInitPosition": {
+      "latitude": 45.4203222,
+      "longitude": -75.6803941
     }
   }
 }

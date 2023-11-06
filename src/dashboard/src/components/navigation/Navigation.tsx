@@ -40,10 +40,12 @@ export const defaultPrecision = 5;
 const Navigation: React.FC<NavigationType> = ({
   precision = defaultPrecision,
 }) => {
+  // Basic constants
   const { latitude, longitude } =
     config.overview.navigation.baseStationInitPosition;
   const initPosition = new Leaflet.LatLng(latitude, longitude);
   const initZoom = 18;
+
   // Define URL templates according to the Leaflet TileLayer style to get map
   // tile data from Google Maps
   const satelliteTileLayer =
@@ -52,21 +54,30 @@ const Navigation: React.FC<NavigationType> = ({
   const [useTerrain, setUseTerrain] = useState(false);
   const activeTileLayer = useTerrain ? terrainTileLayer : satelliteTileLayer;
 
+  // Use a the leaflet map component's ref to allow it to be manipulated
   const [map, setMap] = useState<null | Leaflet.Map>(null);
+  // Keep track of coordinates for the center of the map, which will be
+  // displayed to the user
   const [mapPosition, setMapPosition] = useState(initPosition);
   const onMoveCallback = useCallback(() => {
     if (map) {
       setMapPosition(map.getCenter());
     }
   }, [map]);
-  const mapCoords = `${mapPosition.lat.toFixed(
-    precision
-  )}, ${mapPosition.lng.toFixed(precision)}`;
+  useEffect(() => {
+    if (map) {
+      map.on("move", onMoveCallback);
+      return () => {
+        map.off("move", onMoveCallback);
+      };
+    }
+  }, [map]);
 
   const roverIcon = new Leaflet.DivIcon({
     html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
   });
-  // Track the position of the rover, using ROS topic subscription to update it's position
+  // Track the position of the rover, using ROS topic subscription to update
+  // it's position
   const [roverPosition, setRoverPosition] = useState<Leaflet.LatLngTuple>([
     initPosition.lat,
     initPosition.lng,
@@ -93,7 +104,10 @@ const Navigation: React.FC<NavigationType> = ({
     }
   }, [rosClient]);
 
-  // Draggable markers
+  // Keep track of the draggable markers on the map (which can be added by the
+  // user), including the base station marker. An object is used instead of an
+  // array to allow for the keys to be used to access markers for
+  // cleanup/deletion. The object's keys increment and aren't reused.
   const [markers, setMarkers] = useState<markerObjectListType>({
     0: (
       <DraggableMarker
@@ -108,6 +122,7 @@ const Navigation: React.FC<NavigationType> = ({
     ),
   });
   const [numMarkers, setNumMarkers] = useState(Object.keys(markers).length);
+  // Helper function to allow a marker to remove itself from the map if specified by the user
   const markerDeleteCallbackGenerator = (markerIndex: number) => {
     return () => {
       const newMarkers = markers;
@@ -118,14 +133,8 @@ const Navigation: React.FC<NavigationType> = ({
 
   const [form] = Form.useForm<{ lat: string; lng: string; title: string }>();
 
-  useEffect(() => {
-    if (map) {
-      map.on("move", onMoveCallback);
-      return () => {
-        map.off("move", onMoveCallback);
-      };
-    }
-  }, [map]);
+  // Allow for map tiles to be downloaded, allowing for the map to be accessed
+  // offline
   useEffect(() => {
     if (map) {
       const offlineTileLayer = tileLayerOffline(activeTileLayer, {
@@ -273,7 +282,9 @@ const Navigation: React.FC<NavigationType> = ({
             </Col>
             <Col>
               Map Center:{" "}
-              <Typography.Text copyable>{mapCoords}</Typography.Text>
+              <Typography.Text copyable>{`${mapPosition.lat.toFixed(
+                precision
+              )}, ${mapPosition.lng.toFixed(precision)}`}</Typography.Text>
             </Col>
             <Col>
               Rover Position:{" "}

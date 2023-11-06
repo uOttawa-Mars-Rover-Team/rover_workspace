@@ -14,11 +14,13 @@ import {
   Form,
   Input,
 } from "antd";
-import { MapContainer } from "react-leaflet";
-import { Fragment, useCallback, useEffect, useState } from "react";
-import { DraggableMarker } from "./Markers";
+import { MapContainer, Marker } from "react-leaflet";
+import { Fragment, useCallback, useContext, useEffect, useState } from "react";
+import { DraggableMarker, MarkerPopup } from "./Markers";
 import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 import * as config from "../../dashboardConfig.json";
+import { RosContext } from "../../contexts";
+import ROSLIB from "roslib";
 
 type NavigationType = {
   precision?: number;
@@ -26,13 +28,20 @@ type NavigationType = {
 type markerObjectListType = {
   [key: number]: JSX.Element;
 };
+type GPSMessage = {
+  fix: number;
+  satellites: number;
+  latitude: number;
+  longitude: number;
+};
 
 export const defaultPrecision = 5;
 
 const Navigation: React.FC<NavigationType> = ({
   precision = defaultPrecision,
 }) => {
-  const { latitude, longitude } = config.overview.baseStationInitPosition;
+  const { latitude, longitude } =
+    config.overview.navigation.baseStationInitPosition;
   const initPosition = new Leaflet.LatLng(latitude, longitude);
   const initZoom = 18;
   // Define URL templates according to the Leaflet TileLayer style to get map
@@ -54,6 +63,37 @@ const Navigation: React.FC<NavigationType> = ({
     precision
   )}, ${mapPosition.lng.toFixed(precision)}`;
 
+  const roverIcon = new Leaflet.DivIcon({
+    html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
+  });
+  // Track the position of the rover, using ROS topic subscription to update it's position
+  const [roverPosition, setRoverPosition] = useState<Leaflet.LatLngTuple>([
+    initPosition.lat,
+    initPosition.lng,
+  ]);
+  const { rosClient } = useContext(RosContext);
+  useEffect(() => {
+    if (rosClient) {
+      const topicName = config.overview.navigation.gpsTopicName;
+      const topic = new ROSLIB.Topic({
+        ros: rosClient,
+        name: topicName,
+        messageType: "general_interfaces/msg/GPS",
+      });
+      topic.subscribe((msg) => {
+        const message = msg as GPSMessage;
+        if (message.fix == 1) {
+          setRoverPosition([message.latitude!, message.longitude!]);
+        }
+      });
+
+      return () => {
+        topic.unsubscribe();
+      };
+    }
+  }, [rosClient]);
+
+  // Draggable markers
   const [markers, setMarkers] = useState<markerObjectListType>({
     0: (
       <DraggableMarker
@@ -62,17 +102,6 @@ const Navigation: React.FC<NavigationType> = ({
         icon={
           new Leaflet.DivIcon({
             html: '<i style="color:purple;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-house"></i>',
-          })
-        }
-      />
-    ),
-    1: (
-      <DraggableMarker
-        initPosition={initPosition}
-        title="Rover"
-        icon={
-          new Leaflet.DivIcon({
-            html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
           })
         }
       />
@@ -148,9 +177,9 @@ const Navigation: React.FC<NavigationType> = ({
     {
       key: "1",
       label: <b>Map</b>,
-      extra: <div>Rover position: </div>,
       children: (
         <div style={{ height: "46em" }}>
+          {/* Leaflet map */}
           <MapContainer
             center={initPosition}
             zoom={initZoom}
@@ -159,12 +188,23 @@ const Navigation: React.FC<NavigationType> = ({
             }}
             ref={setMap}
           >
+            {/* Rover marker */}
+            <Marker position={roverPosition} title="Rover" icon={roverIcon}>
+              <MarkerPopup
+                title="Rover"
+                position={
+                  new Leaflet.LatLng(roverPosition[0], roverPosition[1])
+                }
+              />
+            </Marker>
+            {/* Draggable markers */}
             {Object.keys(markers).map((markerNum, index) => {
               return (
                 <Fragment key={index}>{markers[Number(markerNum)]}</Fragment>
               );
             })}
           </MapContainer>
+          {/* Bottom info. bar */}
           <Row gutter={[12, 12]} justify="space-between" align="middle">
             <Col>
               <Form
@@ -234,6 +274,14 @@ const Navigation: React.FC<NavigationType> = ({
             <Col>
               Map Center:{" "}
               <Typography.Text copyable>{mapCoords}</Typography.Text>
+            </Col>
+            <Col>
+              Rover Position:{" "}
+              <Typography.Text copyable>
+                {`${roverPosition[0].toFixed(
+                  defaultPrecision
+                )}, ${roverPosition[1].toFixed(defaultPrecision)}`}
+              </Typography.Text>
             </Col>
             <Col>
               <Space align="center">

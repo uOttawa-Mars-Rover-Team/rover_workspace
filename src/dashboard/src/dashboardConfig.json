@@ -44,9 +44,12 @@
         }
       }
     },
-    "baseStationInitPosition": {
-      "latitude": 45.4203222,
-      "longitude": -75.6803941
+    "navigation": {
+      "baseStationInitPosition": {
+        "latitude": 45.4203222,
+        "longitude": -75.6803941
+      },
+      "gpsTopicName": "/GPS"
     }
   }
 }

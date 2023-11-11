@@ -43,6 +43,7 @@ setup(
         "console_scripts": [
             "ik_arm_controls = robotic_arm_controls.ik_arm_controls:main",
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
+            "template_node = robotic_arm_controls.template_pub_sub:main",
         ],
     },
 )

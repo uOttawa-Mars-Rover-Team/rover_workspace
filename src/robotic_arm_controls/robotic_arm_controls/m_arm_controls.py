@@ -230,6 +230,19 @@ class MArmControllerNode(Node):
                 self.multiplier = 1.0
                 self.get_logger().info("Speed multiplier changed to 100%")
 
+            if btn_values.btn_7:
+                self.movement += "L1;1;600;!"
+                self.write_serial()
+            elif btn_values.btn_9:
+                self.movement += "L1;-1;600;!"
+                self.write_serial()
+            if btn_values.btn_8:
+                self.movement += "L2;1;600;!"
+                self.write_serial()
+            elif btn_values.btn_10:
+                self.movement += "L2;-1;600;!"
+                self.write_serial()
+
             # Checking all axes are stationary (less than deadband)
             axes_stationary = True
             for name, value in axes_values._asdict().items():

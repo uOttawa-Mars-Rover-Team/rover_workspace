@@ -230,19 +230,6 @@ class MArmControllerNode(Node):
                 self.multiplier = 1.0
                 self.get_logger().info("Speed multiplier changed to 100%")
 
-            if btn_values.btn_7:
-                self.movement += "L1;1;600;!"
-                self.write_serial()
-            elif btn_values.btn_9:
-                self.movement += "L1;-1;600;!"
-                self.write_serial()
-            if btn_values.btn_8:
-                self.movement += "L2;1;600;!"
-                self.write_serial()
-            elif btn_values.btn_10:
-                self.movement += "L2;-1;600;!"
-                self.write_serial()
-
             # Checking all axes are stationary (less than deadband)
             axes_stationary = True
             for name, value in axes_values._asdict().items():
@@ -300,30 +287,30 @@ class MArmControllerNode(Node):
 
                 self.speed *= self.MOTOR_CAP  # All below parts have motor cap
                 tmp_speed = (
-                    int(self.speed) >> 1
+                    int(self.speed) >> 0
                 )  # WR has ~1/2 speed mult.; equiv to >> 1
 
                 # Wrist Roll
                 tmp_axis = axes_values.wrist_roll
                 if abs(tmp_axis) > self.deadband:
-                    self.movement = "WR;"
+                    self.movement = "L1;"
                     if self.movement not in self.partsInMotion:
                         self.partsInMotion.append(self.movement)
                         if tmp_axis < 0:
                             self.movement += "1;"
                         else:
                             self.movement += "-1;"
-                        self.movement += str(int(tmp_speed)) + ";!"
+                        self.movement += "600;!"
                         self.write_serial()
 
                 # WP & EE have ~1/4 speed multiplier; equiv to >> 2
-                tmp_speed >>= 1
-                tmp_str = str(int(tmp_speed)) + ";!"
+                tmp_speed >>= 0
+                tmp_str = "600;!"
 
                 # Wrist Pitch
                 tmp_axis = axes_values.wrist_pitch
                 if abs(tmp_axis) > self.deadband:
-                    self.movement = "WP;"
+                    self.movement = "L2;"
                     if self.movement not in self.partsInMotion:
                         self.partsInMotion.append(self.movement)
                         if tmp_axis < 0:

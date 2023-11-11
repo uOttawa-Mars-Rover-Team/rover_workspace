@@ -46,7 +46,11 @@ Make sure that **Node.js** and **npm** is installed.
 
 ## Run the code
 
-> Make sure the ROS webserver is running. To run it, make sure _roscore_ is running by running `roscore`, and launch the webserver by executing this command in another terminal from the root of the rover workspace `roslaunch src/dashboard/websocket.launch`.
+Running the dashboard involves running a Vite dev server which serves up our React dashboard. For the dashboard to interface with ROS (nodes, topics, etc.) using Javascript/Typescript, it interfaces with a server (which uses websockets) launchable from the `rosbridge_server` package.
+
+To run the dashboard, run the Vite dev server and optionally (if you want to interface with ROS), run the server from `rosbridge_server`.
+
+### Installation
 
 At the root of **_this_** directory, install the dependencies of the dashboard:
 
@@ -56,10 +60,16 @@ npm install
 
 ### Development
 
-To run the React/Vite app:
+Run the React/Vite app:
 
 ```bash
 npm run dev
+```
+
+(Optional, this is only required for the dashboard to interface with ROS) In a new terminal, run the server from the `rosbridge_server` package:
+
+```bash
+./websocket.sh
 ```
 
 ### Production (or when we want optimal performance)

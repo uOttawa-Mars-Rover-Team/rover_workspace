@@ -1,6 +1,6 @@
 import { Col, Row, Space } from "antd";
 import * as Leaflet from "leaflet";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Marker, Popup, MarkerProps, PopupProps } from "react-leaflet";
 import { defaultPrecision } from "./Navigation";
 
@@ -61,10 +61,6 @@ export const DynamicMarker: React.FC<DynamicMarkerProps> = ({
   title,
   icon,
 }) => {
-  useEffect(() => {
-    console.log("wowo!");
-  }, [position]);
-
   // Omit the icon prop altogether if it isn't a valid Leaflet.DivIcon. It seems
   // as though passing in an undefined value throws errors that cause the page
   // to not load (even though Typescript indicates it's a valid prop value)

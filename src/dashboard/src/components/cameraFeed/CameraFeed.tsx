@@ -59,33 +59,23 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
 
   useEffect(() => {
     if (rosClient) {
-      if (messageType === "sensor_msgs/Image") {
-        setCameraState(CameraState.Connecting);
-        setImage(`http://0.0.0.0:8080/stream?topic=${topicName}`);
+      setCameraState(CameraState.Connecting);
+      let topic = new ROSLIB.Topic({
+        ros: rosClient!,
+        name: topicName,
+        messageType,
+      });
+
+      topic.subscribe((message) => {
         setCameraState(CameraState.Connected);
+        // @ts-ignore
+        setImage("data:image/jpg;base64," + message.data);
+      });
 
-        return () => {
-          setCameraState(CameraState.Disconnected);
-        };
-      } else {
-        setCameraState(CameraState.Connecting);
-        let topic = new ROSLIB.Topic({
-          ros: rosClient!,
-          name: topicName,
-          messageType,
-        });
-
-        topic.subscribe((message) => {
-          setCameraState(CameraState.Connected);
-          // @ts-ignore
-          setImage("data:image/jpg;base64," + message.data);
-        });
-
-        return () => {
-          setCameraState(CameraState.Disconnected);
-          topic.unsubscribe();
-        };
-      }
+      return () => {
+        setCameraState(CameraState.Disconnected);
+        topic.unsubscribe();
+      };
     }
   }, [topicName, messageType, rosClient]);
 

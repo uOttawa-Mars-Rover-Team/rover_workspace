@@ -8,6 +8,7 @@ def generate_launch_description():
             Node(
                 package="usb_cam",
                 executable="usb_cam_node_exe",
+                parameters=[{"pixel_format": "mjpeg2rgb"}],
             ),
         ]
     )

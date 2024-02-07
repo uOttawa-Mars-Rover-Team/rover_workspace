@@ -50,7 +50,10 @@ def generate_launch_description():
                 parameters=[
                     {"block_duration": 5},
                 ],
-                remappings=[("cmd_vel", "turtle1/cmd_vel")],
+                remappings=[
+                    ("teleop/cmd_vel", "cmd_vel"),
+                    ("cmd_vel", "turtle1/cmd_vel")
+                ],
             ),
             Node(package="turtlesim", executable="turtlesim_node", name="sim"),
         ]

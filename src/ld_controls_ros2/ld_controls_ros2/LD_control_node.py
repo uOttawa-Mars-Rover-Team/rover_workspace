@@ -10,11 +10,11 @@ class soilCollection(Node):
         self.soilCollectionPub = self.create_publisher(String, "soil_collection", 10)
         self.vacuumTubeControlPub = self.create_publisher(String, "vacuum_tube_control", 10)
         self.weatherStationPub = self.create_publisher(Empty, "weather_station", 10)
-        self.soilTestingPub = self.create_publisher(String, "soil_testing", 10)
+        self.soilTestingPub = self.creat_publisher(String, "soil_testing", 10)
 
         #Subscribers Setup:
-        #self.soilTestingSub = self.create_subscription(String, "soil_data", 10)
-        #self.weatherStationSub = self.create_subscription(String, "weather_data", 10)
+        self.soilTestingSub = self.create_subscription(String, "soil_data", 10)
+        self.weatherStationSub = self.create_subscription(String, "weather_data", 10)
 
     def collectCache(self):
         msg = String()
@@ -37,25 +37,22 @@ class soilCollection(Node):
         msg = String()
         msg.data = "stop"
         self.vacuumTubeControlPub.publish(msg)
-    def onVac(self):
+    def toggleVac(self):
         msg = String()
-        msg.data = "on"
-        self.vacuumTubeControlPub.publish(msg)
-    def offVac(self):
-        msg = String()
-        msg.data = "off"
+        msg.data = "toggle"
         self.vacuumTubeControlPub.publish(msg)
 
     def collectWeatherData(self):
         self.weatherStationPub(Empty())
 
 
-def main(args=None):
+
+def initiate(args=None):
     rclpy.init(args=args)
     rclpy.spin(soilCollection())
     soilCollection.destroy_node()
     rclpy.shutdown()
-    
+
 
 if __name__ == '__main__':
-    main()
+    initiate()

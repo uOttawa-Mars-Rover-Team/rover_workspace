@@ -111,5 +111,5 @@ root = customtkinter.CTk()
 app(root)
 root.mainloop()
 
-if __name__ == '__main__':
+def main():
     LD_control_node.initiate()

@@ -48,3 +48,13 @@ class soilCollection(Node):
 
     def collectWeatherData(self):
         self.weatherStationPub(Empty())
+
+def main(args=None):
+    rclpy.init(args=args)
+    rclpy.spin(soilCollection())
+    soilCollection.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

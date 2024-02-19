@@ -6,7 +6,7 @@ from std_msgs.msg import Empty
 import sys
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget
 
-class soilCollection(node):
+class soilCollection(Node):
     def __init__(self):
         super().__init__("MCU_interface_node")
         #Publisher Setup:
@@ -51,3 +51,12 @@ class soilCollection(node):
 
     def collectWeatherData(self):
         self.weatherStationPub(Empty())
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    rclpy.spin(soilCollection())
+
+    soilCollection.destroy_node()
+    rclpy.shutdown()

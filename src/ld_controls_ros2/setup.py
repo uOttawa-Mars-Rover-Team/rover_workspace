@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'ld_controls_ROS2'
+package_name = 'ld_controls_ros2'
 
 setup(
     name=package_name,
@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+        	'LD_control_node = ld_controls_ros2.LD_control_node:main'
         ],
     },
 )

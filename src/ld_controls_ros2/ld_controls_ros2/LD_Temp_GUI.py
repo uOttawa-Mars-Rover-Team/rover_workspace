@@ -1,17 +1,17 @@
 from tkinter import *
 from tkinter import ttk
 import customtkinter
-import LD_control_node
-from LD_control_node import soilCollection
+from .LD_control_node import soilCollection
 
+soilCollectionNode = soilCollection.initiate()
 
 class app:
     def __init__(self, master):
-        self.master = master
-        self.master.geometry("900x500")
-        self.master.resizable(False, False)
-        self.master.title("HOSA Canada Marking Software")
-        self.home()
+    	self.master = master
+    	self.master.geometry("900x500")
+    	self.master.resizable(False, False)
+    	self.master.title("HOSA Canada Marking Software")
+    	self.home()
 
     def generalFrame(self):
         self.frame1 = customtkinter.CTkFrame(master = self.master, width= 880, height= 480, corner_radius= 5, fg_color="#404258", )
@@ -58,9 +58,9 @@ class app:
         self.weatherStationContolsTitle.insert("0.0", "Weather Station")
         self.weatherStationContolsTitle.configure(state = DISABLED)
 
-        self.soilCollectionButton = customtkinter.CTkButton(master = self.soilCollectionControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Collect Cache", command= soilCollection.collectCache)
+        self.soilCollectionButton = customtkinter.CTkButton(master = self.soilCollectionControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Collect Cache", command= soilCollectionNode.collectCache)
         self.soilCollectionButton.place(x = 10, y = 60)
-        self.soilDataButton = customtkinter.CTkButton(master = self.soilCollectionControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Soil Data", command= soilCollection.collectSoilData)
+        self.soilDataButton = customtkinter.CTkButton(master = self.soilCollectionControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Soil Data", command= soilCollectionNode.collectSoilData)
         self.soilDataButton.place(x = 10, y = 120)
 
         self.soilDataMoistureTitle = customtkinter.CTkTextbox(master = self.soilCollectionControls, width = 180, height = 50, font= ("CTkFont", 20), fg_color= "#474E68")
@@ -74,7 +74,7 @@ class app:
         self.soilDataTemperature = customtkinter.CTkTextbox(master = self.soilCollectionControls, width = 180, height = 50, font= ("CTkFont", 20), fg_color="#50577A")
         self.soilDataTemperature.place(x = 10, y = 320)
 
-        self.weatherDataButton = customtkinter.CTkButton(master = self.weatherStationContols, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Weather Data", command= soilCollection.collectWeatherData)
+        self.weatherDataButton = customtkinter.CTkButton(master = self.weatherStationContols, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Weather Data", command= soilCollectionNode.collectWeatherData)
         self.weatherDataButton.place(x = 10, y = 60)
 
         self.weatherTemperatureTitle = customtkinter.CTkTextbox(master = self.weatherStationContols, width = 180, height = 50, font= ("CTkFont", 15), fg_color= "#474E68")
@@ -101,15 +101,17 @@ class app:
         self.weatherUVLight = customtkinter.CTkTextbox(master = self.weatherStationContols, width = 180, height = 30, font= ("CTkFont", 15), fg_color="#50577A")
         self.weatherUVLight.place(x = 10, y = 320)
 
-        self.VacuumUpButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Up", command= soilCollection.moveVacUp)
+        self.VacuumUpButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Up", command= soilCollectionNode.moveVacUp)
         self.VacuumUpButton.place(x = 10, y = 60)
-        self.VacuumDownButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Down", command= soilCollection.moveVacDown)
+        self.VacuumDownButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Down", command= soilCollectionNode.moveVacDown)
         self.VacuumDownButton.place(x = 10, y = 120)
-        self.VacuumStartButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Toggle On/Off", command= soilCollection.toggleVac)
+        self.VacuumStartButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Toggle On/Off", command= soilCollectionNode.toggleVac)
         self.VacuumStartButton.place(x = 10, y = 180)
 root = customtkinter.CTk()
 app(root)
-root.mainloop()
 
 def main():
-    LD_control_node.initiate()
+    root.mainloop()
+    
+if __name__ == "__main__":
+	main()

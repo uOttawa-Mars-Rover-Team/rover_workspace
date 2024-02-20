@@ -10,7 +10,7 @@ class app:
     	self.master = master
     	self.master.geometry("900x500")
     	self.master.resizable(False, False)
-    	self.master.title("HOSA Canada Marking Software")
+    	self.master.title("Life Detection GUI")
     	self.home()
 
     def generalFrame(self):
@@ -27,12 +27,12 @@ class app:
         #self.logo = customtkinter.CTkImage(light_image=Image.open("images/logo.png"), size=(160, 160 * 0.37))
         #self.logoLabel = customtkinter.CTkLabel(master= self.frame1, image=self.logo, text='')
         #self.logoLabel.place(x = 20, y = 10)
-        self.title = customtkinter.CTkTextbox(master = self.frame1, width= 250, height= 60, font= ("CTkFont", 40, 'bold'), fg_color= "#474E68")
+        self.title = customtkinter.CTkTextbox(master = self.frame1, width= 250, height= 60, font= ("CTkFont", 30, 'bold'), fg_color= "#474E68")
         self.title.place(x = 20, y = 7)
         self.title.insert("0.0", "LD Controls")
-        self.event = customtkinter.CTkTextbox(master = self.frame1, width= 70, height= 20, font= ("CTkFont", 20, 'bold'), fg_color= "#474E68")
+        self.event = customtkinter.CTkTextbox(master = self.frame1, width= 70, height= 20, font= ("CTkFont", 10, 'bold'), fg_color= "#474E68")
         self.event.place(x = 760, y = 10)
-        self.event.insert("0.0", "Temp")
+        self.event.insert("0.0", "Test")
         self.event.configure(state = DISABLED)
         self.title.configure(state = DISABLED)
 
@@ -53,7 +53,7 @@ class app:
         self.soilTestingControlsTitle.place(x = 10, y = 7)
         self.soilTestingControlsTitle.insert("0.0", "Soil Testing")
         self.soilTestingControlsTitle.configure(state = DISABLED)
-        self.weatherStationContolsTitle = customtkinter.CTkTextbox(master = self.weatherStationContols, width= 180, height= 20, font= ("CTkFont", 20, 'bold'), fg_color= "#474E68")
+        self.weatherStationContolsTitle = customtkinter.CTkTextbox(master = self.weatherStationContols, width= 180, height= 15, font= ("CTkFont", 20, 'bold'), fg_color= "#474E68")
         self.weatherStationContolsTitle.place(x = 10, y = 7)
         self.weatherStationContolsTitle.insert("0.0", "Weather Station")
         self.weatherStationContolsTitle.configure(state = DISABLED)

@@ -8,8 +8,8 @@ soilCollectionNode = soilCollection.initiate()
 class app:
     def __init__(self, master):
     	self.master = master
-    	self.master.geometry("900x500")
-    	self.master.resizable(False, False)
+         self.master.geometry("900x500")
+        self.master.resizable(False, False)
     	self.master.title("HOSA Canada Marking Software")
     	self.home()
 

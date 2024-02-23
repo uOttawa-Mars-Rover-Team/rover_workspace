@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from std_msgs.msg import Empty
+import threading
 
 class soilCollection(Node):
     def __init__(self):
@@ -10,11 +11,10 @@ class soilCollection(Node):
         self.soilCollectionPub = self.create_publisher(String, "soil_collection", 10)
         self.vacuumTubeControlPub = self.create_publisher(String, "vacuum_tube_control", 10)
         self.weatherStationPub = self.create_publisher(Empty, "weather_station", 10)
-        self.soilTestingPub = self.creat_publisher(String, "soil_testing", 10)
-
+        self.soilTestingPub = self.create_publisher(String, "soil_testing", 10)
         #Subscribers Setup:
-        self.soilTestingSub = self.create_subscription(String, "soil_data", 10)
-        self.weatherStationSub = self.create_subscription(String, "weather_data", 10)
+        #self.soilTestingSub = self.create_subscription(String, "soil_data", 10)
+        #self.weatherStationSub = self.create_subscription(String, "weather_data", 10)
 
     def collectCache(self):
         msg = String()
@@ -43,15 +43,18 @@ class soilCollection(Node):
         self.vacuumTubeControlPub.publish(msg)
 
     def collectWeatherData(self):
-        self.weatherStationPub(Empty())
+        msg = Empty()
+        self.weatherStationPub.publish(msg)
+        
+    def initiate(args=None):
+    	rclpy.init(args=args)
+    	soilCollectionNode = soilCollection()
+    	thread = threading.Thread(target = rclpy.spin, args=[soilCollectionNode])
+    	thread.start()
+    	return soilCollectionNode
+    	
+    	#soilCollection.destroy_node()
+    	#rclpy.shutdown()
+    	#thread.join()
 
 
-def initiate(args=None):
-    rclpy.init(args=args)
-    rclpy.spin(soilCollection())
-    soilCollection.destroy_node()
-    rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    initiate()

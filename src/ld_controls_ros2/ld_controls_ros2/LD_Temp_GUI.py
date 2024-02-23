@@ -8,15 +8,9 @@ soilCollectionNode = soilCollection.initiate()
 class app:
     def __init__(self, master):
     	self.master = master
-<<<<<<< HEAD
-         self.master.geometry("900x500")
-        self.master.resizable(False, False)
-    	self.master.title("HOSA Canada Marking Software")
-=======
     	self.master.geometry("900x500")
     	self.master.resizable(False, False)
     	self.master.title("Life Detection GUI")
->>>>>>> aa4bee3f5cc40a4361910da824dcf6771c1be91e
     	self.home()
 
     def generalFrame(self):

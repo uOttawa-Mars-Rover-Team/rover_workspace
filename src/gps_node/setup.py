@@ -40,6 +40,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gps_node = gps_node.gps_node:main",
+            "gps_msg_test = gps_node.gps_msg_test:main",
         ],
     },
 )

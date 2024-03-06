@@ -76,12 +76,14 @@ class TemplateNode(Node):
         logging: bool = True,
     ) -> T:
 
+        # Must declare existence of parameter before retrieving it
         self.declare_parameter(param_name, param_type)
 
         if default_val is None:
             param_val = self.get_parameter(param_name).value
         else:
             default_param = Parameter(param_name, param_type, default_val)
+            # Returns parameter if it exists, else returns default_param
             param_val = self.get_parameter_or(param_name, default_param).value
 
         assert param_val is not None, "The parameter received was None."

@@ -23,6 +23,14 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmControl.msg"
   "msg/GPS.msg"
   "msg/IMU.msg"
+  "msg/PowerData.msg"
+  "msg/MotorData.msg"
+  "msg/DriveControl.msg"
+  "msg/ArmPose.msg"
+  "msg/ToggleMessage.msg"
+  "msg/ArmState.msg"
+  "msg/ArmError.msg"
+  "action/ZeroArm.action"
 )
 
 if(BUILD_TESTING)

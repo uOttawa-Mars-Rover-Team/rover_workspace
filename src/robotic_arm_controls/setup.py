@@ -42,8 +42,11 @@ setup(
     entry_points={
         "console_scripts": [
             "ik_arm_controls = robotic_arm_controls.ik_arm_controls:main",
+            "old_manual = robotic_arm_controls.old_manual:main",
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
             "template_node = robotic_arm_controls.template_pub_sub:main",
+            "toggler = robotic_arm_controls.toggler:main",
+            "router = robotic_arm_controls.router:main"
         ],
     },
 )

@@ -1,0 +1,14 @@
+<!--
+Launch file for the M_arm_controls.py node
+-->
+<launch>
+	<!-- Manual Arm Controls Node -->
+	<node pkg="robotic_arm_controls" exec="m_arm_controls" name="m_arm_controls" output="screen"
+	respawn="true">
+		<param name="serial_dev" value="/dev/ttyACM0" />
+		<param name="baudrate" type="int" value="115200" />
+		<param name="timeout_delay" type="float" value="0.5" />
+		<param name="deadband" type="float" value="0.35" />
+		<param name="actuator_cap" type="int" value="600" />
+	</node>
+</launch>

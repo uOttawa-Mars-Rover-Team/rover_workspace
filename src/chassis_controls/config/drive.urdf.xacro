@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="drive">
+
+    <xacro:arg name="use_gazebo" default="false"/>
+    <xacro:include filename="$(find chassis_controls)/urdf/rmm.urdf" />
+
+    <!-- Import control_xacro -->
+    <xacro:include filename="drive_ros2_control.xacro" />
+
+
+    <xacro:rmm_ros2_control 
+        name="DriveSystem"
+        use_gazebo="$(arg use_gazebo)"
+    />
+
+</robot>

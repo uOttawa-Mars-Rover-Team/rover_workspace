@@ -1,6 +1,7 @@
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 cmake_minimum_required(VERSION 3.8)
 project(chassis_controls)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -11,18 +12,31 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(general_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 
 add_executable(power_data src/power_data_publisher.cpp)
 add_executable(drive_control src/drive_control.cpp)
+
+add_library(
+    chassis_controls
+    SHARED
+    hardware/drive_hardware.cpp)
+target_compile_features(chassis_controls PUBLIC c_std_99 cxx_std_17)
+target_include_directories(chassis_controls PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
+    $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(chassis_controls PUBLIC pluginlib rclcpp_lifecycle hardware_interface rclcpp)
+
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 ament_target_dependencies(power_data rclcpp general_interfaces)
 ament_target_dependencies(drive_control rclcpp general_interfaces geometry_msgs)
-
-
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
+pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 
 install(TARGETS
   power_data
@@ -30,12 +44,22 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME})
 
 install(
-    DIRECTORY launch
+    DIRECTORY launch description
     DESTINATION share/${PROJECT_NAME})
 
 install(
     PROGRAMS scripts/can_start.sh
     DESTINATION lib/${PROJECT_NAME})
+
+install(
+    DIRECTORY hardware/include/
+    DESTINATION include/chassis_controls)
+
+install(TARGETS chassis_controls
+    EXPORT chassis_controls
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin)
 
 if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf") # Jetson TK1 / Pi
     set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm32)
@@ -66,4 +90,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+ament_export_targets(chassis_controls HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+    ament_cmake
+    rclcpp
+    general_interfaces
+    geometry_msgs
+    pluginlib
+    hardware_interface
+    rclcpp_lifecycle)
 ament_package()

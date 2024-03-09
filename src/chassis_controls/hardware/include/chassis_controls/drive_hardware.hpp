@@ -10,10 +10,7 @@
 #include <rclcpp/duration.hpp>
 #include <unordered_map>
 
-#include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
 #define Phoenix_No_WPI
-#include "ctre/Phoenix.h"
-#include "ctre/phoenix/unmanaged/Unmanaged.h"
 
 namespace chassis_controls {
 using CallbackReturn =
@@ -22,13 +19,15 @@ using CallbackReturn =
 class HARDWARE_INTERFACE_PUBLIC DriveSystem
     : public hardware_interface::SystemInterface {
 public:
-
   CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
 
   std::vector<hardware_interface::StateInterface>
   export_state_interfaces() override;
   std::vector<hardware_interface::CommandInterface>
   export_command_interfaces() override;
+
+  hardware_interface::CallbackReturn
+  on_activate(const rclcpp_lifecycle::State &previous_state) override;
 
   hardware_interface::return_type read(const rclcpp::Time &time,
                                        const rclcpp::Duration &period) override;
@@ -41,13 +40,23 @@ protected:
   std::vector<double> wheel_position_;
   std::vector<double> wheel_velocities_;
 
+  double read_rate_, update_rate_;
+
   std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
       {"position", {}}, {"velocity", {}}};
 
-  ctre::phoenix::motorcontrol::can::TalonSRX * front_right_;
-  ctre::phoenix::motorcontrol::can::TalonSRX * front_left_;
-  ctre::phoenix::motorcontrol::can::TalonSRX * rear_left_;
-  ctre::phoenix::motorcontrol::can::TalonSRX * rear_right_;
+  std::vector<ctre::phoenix::motorcontrol::can::TalonSRX *> talons_;
+
+  enum Wheels {
+    FL,
+    FR,
+    RR,
+    RL,
+    LAST,
+  };
+
+  double counts_per_rotation_;
+  double gear_ratio_;
 
 }; // class drive_system
 } // namespace chassis_controls

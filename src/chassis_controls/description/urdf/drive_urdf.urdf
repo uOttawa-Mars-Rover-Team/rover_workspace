@@ -4,47 +4,12 @@
     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
-    <xacro:include filename="gazebo_imu.xacro" />
-    <xacro:include filename="gazebo_2D_lidar.xacro" />
-    <xacro:include filename="ros2_control.xacro" />
+<!--<xacro:include filename="gazebo_imu.xacro" />
+<xacro:include filename="gazebo_2D_lidar.xacro" /> -->
     <xacro:property name="wheel_distance_center" value="0.7524"/>
     <xacro:property name="wheel_diameter" value="0.40601"/>
     <xacro:property name="wheel_width" value="0.18260"/>
-    <joint name="base_footprint_joint" type="fixed">
-        <origin xyz="0 0 0.001" rpy="0 0 0" />
-        <parent link="base_footprint" />
-        <child link="base_link" />
-    </joint>
-    <link name="base_footprint">
-        <inertial>
-            <origin xyz="0.0045313 -0.00073022 2.7991E-06" rpy="0 0 0" />
-            <mass value="1E-12" />
-            <inertia
-                ixx="1.6667E-23"
-                ixy="0"
-                ixz="-5.0154E-40"
-                iyy="1.6667E-23"
-                iyz="-1.0896E-50"
-                izz="1.6667E-23" />
-        </inertial>
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <geometry>
-                <mesh 
-                    filename="package://chassis_controls/meshes/visual/base_footprint.STL" />
-            </geometry>
-            <material name="">
-                <color rgba="0.79216 0.81961 0.93333 1" />
-            </material>
-        </visual>
-        <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <geometry>
-                <mesh
-                    filename="package://chassis_controls/meshes/visual/base_footprint.STL" />
-            </geometry>
-        </collision>
-    </link>
+
     <link name="base_link">
         <inertial>
             <origin xyz="-0.018756 0.0030187 0.29298" rpy="0 0 0" />
@@ -61,7 +26,7 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="package://chassis_controls//meshes/visual/base_link.STL" />
+                    filename="package://chassis_controls/description/meshes/visual/base_link.STL" />
             </geometry>
             <material name="">
 
@@ -72,15 +37,20 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="package://chassis_controls/meshes/visual/base_link.STL" />
+                    filename="package://chassis_controls/description/meshes/visual/base_link.STL" />
             </geometry>
         </collision>
     </link>
-    <joint name="base_joint" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <parent link="base_footprint" />
-        <child link="base_link" />
-        <axis xyz="0 0 0" />
+    <joint name="q1" type="continuous">
+        <origin xyz="0.41417 0.38597 0.19864" rpy="1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="FL_wheel" />
+        <axis xyz="0 0 -1" />
+        <limit
+            lower="0"
+            upper="0"
+            effort="0"
+            velocity="0" />
     </joint>
     <link name="FL_wheel">
         <inertial>
@@ -98,7 +68,7 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="package://chassis_controls/meshes/visual/FL_wheel.STL" />
+                    filename="package://chassis_controls/description/meshes/visual/FL_wheel.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.75294 0.75294 0.75294 1" />
@@ -107,20 +77,15 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/FL_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/FL_wheel.STL" />
             </geometry>
         </collision>
     </link>
-    <joint name="q1" type="continuous">
-        <origin xyz="0.41417 0.38597 0.19864" rpy="1.5708 0 0" />
+    <joint name="q2" type="continuous">
+        <origin xyz="0.41412 -0.38743 0.19844" rpy="1.5708 0 0" />
         <parent link="base_link" />
-        <child link="FL_wheel" />
+        <child link="FR_wheel" />
         <axis xyz="0 0 -1" />
-        <limit
-            lower="0"
-            upper="0"
-            effort="0"
-            velocity="0" />
     </joint>
     <link name="FR_wheel">
         <inertial>
@@ -138,7 +103,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/FR_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/FR_wheel.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.75294 0.75294 0.75294 1" />
@@ -147,14 +112,14 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/FR_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/FR_wheel.STL" />
             </geometry>
         </collision>
     </link>
-    <joint name="q2" type="continuous">
-        <origin xyz="0.41412 -0.38743 0.19844" rpy="1.5708 0 0" />
+    <joint name="q3" type="continuous">
+        <origin xyz="-0.40511 -0.38743 0.19864" rpy="1.5708 0 0" />
         <parent link="base_link" />
-        <child link="FR_wheel" />
+        <child link="RR_wheel" />
         <axis xyz="0 0 -1" />
     </joint>
     <link name="RR_wheel">
@@ -172,7 +137,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/RR_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/RR_wheel.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.75294 0.75294 0.75294 1" />
@@ -181,14 +146,14 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/RR_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/RR_wheel.STL" />
             </geometry>
         </collision>
     </link>
-    <joint name="q3" type="continuous">
-        <origin xyz="-0.40511 -0.38743 0.19864" rpy="1.5708 0 0" />
+    <joint name="q4" type="continuous">
+        <origin xyz="-0.40506 0.38597 0.19844" rpy="1.5708 0 0" />
         <parent link="base_link" />
-        <child link="RR_wheel" />
+        <child link="RL_wheel" />
         <axis xyz="0 0 -1" />
     </joint>
     <link name="RL_wheel">
@@ -207,7 +172,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/RL_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/RL_wheel.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.75294 0.75294 0.75294 1" />
@@ -216,14 +181,8 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://chassis_controls/meshes/visual/RL_wheel.STL" />
+                <mesh filename="package://chassis_controls/description/meshes/visual/RL_wheel.STL" />
             </geometry>
         </collision>
     </link>
-    <joint name="q4" type="continuous">
-        <origin xyz="-0.40506 0.38597 0.19844" rpy="1.5708 0 0" />
-        <parent link="base_link" />
-        <child link="RL_wheel" />
-        <axis xyz="0 0 -1" />
-    </joint>
 </robot>

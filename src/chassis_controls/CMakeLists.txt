@@ -15,6 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(xacro REQUIRED)
 
 add_executable(power_data src/power_data_publisher.cpp)
 add_executable(drive_control src/drive_control.cpp)
@@ -44,8 +45,9 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME})
 
 install(
-    DIRECTORY launch description
+    DIRECTORY launch description config
     DESTINATION share/${PROJECT_NAME})
+
 
 install(
     PROGRAMS scripts/can_start.sh
@@ -59,7 +61,7 @@ install(TARGETS chassis_controls
     EXPORT chassis_controls
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin)
+    RUNTIME DESTINATION lib)
 
 if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf") # Jetson TK1 / Pi
     set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm32)
@@ -77,6 +79,9 @@ target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so)
 target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so)
 target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so)
 
+target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so)
+target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so)
+target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -98,5 +103,6 @@ ament_export_dependencies(
     geometry_msgs
     pluginlib
     hardware_interface
-    rclcpp_lifecycle)
+    rclcpp_lifecycle
+    xacro)
 ament_package()

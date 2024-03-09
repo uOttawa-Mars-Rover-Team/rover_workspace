@@ -1,6 +1,12 @@
-#include "include/chassis_controls/drive_hardware.hpp"
+#include "hardware_interface/system_interface.hpp"
+#include <rclcpp_lifecycle/state.hpp>
+#define Phoenix_No_WPI
+#include "ctre/phoenix/motorcontrol/ControlMode.h"
+#include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
+#include "ctre/phoenix/unmanaged/Unmanaged.h"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
+#include "include/chassis_controls/drive_hardware.hpp"
 
 namespace chassis_controls {
 CallbackReturn
@@ -12,25 +18,6 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
     return CallbackReturn::ERROR;
   }
 
-  // assign controllers by CANid
-  front_right_ = new ctre::phoenix::motorcontrol::can::TalonSRX(10);
-  front_left_ = new ctre::phoenix::motorcontrol::can::TalonSRX(20);
-  rear_right_ = new ctre::phoenix::motorcontrol::can::TalonSRX(40);
-  rear_left_ = new ctre::phoenix::motorcontrol::can::TalonSRX(30);
-
-  // inverted motor
-  front_right_->SetInverted(true);
-
-  // bring up sensors
-  front_left_->ConfigSelectedFeedbackSensor(
-      FeedbackDevice::CTRE_MagEncoder_Relative, 0, 100);
-  front_right_->ConfigSelectedFeedbackSensor(
-      FeedbackDevice::CTRE_MagEncoder_Relative, 0, 100);
-  rear_right_->ConfigSelectedFeedbackSensor(
-      FeedbackDevice::CTRE_MagEncoder_Relative, 0, 100);
-  rear_left_->ConfigSelectedFeedbackSensor(
-      FeedbackDevice::CTRE_MagEncoder_Relative, 0, 100);
-
   // interfaces:
   wheel_position_.assign(4, 0);
   wheel_velocities_.assign(4, 0);
@@ -41,6 +28,19 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
       joint_interfaces[interface.name].push_back(joint.name);
     }
   }
+
+  read_rate_ = 30;
+  update_rate_ = 30;
+
+  counts_per_rotation_ = 4096;
+  gear_ratio_ = 1.0 / 25;
+
+  // assign controllers by CANid
+  talons_.assign(4, 0);
+  talons_[FL] = new ctre::phoenix::motorcontrol::can::TalonSRX(20);
+  talons_[FR] = new ctre::phoenix::motorcontrol::can::TalonSRX(10);
+  talons_[RR] = new ctre::phoenix::motorcontrol::can::TalonSRX(40);
+  talons_[RL] = new ctre::phoenix::motorcontrol::can::TalonSRX(30);
 
   return CallbackReturn::SUCCESS;
 }
@@ -73,15 +73,51 @@ DriveSystem::export_command_interfaces() {
   }
   return command_interfaces;
 }
+
+hardware_interface::CallbackReturn
+DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
+  talons_[FR]->SetInverted(true);
+
+  int err;
+  for (size_t wheel = FL; wheel < LAST; wheel++) {
+    err = (int)talons_[wheel]->ConfigSelectedFeedbackSensor(
+        ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
+        0, 100);
+    talons_[wheel]->SetSelectedSensorPosition(0.0);
+    if (err) {
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+  }
+
+  return hardware_interface::CallbackReturn::SUCCESS;
+};
+
 hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
-  for (size_t i = 0; i < wheel_velocity_command_.size(); i++){
-      wheel_velocities_[i] = wheel_velocity_command_[i];
-  }
+
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(read_rate_ * 1.15);
+
+  for (size_t wheel = FL; wheel < LAST; wheel++) {
+    wheel_position_[wheel] =
+        talons_[wheel]->GetSelectedSensorPosition() / counts_per_rotation_;
+    wheel_velocities_[wheel] = gear_ratio_ *
+                               talons_[wheel]->GetSelectedSensorVelocity() /
+                               counts_per_rotation_;
+  };
+
   return hardware_interface::return_type::OK;
 }
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
                                                    const rclcpp::Duration &) {
+
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(update_rate_ * 1.15);
+
+  for (size_t wheel = FL; wheel < LAST; wheel++) {
+    talons_[wheel]->Set(
+        ctre::phoenix::motorcontrol::TalonSRXControlMode::Velocity,
+        wheel_velocity_command_[wheel] / gear_ratio_);
+  }
+
   return hardware_interface::return_type::OK;
 }
 }; // namespace chassis_controls

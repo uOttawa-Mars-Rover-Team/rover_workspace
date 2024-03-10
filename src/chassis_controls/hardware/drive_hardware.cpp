@@ -1,4 +1,5 @@
 #include "hardware_interface/system_interface.hpp"
+#include <algorithm>
 #include <rclcpp_lifecycle/state.hpp>
 #define Phoenix_No_WPI
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
@@ -30,7 +31,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   }
 
   read_rate_ = 30;
-  update_rate_ = 30;
+  update_rate_ = 50;
 
   counts_per_rotation_ = 4096;
   gear_ratio_ = 1.0 / 25;
@@ -95,8 +96,6 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
 hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
 
-  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(read_rate_ * 1.15);
-
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     wheel_position_[wheel] =
         talons_[wheel]->GetSelectedSensorPosition() / counts_per_rotation_;
@@ -115,7 +114,7 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     talons_[wheel]->Set(
         ctre::phoenix::motorcontrol::TalonSRXControlMode::Velocity,
-        wheel_velocity_command_[wheel] / gear_ratio_);
+        counts_per_rotation_*wheel_velocity_command_[wheel] / gear_ratio_);
   }
 
   return hardware_interface::return_type::OK;

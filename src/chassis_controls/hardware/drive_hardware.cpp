@@ -1,4 +1,5 @@
 #include "hardware_interface/system_interface.hpp"
+#include <rclcpp/logger.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #define Phoenix_No_WPI
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
@@ -35,6 +36,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   counts_per_rotation_ = 4096;
   talon_period_ = 0.1;
   gear_ratio_ = 1.0 / 25;
+  wheel_circumference_ = 1.436;
 
   // assign controllers by CANid
   talons_.assign(4, 0);
@@ -84,11 +86,17 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
     err = (int)talons_[wheel]->ConfigSelectedFeedbackSensor(
         ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
         0, 100);
+
     talons_[wheel]->SetSelectedSensorPosition(0.0);
+    /*talons_[wheel]->Config_kI(0,0.0);
+    talons_[wheel]->Config_kP(0,0.0);
+    talons_[wheel]->Config_kF(0,4096);
+    talons_[wheel]->Config_kD(0,0.0);*/
     if (err) {
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
+  talons_[FL]->SetSensorPhase(true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -101,7 +109,7 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
         talons_[wheel]->GetSelectedSensorPosition() / counts_per_rotation_;
     wheel_velocities_[wheel] = gear_ratio_ *
                                talons_[wheel]->GetSelectedSensorVelocity() *
-                               talon_period_;
+                               talon_period_ / 1.17;
   };
 
   return hardware_interface::return_type::OK;
@@ -113,10 +121,8 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     talons_[wheel]->Set(
-//ctre::phoenix::motorcontrol::TalonSRXControlMode::Velocity,
-//        counts_per_rotation_*wheel_velocity_command_[wheel] / gear_ratio_);
-ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
-    0.2);
+        ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, wheel_velocity_command_[wheel]/1000);
+        //0.1*counts_per_rotation_ * wheel_velocity_command_[wheel] / (gear_ratio_* wheel_circumference_));
   }
 
   return hardware_interface::return_type::OK;

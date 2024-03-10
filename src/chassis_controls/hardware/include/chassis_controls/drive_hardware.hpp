@@ -58,6 +58,7 @@ protected:
   double counts_per_rotation_;
   double gear_ratio_;
   double talon_period_;
+  double wheel_circumference_;
 
 }; // class drive_system
 } // namespace chassis_controls

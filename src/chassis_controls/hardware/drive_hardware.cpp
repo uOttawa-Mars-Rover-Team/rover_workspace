@@ -1,15 +1,9 @@
-#include "hardware_interface/system_interface.hpp"
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp_lifecycle/state.hpp>
-#include <string>
-#include <sys/types.h>
-#define Phoenix_No_WPI
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
 #include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
 #include "ctre/phoenix/unmanaged/Unmanaged.h"
-#include "hardware_interface/handle.hpp"
-#include "hardware_interface/hardware_info.hpp"
 #include "include/chassis_controls/drive_hardware.hpp"
 
 namespace chassis_controls {
@@ -37,6 +31,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   cfg_.enc_counts_per_rev = 1024;
   cfg_.gear_ratio = 1.0 / 25;
   cfg_.wheel_circumference = 0.203005 * 2 * M_PI;
+  cfg_.max_velocity = 20.00;
 
   // assign controllers by CANid
   talons_.assign(4, 0);
@@ -44,8 +39,11 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   talons_[FR] = new ctre::phoenix::motorcontrol::can::TalonSRX(10);
   talons_[RR] = new ctre::phoenix::motorcontrol::can::TalonSRX(40);
   talons_[RL] = new ctre::phoenix::motorcontrol::can::TalonSRX(30);
-  // bring up PID
-  pid_.initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
+
+  // bring up PIDs
+  pids_.assign(4, 0);
+  pids_[FL].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
+  pids_[RR].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
 
   return CallbackReturn::SUCCESS;
 }
@@ -110,14 +108,11 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
 hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
 
-  // update our state interface for each wheel
   for (size_t wheel = FL; wheel < LAST; wheel++) {
 
-    // convert counts to rad
     wheel_position_[wheel] =
         talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
 
-    // converts counts/100ms to rad/s
     wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() *
                                (10.0 / cfg_.enc_counts_per_rev);
   };
@@ -129,27 +124,34 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
   ctre::phoenix::unmanaged::Unmanaged::FeedEnable(cfg_.loop_rate * 1.15);
 
-  double command = 0.0;
+  u_int64_t period = dt.nanoseconds();
+
   for (size_t wheel = FL; wheel < LAST; wheel++) {
-    if (wheel == 999) {
-      command = pid_.computeCommand(wheel_velocity_command_[wheel] -
-                                        wheel_velocities_[wheel],
-                                    (u_int64_t)dt.nanoseconds());
-      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Error: %.3f",
-                  wheel_velocity_command_[wheel] - wheel_velocities_[wheel]);
-      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Cmd: %.3f",
-                  pid_.getCurrentCmd());
-      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Dur: %d",
-                  (int)dt.nanoseconds());
-      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "K_p: %.3f",
-                  pid_.getGains().p_gain_);
+    switch (wheel) {
+    case FL: {
+      double command = pids_[wheel].computeCommand(
+          wheel_velocity_command_[wheel] - wheel_velocities_[wheel], period);
+      double pwm = command / cfg_.max_velocity;
+
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
-          command / 20);
-    } else {
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
+    } break;
+    case FR: {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
-          wheel_velocity_command_[wheel] * (0.8/11.9));
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 20);
+    } break;
+    case RR: {
+      double command = pids_[wheel].computeCommand(
+          wheel_velocity_command_[wheel] - wheel_velocities_[wheel], period);
+      double pwm = command / cfg_.max_velocity;
+
+      talons_[wheel]->Set(
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
+    } break;
+    case RL: {
+      talons_[wheel]->Set(
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 40);
+    } break;
     }
   }
 

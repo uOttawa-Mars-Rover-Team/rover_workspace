@@ -3,13 +3,10 @@
 
 #include "control_toolbox/pid.hpp"
 #include "ctre/phoenix/motorcontrol/can/TalonSRX.h"
-#include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
-#include <rclcpp/duration.hpp>
-#include <unordered_map>
 
 #define Phoenix_No_WPI
 
@@ -31,6 +28,7 @@ class HARDWARE_INTERFACE_PUBLIC DriveSystem
     int enc_counts_per_rev;
     double gear_ratio;
     double wheel_circumference;
+    double max_velocity;
   };
 
 public:
@@ -59,7 +57,7 @@ protected:
 
   Config cfg_;
   std::vector<ctre::phoenix::motorcontrol::can::TalonSRX *> talons_;
-  control_toolbox::Pid pid_;
+  std::vector<control_toolbox::Pid> pids_;
 }; // class drive_system
 } // namespace chassis_controls
 #endif // CHASSIS_CONTROLS__DRIVE_HARDWARE_HPP_

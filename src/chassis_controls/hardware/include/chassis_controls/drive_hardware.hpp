@@ -9,6 +9,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include <rclcpp/duration.hpp>
 #include <unordered_map>
+#include "control_toolbox/pid.hpp"
 
 #define Phoenix_No_WPI
 
@@ -33,12 +34,14 @@ public:
                                        const rclcpp::Duration &period) override;
   hardware_interface::return_type
   write(const rclcpp::Time & /*time*/,
-        const rclcpp::Duration & /*period*/) override;
+        const rclcpp::Duration & dt) override;
 
 protected:
   std::vector<double> wheel_velocity_command_;
   std::vector<double> wheel_position_;
   std::vector<double> wheel_velocities_;
+
+  control_toolbox::Pid pid_;
 
   double read_rate_, update_rate_;
 

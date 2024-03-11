@@ -16,6 +16,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(xacro REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 add_executable(power_data src/power_data_publisher.cpp)
 add_executable(drive_control src/drive_control.cpp)
@@ -29,7 +30,7 @@ target_include_directories(chassis_controls PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
     $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(chassis_controls PUBLIC pluginlib rclcpp_lifecycle hardware_interface rclcpp)
+ament_target_dependencies(chassis_controls PUBLIC pluginlib rclcpp_lifecycle hardware_interface rclcpp control_toolbox)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
@@ -104,5 +105,6 @@ ament_export_dependencies(
     pluginlib
     hardware_interface
     rclcpp_lifecycle
-    xacro)
+    xacro
+    control_toolbox)
 ament_package()

@@ -1,6 +1,9 @@
 #include "hardware_interface/system_interface.hpp"
+#include <cstdint>
 #include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
 #include <rclcpp_lifecycle/state.hpp>
+#include <sys/types.h>
 #define Phoenix_No_WPI
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
 #include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
@@ -45,6 +48,9 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   talons_[RR] = new ctre::phoenix::motorcontrol::can::TalonSRX(40);
   talons_[RL] = new ctre::phoenix::motorcontrol::can::TalonSRX(30);
 
+  // bring up PID
+  pid_.initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -88,10 +94,6 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
         0, 100);
 
     talons_[wheel]->SetSelectedSensorPosition(0.0);
-    /*talons_[wheel]->Config_kI(0,0.0);
-    talons_[wheel]->Config_kP(0,0.0);
-    talons_[wheel]->Config_kF(0,4096);
-    talons_[wheel]->Config_kD(0,0.0);*/
     if (err) {
       return hardware_interface::CallbackReturn::ERROR;
     }
@@ -109,20 +111,35 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
         talons_[wheel]->GetSelectedSensorPosition() / counts_per_rotation_;
     wheel_velocities_[wheel] = gear_ratio_ *
                                talons_[wheel]->GetSelectedSensorVelocity() *
-                               talon_period_ / 1.17;
+                               talon_period_;
   };
 
   return hardware_interface::return_type::OK;
 }
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
-                                                   const rclcpp::Duration &) {
+                                                   const rclcpp::Duration &dt) {
 
   ctre::phoenix::unmanaged::Unmanaged::FeedEnable(update_rate_ * 1.15);
 
+  double command = 0.0;
   for (size_t wheel = FL; wheel < LAST; wheel++) {
-    talons_[wheel]->Set(
-        ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, wheel_velocity_command_[wheel]/1000);
-        //0.1*counts_per_rotation_ * wheel_velocity_command_[wheel] / (gear_ratio_* wheel_circumference_));
+    if (wheel == FL) {
+      command = pid_.computeCommand(wheel_velocity_command_[wheel] -
+                                        wheel_velocities_[wheel],
+                                    (u_int64_t) dt.nanoseconds());
+      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Error: %.3f",
+                  wheel_velocity_command_[wheel] - wheel_velocities_[wheel]);
+      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Cmd: %.3f", pid_.getCurrentCmd());
+      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "Dur: %d", (int) dt.nanoseconds());
+      RCLCPP_INFO(rclcpp::get_logger("DriveSystem"), "K_p: %.3f", pid_.getGains().p_gain_);
+      talons_[wheel]->Set(
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+          command / 20);
+    } else {
+      talons_[wheel]->Set(
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+          wheel_velocity_command_[wheel] / 20);
+    }
   }
 
   return hardware_interface::return_type::OK;

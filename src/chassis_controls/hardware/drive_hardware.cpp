@@ -1,10 +1,11 @@
-#include <rclcpp/logger.hpp>
-#include <rclcpp/logging.hpp>
-#include <rclcpp_lifecycle/state.hpp>
+#include "include/chassis_controls/drive_hardware.hpp"
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
 #include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
 #include "ctre/phoenix/unmanaged/Unmanaged.h"
-#include "include/chassis_controls/drive_hardware.hpp"
+#include <memory>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp_lifecycle/state.hpp>
 
 namespace chassis_controls {
 CallbackReturn
@@ -35,10 +36,14 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
 
   // assign controllers by CANid
   talons_.assign(4, 0);
-  talons_[FL] = new ctre::phoenix::motorcontrol::can::TalonSRX(20);
-  talons_[FR] = new ctre::phoenix::motorcontrol::can::TalonSRX(10);
-  talons_[RR] = new ctre::phoenix::motorcontrol::can::TalonSRX(40);
-  talons_[RL] = new ctre::phoenix::motorcontrol::can::TalonSRX(30);
+  talons_[FL] =
+      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(20);
+  talons_[FR] =
+      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(10);
+  talons_[RR] =
+      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(40);
+  talons_[RL] =
+      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(30);
 
   // bring up PIDs
   pids_.assign(4, 0);
@@ -65,6 +70,7 @@ DriveSystem::export_state_interfaces() {
   }
   return state_interfaces;
 }
+
 std::vector<hardware_interface::CommandInterface>
 DriveSystem::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
@@ -119,6 +125,7 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
 
   return hardware_interface::return_type::OK;
 }
+
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
                                                    const rclcpp::Duration &dt) {
 
@@ -157,6 +164,7 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
   return hardware_interface::return_type::OK;
 }
+
 }; // namespace chassis_controls
 
 #include "pluginlib/class_list_macros.hpp"

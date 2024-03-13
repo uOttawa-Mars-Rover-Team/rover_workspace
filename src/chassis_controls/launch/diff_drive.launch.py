@@ -19,15 +19,11 @@ def generate_launch_description():
             'use_robot_state_pub',
             default_value='True',
             description='Whether to start the robot state publisher')
-    declare_use_rviz_cmd = DeclareLaunchArgument(
-            'use_rviz',
-            default_value='True',
-            description='Whether to start RVIZ')
 
     declare_urdf_cmd = DeclareLaunchArgument(
             'urdf_file',
             default_value=str(urdf_path),
-            description='Whether to start RVIZ')
+            description='Path to URDF file')
 
     rviz_config_file = PathJoinSubstitution([
                 FindPackageShare("chassis_controls"),
@@ -100,7 +96,6 @@ def generate_launch_description():
 
     return LaunchDescription(
             [
-                declare_use_rviz_cmd,
                 declare_urdf_cmd,
                 declare_use_robot_state_pub_cmd,
 

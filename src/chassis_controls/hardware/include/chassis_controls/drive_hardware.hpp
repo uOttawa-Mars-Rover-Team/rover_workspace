@@ -7,6 +7,7 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
+#include <memory>
 
 #define Phoenix_No_WPI
 
@@ -56,7 +57,8 @@ protected:
       {"position", {}}, {"velocity", {}}};
 
   Config cfg_;
-  std::vector<ctre::phoenix::motorcontrol::can::TalonSRX *> talons_;
+  std::vector<std::shared_ptr<ctre::phoenix::motorcontrol::can::TalonSRX>>
+      talons_;
   std::vector<control_toolbox::Pid> pids_;
 }; // class drive_system
 } // namespace chassis_controls

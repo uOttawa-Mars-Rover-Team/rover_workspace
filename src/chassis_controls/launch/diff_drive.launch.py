@@ -15,6 +15,11 @@ def generate_launch_description():
     use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
     use_rviz = LaunchConfiguration('use_rviz')
 
+    declare_use_rviz_cmd = DeclareLaunchArgument(
+            'use_rviz',
+            default_value='True',
+            description='Whether to start Rviz')
+
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
             'use_robot_state_pub',
             default_value='True',
@@ -37,7 +42,7 @@ def generate_launch_description():
                         FindPackageShare("chassis_controls"),
                         "description",
                         "urdf",
-                        "drive.urdf.xacro"])])
+                        "rover.urdf.xacro"])])
 
     robot_description = {"robot_description": robot_description_content}
 
@@ -98,6 +103,7 @@ def generate_launch_description():
             [
                 declare_urdf_cmd,
                 declare_use_robot_state_pub_cmd,
+                declare_use_rviz_cmd,
 
                 ros2_control_node,
                 rviz_cmd,

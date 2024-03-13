@@ -8,16 +8,26 @@
 #include <rclcpp_lifecycle/state.hpp>
 
 namespace chassis_controls {
+
+/**
+ * @brief Initializes the DriveSystem lifecycle node.
+ *
+ * Parses the URDF, extractacting xacro arguments. Initializes all class
+ * attributes, brings up Talon objects and PIDs.
+ *
+ * @param info data contained in xacro file (URDF + macros + args + ros2
+ * control)
+ * @return Success flag if no errors during initialization, failure flag if
+ * executition fails.
+ */
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
 
-  // parse URDF
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
   }
 
-  // interfaces:
   wheel_position_.assign(4, 0);
   wheel_velocities_.assign(4, 0);
   wheel_velocity_command_.assign(4, 0);
@@ -34,7 +44,6 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   cfg_.wheel_circumference = 0.203005 * 2 * M_PI;
   cfg_.max_velocity = 20.00;
 
-  // assign controllers by CANid
   talons_.assign(4, 0);
   talons_[FL] =
       std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(20);
@@ -45,7 +54,6 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   talons_[RL] =
       std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(30);
 
-  // bring up PIDs
   pids_.assign(4, 0);
   pids_[FL].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
   pids_[RR].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
@@ -53,6 +61,48 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   return CallbackReturn::SUCCESS;
 }
 
+/**
+ * @brief Configures the DriveSystem lifecycle node.
+ *
+ * Configures hardware by aligning motor and encoder phase with system,
+ * configuring sensors, and zero-ing relative position encoders.
+ *
+ * @param previous_state UNCONFIGURED, hardware progresses to INACTIVE once this
+ * method executes successfully.
+ * @return Success flag if no errors during configuration, failure flag if
+ * executition fails.
+ */
+hardware_interface::CallbackReturn
+DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
+  talons_[FR]->SetInverted(true);
+
+  int err;
+  for (size_t wheel = FL; wheel < LAST; wheel++) {
+    err = (int)talons_[wheel]->ConfigSelectedFeedbackSensor(
+        ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
+        0, 100);
+
+    talons_[wheel]->SetSelectedSensorPosition(0.0);
+
+    if (err) {
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+  }
+
+  talons_[FL]->SetSensorPhase(true);
+
+  return hardware_interface::CallbackReturn::SUCCESS;
+};
+
+/**
+ * @brief Exports state interfaces: wheel position and velocity.
+ *
+ * StateInterfaces are created and ownership is transferred to caller (Joint
+ * State Broadcaster)
+ *
+ * @returns std::vector<hardware_interface::StateInterface> Vector of size 2,
+ * containing velocit and position state interfaces
+ */
 std::vector<hardware_interface::StateInterface>
 DriveSystem::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
@@ -71,6 +121,15 @@ DriveSystem::export_state_interfaces() {
   return state_interfaces;
 }
 
+/**
+ * @brief Exports command interface: wheel velocity.
+ *
+ * CommandInterface is created and ownership is transferred to caller
+ * (diff_cont)
+ *
+ * @returns std::vector<hardware_interface::CommandInterface> Vector of size 1,
+ * containing velocit command interface
+ */
 std::vector<hardware_interface::CommandInterface>
 DriveSystem::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
@@ -83,42 +142,20 @@ DriveSystem::export_command_interfaces() {
   return command_interfaces;
 }
 
-hardware_interface::CallbackReturn
-DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
-
-  // invert this talon so +ve is fwd
-  talons_[FR]->SetInverted(true);
-
-  int err;
-  for (size_t wheel = FL; wheel < LAST; wheel++) {
-
-    // configure each encoder, returns non-zero if erro
-    err = (int)talons_[wheel]->ConfigSelectedFeedbackSensor(
-        ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
-        0, 100);
-
-    // zero each position encoder
-    talons_[wheel]->SetSelectedSensorPosition(0.0);
-
-    if (err) {
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-  }
-
-  // invert this encoder so +ve is fwd
-  talons_[FL]->SetSensorPhase(true);
-
-  return hardware_interface::CallbackReturn::SUCCESS;
-};
-
+/**
+ * @brief Read latest wheel positions and velocities over CAN.
+ *
+ * Converts encoder data in encoder counts, given a sample period of 100ms, to
+ * position [rad] and velocity [rad/s] in units that agree with diff_cont.
+ *
+ * @returns OK flag if successful read, ERROR flag if read failed.
+ */
 hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
-
     wheel_position_[wheel] =
         talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-
     wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() *
                                (10.0 / cfg_.enc_counts_per_rev);
   };
@@ -126,12 +163,20 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
   return hardware_interface::return_type::OK;
 }
 
+/**
+ * @brief Write commanded wheel velocities over CAN.
+ *
+ * Perform PID control on each wheel from commanded values and latest state.
+ * Send PWM command to motors according to to latest value. Handles unit
+ * conversion from rad/s to pwm as a % of free wheel velocity.
+ *
+ * @params dt duration since last write command.
+ * @returns OK flag if successful write, ERROR flag if write failed.
+ */
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
                                                    const rclcpp::Duration &dt) {
-
-  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(cfg_.loop_rate * 1.15);
-
   u_int64_t period = dt.nanoseconds();
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period);
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     switch (wheel) {
@@ -161,12 +206,14 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     } break;
     }
   }
-
   return hardware_interface::return_type::OK;
 }
 
 }; // namespace chassis_controls
 
+/**
+ * Exports class via pluginlib so it may be used by diff_cont
+ */
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(chassis_controls::DriveSystem,
                        hardware_interface::SystemInterface)

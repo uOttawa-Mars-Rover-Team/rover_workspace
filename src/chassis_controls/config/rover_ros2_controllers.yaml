@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 30
+    update_rate: 50
 
     diff_cont:
       type: diff_drive_controller/DiffDriveController
@@ -10,7 +10,6 @@ controller_manager:
 
 diff_cont:
   ros__parameters:
-    publish_rate: 30.0 # Hz
     odom_frame_id: odom
     base_frame_id: base_link
     left_wheel_names: ['q1','q4']

@@ -45,11 +45,12 @@ protected:
   };
 
   struct Config {
-    double loop_rate;
     int enc_counts_per_rev;
-    double gear_ratio;
     double wheel_circumference;
     double max_velocity;
+    double controller_period;
+    control_toolbox::Pid::Gains pid_gains_l;
+    control_toolbox::Pid::Gains pid_gains_r;
   };
 
   std::vector<double> wheel_velocity_command_;
@@ -62,7 +63,7 @@ protected:
   Config cfg_;
   std::vector<std::shared_ptr<ctre::phoenix::motorcontrol::can::TalonSRX>>
       talons_;
-  std::vector<control_toolbox::Pid> pids_;
+  std::vector<std::shared_ptr<control_toolbox::Pid>> pids_;
 }; // class drive_system
 } // namespace chassis_controls
 #endif // CHASSIS_CONTROLS__DRIVE_HARDWARE_HPP_

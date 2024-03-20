@@ -8,6 +8,14 @@
                 </xacro:if>
                 <xacro:unless value="${use_gazebo}">
                     <plugin>chassis_controls/DriveSystem</plugin>
+                    <param name="wheel_diameter">${wheel_diameter}</param>
+                    <param name="wheel_max_velocity">${wheel_max_velocity}</param>
+                    <param name="wheel_enc_counts_per_rev">${wheel_enc_counts_per_rev}</param>
+                    <param name="controller_period">${controller_period}</param>
+                    <param name="FL_id">${FL_id}</param>
+                    <param name="RR_id">${RR_id}</param>
+                    <param name="FR_id">${FR_id}</param>
+                    <param name="RL_id">${RL_id}</param>
                 </xacro:unless>
             </hardware>
 

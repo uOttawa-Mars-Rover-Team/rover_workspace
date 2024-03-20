@@ -2,10 +2,13 @@
 #include "ctre/phoenix/motorcontrol/ControlMode.h"
 #include "ctre/phoenix/motorcontrol/FeedbackDevice.h"
 #include "ctre/phoenix/unmanaged/Unmanaged.h"
+#include <control_toolbox/pid.hpp>
+#include <hardware_interface/system_interface.hpp>
 #include <memory>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp_lifecycle/state.hpp>
+#include <string>
 
 namespace chassis_controls {
 
@@ -38,25 +41,28 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
     }
   }
 
-  cfg_.loop_rate = 30;
-  cfg_.enc_counts_per_rev = 1024;
-  cfg_.gear_ratio = 1.0 / 25;
-  cfg_.wheel_circumference = 0.203005 * 2 * M_PI;
-  cfg_.max_velocity = 20.00;
+  cfg_.wheel_circumference =
+      std::stod(info_.hardware_parameters["wheel_diameter"]) * M_PI;
+  cfg_.max_velocity =
+      std::stod(info_.hardware_parameters["wheel_max_velocity"]);
+  cfg_.enc_counts_per_rev =
+      std::stoi(info_.hardware_parameters["wheel_enc_counts_per_rev"]);
+  cfg_.controller_period =
+      std::stod(info_.hardware_parameters["controller_period"]);
 
-  talons_.assign(4, 0);
-  talons_[FL] =
-      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(20);
-  talons_[FR] =
-      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(10);
-  talons_[RR] =
-      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(40);
-  talons_[RL] =
-      std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(30);
+  talons_.reserve(4);
+  talons_[FL] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(
+      std::stoi(info_.hardware_parameters["FL_id"]));
+  talons_[FR] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(
+      std::stoi(info_.hardware_parameters["FR_id"]));
+  talons_[RR] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(
+      std::stoi(info_.hardware_parameters["RR_id"]));
+  talons_[RL] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(
+      std::stoi(info_.hardware_parameters["RL_id"]));
 
-  pids_.assign(4, 0);
-  pids_[FL].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
-  pids_[RR].initPid(5.0, 0.0, 0.0, 0.3, -0.3, true);
+  pids_.reserve(4);
+  pids_[FL] = std::make_shared<control_toolbox::Pid>();
+  pids_[RR] = std::make_shared<control_toolbox::Pid>();
 
   return CallbackReturn::SUCCESS;
 }
@@ -77,12 +83,11 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
   talons_[FR]->SetInverted(true);
 
   int err;
-  for (size_t wheel = FL; wheel < LAST; wheel++) {
-    err = (int)talons_[wheel]->ConfigSelectedFeedbackSensor(
+  for (const auto &wheel : talons_) {
+    err = (int)wheel->ConfigSelectedFeedbackSensor(
         ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
         0, 100);
-
-    talons_[wheel]->SetSelectedSensorPosition(0.0);
+    wheel->SetSelectedSensorPosition(0.0);
 
     if (err) {
       return hardware_interface::CallbackReturn::ERROR;
@@ -90,6 +95,9 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
   }
 
   talons_[FL]->SetSensorPhase(true);
+
+  pids_[FL]->initPid(5.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[RR]->initPid(5.0, 0.0, 0.0, 0.5, -0.5, true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -127,8 +135,8 @@ DriveSystem::export_state_interfaces() {
  * CommandInterface is created and ownership is transferred to caller
  * (diff_cont)
  *
- * @returns std::vector<hardware_interface::CommandInterface> Vector of size 1,
- * containing velocit command interface
+ * @returns std::vector<hardware_interface::CommandInterface> Vector of size
+ * 1, containing velocit command interface
  */
 std::vector<hardware_interface::CommandInterface>
 DriveSystem::export_command_interfaces() {
@@ -156,8 +164,9 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     wheel_position_[wheel] =
         talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-    wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() *
-                               (10.0 / cfg_.enc_counts_per_rev);
+    wheel_velocities_[wheel] =
+        talons_[wheel]->GetSelectedSensorVelocity() /
+        (cfg_.controller_period * cfg_.enc_counts_per_rev);
   };
 
   return hardware_interface::return_type::OK;
@@ -179,30 +188,35 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
   ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period);
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
+    double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
+
     switch (wheel) {
     case FL: {
-      double command = pids_[wheel].computeCommand(
-          wheel_velocity_command_[wheel] - wheel_velocities_[wheel], period);
+      double command = pids_[wheel]->computeCommand(error, period);
       double pwm = command / cfg_.max_velocity;
 
       talons_[wheel]->Set(
           ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
     } break;
+
     case FR: {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 20);
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
+          talons_[RR]->GetDeviceID());
     } break;
+
     case RR: {
-      double command = pids_[wheel].computeCommand(
-          wheel_velocity_command_[wheel] - wheel_velocities_[wheel], period);
+      double command = pids_[wheel]->computeCommand(error, period);
       double pwm = command / cfg_.max_velocity;
 
       talons_[wheel]->Set(
           ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
     } break;
+
     case RL: {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 40);
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
+          talons_[RR]->GetDeviceID());
     } break;
     }
   }

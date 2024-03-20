@@ -11,7 +11,6 @@ import os
 
 def generate_launch_description():
 
-    urdf_path = get_package_share_path('chassis_controls') / 'description' / 'urdf' / 'drive_urdf.urdf'
     use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
     use_rviz = LaunchConfiguration('use_rviz')
 
@@ -24,11 +23,6 @@ def generate_launch_description():
             'use_robot_state_pub',
             default_value='True',
             description='Whether to start the robot state publisher')
-
-    declare_urdf_cmd = DeclareLaunchArgument(
-            'urdf_file',
-            default_value=str(urdf_path),
-            description='Path to URDF file')
 
     rviz_config_file = PathJoinSubstitution([
                 FindPackageShare("chassis_controls"),
@@ -101,7 +95,6 @@ def generate_launch_description():
 
     return LaunchDescription(
             [
-                declare_urdf_cmd,
                 declare_use_robot_state_pub_cmd,
                 declare_use_rviz_cmd,
 

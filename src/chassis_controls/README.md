@@ -15,7 +15,7 @@
 
 ### Prequisites
 
--Install all necessary packages (this list is not exhaustive).
+- Install all necessary packages (this list is not exhaustive).
 
 ```bash
 sudo apt update
@@ -59,7 +59,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"path/to/rover_workspace/src/chassis_con
 ### Command to Robot State
 
 **Controller Manager**
--Manages the spawning of the PID and differential drive controllers. This manager
+- Manages the spawning of the PID and differential drive controllers. This manager
 
 **Joint State Broadcaster**
 - The broadcaster reads the status of all state interfaces via `/parameter_events`, and publishes them to `/joint_states`.
@@ -69,8 +69,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"path/to/rover_workspace/src/chassis_con
 -Subscribes to the `/joint_states` topic, and publishes the description of our robot in space. 
 
 **tf**
--This topic holds the general telemetry of our rover in space.
--This node pairs the state of our joints with the velocity command per wheel taken from the PID and diff_drive controllers to output the state and pose of each joint, as well as the velocity and position of the rover.
+- This topic holds the general telemetry of our rover in space.
+- This node pairs the state of our joints with the velocity command per wheel taken from the PID and diff_drive controllers to output the state and pose of each joint, as well as the velocity and position of the rover.
 
 ### Power Data Publisher Node
 
@@ -79,7 +79,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"path/to/rover_workspace/src/chassis_con
 - Current draw is still unstable, will be further explored.
 
 **Publishes**
--This node publishes to the `PowerData` topic, with an array of currents and voltage double. (every 10 seconds as of writing)
+- This node publishes to the `PowerData` topic, with an array of currents and voltage double. (every 10 seconds as of writing)
 
 ## FAQ
 
@@ -98,12 +98,16 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"path/to/rover_workspace/src/chassis_con
 ### Helpful Links
 [ROS2 Controls](https://control.ros.org/humble/index.html)
 - Gives a thorough description on the operation of control nodes.
+
 [CTRE Bring-Up](https://v5.docs.ctr-electronics.com/en/stable/ch08_BringUpCAN.html)
 - Describes methodology in setting up CAN bus and Linux integration.
+
 [CTRE C++ Documentation](https://api.ctr-electronics.com/phoenix/release/cpp/classctre_1_1phoenix_1_1motorcontrol_1_1can_1_1_talon_s_r_x.html)
 - Documentation of CTRE C++ library for all functions and classes used in pkg.
+
 [Intro to URDF](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Building-a-Visual-Robot-Model-with-URDF-from-Scratch.html)
 - Gives a simple example of simulating a robot in URDF using RVIZ.
+
 [ROS2 Control PID Documentation](https://github.com/ros-controls/control_toolbox/blob/ros2-master/src/pid.cpp)
 - Provides documentation for the ROS2 control toolbox implemented PID controller.
 

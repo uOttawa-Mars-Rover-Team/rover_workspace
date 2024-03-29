@@ -17,6 +17,6 @@ diff_cont:
     wheels_per_side: 2
     wheel_separation: 0.5698        # center to center = 0.7524; inner to inner = 0.5698
     wheel_radius: 0.203005
-    open_loop: true
+    open_loop: false
     enable_odom_tf: true
     use_stamped_vel: false

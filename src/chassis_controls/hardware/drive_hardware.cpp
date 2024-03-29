@@ -61,7 +61,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
       std::stoi(info_.hardware_parameters["RL_id"]));
 
   pids_.reserve(4);
-  pids_[FL] = std::make_shared<control_toolbox::Pid>();
+  pids_[RL] = std::make_shared<control_toolbox::Pid>();
   pids_[RR] = std::make_shared<control_toolbox::Pid>();
 
   return CallbackReturn::SUCCESS;
@@ -80,7 +80,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
  */
 hardware_interface::CallbackReturn
 DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
-  talons_[FR]->SetInverted(true);
+  //talons_[FR]->SetInverted(true);
 
   int err;
   for (const auto &wheel : talons_) {
@@ -94,10 +94,10 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
     }
   }
 
-  talons_[FL]->SetSensorPhase(true);
+  talons_[RL]->SetSensorPhase(true);
 
-  pids_[FL]->initPid(5.0, 0.0, 0.0, 0.5, -0.5, true);
-  pids_[RR]->initPid(5.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[RL]->initPid(3.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[RR]->initPid(3.0, 0.0, 0.0, 0.5, -0.5, true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -162,11 +162,33 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
-    wheel_position_[wheel] =
-        talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-    wheel_velocities_[wheel] =
-        talons_[wheel]->GetSelectedSensorVelocity() /
-        (cfg_.controller_period * cfg_.enc_counts_per_rev);
+    switch (wheel) {
+    case RL: {
+      wheel_position_[wheel] =
+          talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
+      wheel_velocities_[wheel] =
+          talons_[wheel]->GetSelectedSensorVelocity() /
+          (cfg_.controller_period * cfg_.enc_counts_per_rev);
+    } break;
+
+    case FR: {
+      wheel_position_[wheel] = wheel_position_[RR];
+      wheel_velocities_[wheel] = wheel_velocities_[RR];
+    } break;
+
+    case RR: {
+      wheel_position_[wheel] =
+          talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
+      wheel_velocities_[wheel] =
+          talons_[wheel]->GetSelectedSensorVelocity() /
+          (cfg_.controller_period * cfg_.enc_counts_per_rev);
+    } break;
+
+    case FL: {
+      wheel_position_[wheel] = wheel_position_[RL];
+      wheel_velocities_[wheel] = wheel_velocities_[RL];
+    } break;
+    }
   };
 
   return hardware_interface::return_type::OK;
@@ -191,7 +213,7 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
 
     switch (wheel) {
-    case FL: {
+    case RL: {
       double command = pids_[wheel]->computeCommand(error, period);
       double pwm = command / cfg_.max_velocity;
 
@@ -213,10 +235,10 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
           ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
     } break;
 
-    case RL: {
+    case FL: {
       talons_[wheel]->Set(
           ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
-          talons_[RR]->GetDeviceID());
+          talons_[RL]->GetDeviceID());
     } break;
     }
   }

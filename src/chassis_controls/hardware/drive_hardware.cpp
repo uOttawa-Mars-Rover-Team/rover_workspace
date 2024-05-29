@@ -80,7 +80,7 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
  */
 hardware_interface::CallbackReturn
 DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
-  //talons_[FR]->SetInverted(true);
+  talons_[FR]->SetInverted(true);
 
   int err;
   for (const auto &wheel : talons_) {
@@ -96,8 +96,8 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
 
   talons_[RL]->SetSensorPhase(true);
 
-  pids_[RL]->initPid(3.0, 0.0, 0.0, 0.5, -0.5, true);
-  pids_[RR]->initPid(3.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[RL]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[RR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -223,8 +223,8 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
     case FR: {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
-          talons_[RR]->GetDeviceID());
+         ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
+         talons_[RR]->GetDeviceID());
     } break;
 
     case RR: {
@@ -237,8 +237,8 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
     case FL: {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
-          talons_[RL]->GetDeviceID());
+        ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
+        talons_[RL]->GetDeviceID());
     } break;
     }
   }

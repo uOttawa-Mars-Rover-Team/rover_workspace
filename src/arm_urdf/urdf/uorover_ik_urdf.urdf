@@ -15,8 +15,8 @@
 
 <joint name="base_footprint_joint" type="fixed">
     <origin xyz="0 0 0.001" rpy="0 0 0" />
-    <parent link="base_footprint"/>
-    <child link="L1" />
+    <parent link="L1"/>
+    <child link="base_footprint" />
 </joint>
   <link
     name="L1">
@@ -111,10 +111,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+    upper="3.1415"
+    effort="0"
+    velocity="0"/>
   </joint>
   <link
     name="L3">
@@ -169,10 +169,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+    upper="3.1415"
+    effort="0"
+    velocity="0"/>
   </joint>
   <link
     name="L4">
@@ -227,10 +227,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+    upper="3.1415"
+    effort="0"
+    velocity="0"/>
   </joint>
   <link
     name="L5">
@@ -285,10 +285,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+    upper="3.1415"
+    effort="0"
+    velocity="0"/>
   </joint>
   <link
     name="L6">
@@ -396,9 +396,9 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+    upper="3.1415"
+    effort="0"
+    velocity="0"/>
   </joint>
 </robot>

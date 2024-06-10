@@ -1,0 +1,9 @@
+# Default initial positions for uorover_ik_urdf's ros2_control fake system
+
+initial_positions:
+  q1: 0
+  q2: 0
+  q3: 0
+  q4: 0
+  q5: 0
+  q6: 0

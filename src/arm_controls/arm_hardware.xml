@@ -1,0 +1,9 @@
+<library path="arm_hardware">
+    <class  name="arm_controls/ArmSystem"
+    type="arm_controls::ArmSystem"
+    base_class_type="hardware_interface::SystemInterface">
+        <description>
+            Robot hardware plugin for uORover 5-DoF arm.
+        </description>
+    </class>
+</library>

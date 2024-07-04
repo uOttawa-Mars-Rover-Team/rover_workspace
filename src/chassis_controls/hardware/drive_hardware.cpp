@@ -25,7 +25,9 @@ namespace chassis_controls {
  */
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
-
+  rclcpp::Logger logger = rclcpp::get_logger("test_logger");
+  RCLCPP_INFO(logger, "Logging test");
+  
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
@@ -63,6 +65,8 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
   pids_.reserve(4);
   pids_[RL] = std::make_shared<control_toolbox::Pid>();
   pids_[RR] = std::make_shared<control_toolbox::Pid>();
+  pids_[FL] = std::make_shared<control_toolbox::Pid>();
+  pids_[FR] = std::make_shared<control_toolbox::Pid>();
 
   return CallbackReturn::SUCCESS;
 }
@@ -94,10 +98,13 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
     }
   }
 
-  talons_[RL]->SetSensorPhase(true);
-
   pids_[RL]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[FL]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
+  pids_[FR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
   pids_[RR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
+ 
+
+  //talons_[RL]->SetSensorPhase(true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -162,35 +169,9 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
                                                   const rclcpp::Duration &) {
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
-    switch (wheel) {
-    case RL: {
-      wheel_position_[wheel] =
-          talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-      wheel_velocities_[wheel] =
-          talons_[wheel]->GetSelectedSensorVelocity() /
-          (cfg_.controller_period * cfg_.enc_counts_per_rev);
-    } break;
-
-    case FR: {
-      wheel_position_[wheel] = wheel_position_[RR];
-      wheel_velocities_[wheel] = wheel_velocities_[RR];
-    } break;
-
-    case RR: {
-      wheel_position_[wheel] =
-          talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-      wheel_velocities_[wheel] =
-          talons_[wheel]->GetSelectedSensorVelocity() /
-          (cfg_.controller_period * cfg_.enc_counts_per_rev);
-    } break;
-
-    case FL: {
-      wheel_position_[wheel] = wheel_position_[RL];
-      wheel_velocities_[wheel] = wheel_velocities_[RL];
-    } break;
-    }
+    wheel_position_[wheel] = talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
+    wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() / (cfg_.controller_period * cfg_.enc_counts_per_rev);
   };
-
   return hardware_interface::return_type::OK;
 }
 
@@ -207,41 +188,23 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
                                                    const rclcpp::Duration &dt) {
   u_int64_t period = dt.nanoseconds();
-  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period);
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period*2);
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
+    double command = pids_[wheel]->computeCommand(error, period);
+    double pwm = command / cfg_.max_velocity;
 
-    switch (wheel) {
-    case RL: {
-      double command = pids_[wheel]->computeCommand(error, period);
-      double pwm = command / cfg_.max_velocity;
-
-      talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
-    } break;
-
-    case FR: {
-      talons_[wheel]->Set(
-         ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
-         talons_[RR]->GetDeviceID());
-    } break;
-
-    case RR: {
-      double command = pids_[wheel]->computeCommand(error, period);
-      double pwm = command / cfg_.max_velocity;
-
-      talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
-    } break;
-
-    case FL: {
-      talons_[wheel]->Set(
-        ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower,
-        talons_[RL]->GetDeviceID());
-    } break;
+    if (wheel == RL){
+      ctre::phoenix::motorcontrol::can::TalonSRXConfiguration config;
+      talons_[wheel]->GetAllConfigs(config);
+      std::string peewm = config.toString();
+      rclcpp::Logger logger = rclcpp::get_logger("test_logger");
+      RCLCPP_INFO(logger, peewm.c_str());
     }
+    talons_[wheel]->Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
   }
+
   return hardware_interface::return_type::OK;
 }
 

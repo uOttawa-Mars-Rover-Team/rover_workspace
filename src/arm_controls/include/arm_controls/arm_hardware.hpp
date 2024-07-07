@@ -28,11 +28,12 @@ namespace arm_controls {
             // interfaces
             std::vector<double> joint_position_command_;
             std::vector<double> joint_position_state_;
+            std::vector<double> joint_velocity_state_;
+
+            std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
+
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
-
-
     };
-
 } // namespace arm_controls
 
 #endif

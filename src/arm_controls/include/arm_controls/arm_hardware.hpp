@@ -33,7 +33,7 @@ namespace arm_controls {
             std::vector<double> joint_velocity_state_;
 
             //Serial communication object
-            //SerialCommunication serialObject;
+            SerialCommunication* serialObject;
             //std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
 
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };

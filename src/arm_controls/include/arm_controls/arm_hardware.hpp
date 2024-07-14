@@ -9,6 +9,7 @@
 #include "general_interfaces/msg/arm_pose.hpp" // IWYU pragma: keep
 #include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
+#include "../serial_communication_library/include/serial_communication.hpp"
 
 #include <general_interfaces/msg/detail/arm_pose__struct.h>
 #include <unordered_map>
@@ -37,3 +38,6 @@ namespace arm_controls {
 } // namespace arm_controls
 
 #endif
+
+//d;TW;EL;SH;PT;RL
+//f;TW;EL;SH;PT;RL

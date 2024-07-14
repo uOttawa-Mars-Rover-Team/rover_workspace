@@ -17,12 +17,19 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
+# Comment out to enable warnings
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-w)  # Disable all warnings
+endif()
 
 add_library(
     arm_hardware
     SHARED
     hardware/arm_hardware.cpp
     )
+
+add_subdirectory(serial_communication_library)
+target_link_libraries(arm_hardware PRIVATE serial_comms)
 
 #### UNCOMMENT WHEN WE CREATE ARM_CONTROLS NODE ####
 

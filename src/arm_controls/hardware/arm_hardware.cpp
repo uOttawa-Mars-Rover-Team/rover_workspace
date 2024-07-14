@@ -5,15 +5,22 @@
 namespace arm_controls
 {
     CallbackReturn ArmSystem::on_init(const hardware_interface::HardwareInfo & info){
+        // Serial comms initialized when serial comm object is intialized
+        
         // Parent class on init fills the info object out with URDF details 
+        // If URDF can't be read, return ERROR
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
             return CallbackReturn::ERROR;
         }
 
         // intialize joint position and velocity interfaces with 0s
-        // initialize joint interface map with joint names from info_ object
+        joint_position_state_.assign(numInterfaces, 0);
+        joint_velocity_state_.assign(numInterfaces, 0);
         
-        // establish serial comms
+        joint_position_command_.assign(numInterfaces, 0);
+
+        // for loop to check URDF
+                
 
         return CallbackReturn::SUCCESS;
     };
@@ -44,7 +51,8 @@ namespace arm_controls
 
     hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // read the joint_position_command_ vector to see updated target positions
-
+        // Example of typical command to send "I;10000;200;200;1000;-1000;-1000;!
+        // Q1;Q2;Q3;Q4;Q5;Q6
         // send target position values to arduino over serial port
 
         return hardware_interface::return_type::OK;

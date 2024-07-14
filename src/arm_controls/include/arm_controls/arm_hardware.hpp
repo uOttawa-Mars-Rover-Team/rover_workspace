@@ -16,6 +16,7 @@
 
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+    const int numInterfaces = 6;
 
     class HARDWARE_INTERFACE_PUBLIC ArmSystem
     : public hardware_interface::SystemInterface {
@@ -31,7 +32,9 @@ namespace arm_controls {
             std::vector<double> joint_position_state_;
             std::vector<double> joint_velocity_state_;
 
-            std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
+            //Serial communication object
+            //SerialCommunication serialObject;
+            //std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
 
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
     };

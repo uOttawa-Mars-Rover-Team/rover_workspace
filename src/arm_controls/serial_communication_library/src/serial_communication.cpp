@@ -121,8 +121,6 @@ void SerialCommunication::read_serial() {
             tp_executor.enqueue([this, response]() {
                 publishMessage(response);
             });
-
-            publishMessage
         }
     }
 }

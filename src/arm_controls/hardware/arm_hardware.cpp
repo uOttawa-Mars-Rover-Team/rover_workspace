@@ -56,7 +56,7 @@ namespace arm_controls
 
     hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) {
         // read positions from arduino over the serial port
-
+        //"f;TW;SL;EL;PT;RL;EE"
         // update joint_position_state and joint_velocity_state with new values
 
         return hardware_interface::return_type::OK;
@@ -64,7 +64,7 @@ namespace arm_controls
 
     hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // read the joint_position_command_ vector to see updated target positions
-        // Example of typical command to send "I;10000;200;200;1000;-1000;-1000;!
+        // Example of typical command to send "I;TW;SL;EL;PT;RL;EE!
         // Q1;Q2;Q3;Q4;Q5;Q6
         // send target position values to arduino over serial port
 

@@ -19,26 +19,39 @@ namespace arm_controls
         
         joint_position_command_.assign(numInterfaces, 0);
 
+        serialObject.connect_serial(0);
+
+
         // for loop to check URDF
                 
-
         return CallbackReturn::SUCCESS;
-    };
+    }
 
-    std::vector<hardware_interface::StateInterface> export_state_interfaces() {
-        // declare state interface vector
+    std::vector<hardware_interface::StateInterface> ArmSystem::export_state_interfaces() {
+        std::vector<hardware_interface::StateInterface> state_interfaces;
 
-        // create the state interface objects joint and add them to the vector
+        // create the state interface objects and add them to the vector
+        for (auto i = 0u; i < info_.joints.size(); i++){
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &joint_position_state_[i]));
+            
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &joint_velocity_state_[i]));
+        }
 
-        //return state_interfaces
-    };
+        return state_interfaces;
+    }
 
-    std::vector<hardware_interface::CommandInterface> export_command_interfaces() {
-        // declare command interface vector
-        
-        // create command interfaces for positions
+    std::vector<hardware_interface::CommandInterface> ArmSystem::export_command_interfaces() {
+        std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-        // return command interfaces
+        // create command interface objects and place them in the vector
+        for (auto i = 0u; i < info_.joints.size(); i++){
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &joint_position_command_[i]));
+        }
+
+        return command_interfaces;
     }
 
     hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) {
@@ -56,7 +69,7 @@ namespace arm_controls
         // send target position values to arduino over serial port
 
         return hardware_interface::return_type::OK;
-    };
+    }
 
 } // namespace arm_controls
 

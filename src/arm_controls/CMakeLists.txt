@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.8)
 project(arm_controls)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -fPIC)
 endif()
 
 # find dependencies
@@ -28,8 +28,11 @@ add_library(
     hardware/arm_hardware.cpp
     )
 
+
 add_subdirectory(serial_communication_library)
 target_link_libraries(arm_hardware PRIVATE serial_comms)
+#target_link_directories(arm_hardware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/serial_communication_library/include")
+
 
 #### UNCOMMENT WHEN WE CREATE ARM_CONTROLS NODE ####
 
@@ -83,6 +86,10 @@ install(TARGETS arm_hardware
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib
 )
+
+install(EXPORT serial_comms DESTINATION lib/${PROJECT_NAME})
+install(EXPORT serial DESTINATION lib/${PROJECT_NAME})
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)

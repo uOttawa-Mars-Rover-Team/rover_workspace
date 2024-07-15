@@ -45,3 +45,16 @@ target_link_libraries(serial_comms_tests serial_comms ${GTEST_LIBRARIES} pthread
 enable_testing()
 add_test(NAME SerialCommsTests COMMAND serial_comms_tests)
 
+install(TARGETS serial_comms
+    	EXPORT serial_comms
+    	ARCHIVE DESTINATION lib
+    	LIBRARY DESTINATION lib
+    	RUNTIME DESTINATION lib
+)
+
+install(TARGETS serial
+    	EXPORT serial
+    	ARCHIVE DESTINATION lib
+    	LIBRARY DESTINATION lib
+    	RUNTIME DESTINATION lib
+)

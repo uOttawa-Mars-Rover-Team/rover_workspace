@@ -1,6 +1,7 @@
 #include "arm_controls/arm_hardware.hpp"
 #include "pluginlib/class_list_macros.hpp"
-
+#include <string>
+#include <iomanip> // For std::setprecision
 
 namespace arm_controls
 {
@@ -62,11 +63,26 @@ namespace arm_controls
         return hardware_interface::return_type::OK;
     }
 
-    hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) {
+    hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // read the joint_position_command_ vector to see updated target positions
         // Example of typical command to send "I;TW;SL;EL;PT;RL;EE!
         // Q1;Q2;Q3;Q4;Q5;Q6
         // send target position values to arduino over serial port
+
+        std::ostringstream command_stream;
+        command_stream << "I;";
+
+        for (size_t i = 0; i < numInterfaces; ++i) {
+            command_stream << std::fixed << std::setprecision(2) << joint_position_command_[i];
+            if (i < numInterfaces - 1) {
+                command_stream << ";";
+            }
+        }
+        command_stream << "!";
+
+        std::string command = command_stream.str();
+        
+        serialObject.publishToArduino(command);
 
         return hardware_interface::return_type::OK;
     }

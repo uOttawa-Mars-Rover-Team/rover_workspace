@@ -55,10 +55,31 @@ namespace arm_controls
         return command_interfaces;
     }
 
-    hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) {
-        // read positions from arduino over the serial port
-        //"f;TW;SL;EL;PT;RL;EE"
-        // update joint_position_state and joint_velocity_state with new values
+    hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
+        //TO REMOVE AFTER IMPLEMENTING PROPER READ:
+        std::string serialReadResult = "";
+        //std::string serialReadResult = getLatestArduinoState(); // TODO: Implement this method in the serial library
+
+        //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE (all positions)
+        //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
+        //TODO: Decide what velocity feedback return messages will look like
+
+        if(serialReadResult[0] != 'f'){
+            //probably better to log an error here
+            return hardware_interface::return_type::ERROR;;
+        }
+
+        std::string temp;
+        std::istringstream ss(serialReadResult);
+
+        std::getline(ss, temp, ';'); //skip the f; part of the string
+
+        //TODO: change this to a for loop with num interfaces
+        while (std::getline(ss, temp, ';')){
+            joint_position_state_.push_back(std::stod(temp));
+        }
+
+        //joint velocity state will remain at 0 for the time being
 
         return hardware_interface::return_type::OK;
     }

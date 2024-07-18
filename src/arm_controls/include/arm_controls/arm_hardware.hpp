@@ -1,7 +1,8 @@
 #ifndef ARM_CONTROLS__ARM_HARDWARE_HPP_
 #define ARM_CONTROLS__ARM_HARDWARE_HPP_
 
-#include <memory>
+#include <sstream>
+
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"

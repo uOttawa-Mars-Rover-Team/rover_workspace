@@ -25,8 +25,9 @@ namespace chassis_controls {
  */
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
-  rclcpp::Logger logger = rclcpp::get_logger("test_logger");
-  RCLCPP_INFO(logger, "Logging test");
+
+  tested_pwm_ = 5.0;
+  RCLCPP_INFO(logger_, "!!! Testing at: %f.3%% PWM. !!!", tested_pwm_);
   
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
@@ -171,6 +172,12 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     wheel_position_[wheel] = talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
     wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() / (cfg_.controller_period * cfg_.enc_counts_per_rev);
+
+    RCLCPP_INFO(logger_, "!!! Wheel feedback: %zu !!!", wheel);
+    RCLCPP_INFO(logger_, "!!! Wheel velocity: %f !!!", wheel_velocities_[wheel]);
+    RCLCPP_INFO(logger_, "!!! Wheel feedback: %f !!!", talons_[wheel]->GetStatorCurrent());
+
+
   };
   return hardware_interface::return_type::OK;
 }
@@ -195,13 +202,10 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     double command = pids_[wheel]->computeCommand(error, period);
     double pwm = command / cfg_.max_velocity;
 
-    if (wheel == RL){
-      ctre::phoenix::motorcontrol::can::TalonSRXConfiguration config;
-      talons_[wheel]->GetAllConfigs(config);
-      std::string peewm = config.toString();
-      rclcpp::Logger logger = rclcpp::get_logger("test_logger");
-      RCLCPP_INFO(logger, peewm.c_str());
-    }
+    // REMOVE AFTER TESTING //
+    pwm = tested_pwm_/100;
+    // PLEASE //
+    
     talons_[wheel]->Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
   }
 

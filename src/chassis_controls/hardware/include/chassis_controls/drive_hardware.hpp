@@ -8,6 +8,7 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include <memory>
+#include <rclcpp/logger.hpp>
 
 #define Phoenix_No_WPI
 
@@ -57,6 +58,8 @@ protected:
   std::vector<double> wheel_position_;
   std::vector<double> wheel_velocities_;
 
+  double tested_pwm_;
+
   std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
       {"position", {}}, {"velocity", {}}};
 
@@ -64,6 +67,10 @@ protected:
   std::vector<std::shared_ptr<ctre::phoenix::motorcontrol::can::TalonSRX>>
       talons_;
   std::vector<std::shared_ptr<control_toolbox::Pid>> pids_;
+
+
+private:
+  rclcpp::Logger logger_ = rclcpp::get_logger("test logger");
 }; // class drive_system
 } // namespace chassis_controls
 #endif // CHASSIS_CONTROLS__DRIVE_HARDWARE_HPP_

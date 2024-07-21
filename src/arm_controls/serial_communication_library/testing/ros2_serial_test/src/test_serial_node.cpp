@@ -34,7 +34,7 @@ class TestSerialNode : public rclcpp::Node{
             //    string_msg += to_string(msg.buttons[i]) + ";";
             //}
             string_msg += "!";
-            //cout << "Message:" + string_msg << endl;
+            
             serialObject->publishToArduino(string_msg);
         }
 

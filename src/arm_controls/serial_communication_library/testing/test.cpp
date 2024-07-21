@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "include/serial_communication.hpp"
 #include "third_party/SerialLibrary/include/serial/serial.h"
+#include <sys/time.h>
 
 using namespace testing;
 
@@ -18,9 +19,10 @@ protected:
         delete serialComm;
     }
 
-    vector<string> messages_to_send = {"message 1;!", "message 2;!", "message 3;!", " message 4;!", 
-                                       "message 5;!", "message 6;!", "message 7;!", "message 8;!", 
-                                       "message 9;!", "message 10;!"};
+    vector<string> messages_to_send = {"f;-0.004883;0.090915;-0.309793;-1.000000;0.000000;0.000000;!", "a-a-a-a-a;!", "b-b-b-b-b;!", "c-c-c-c-c;!", "d-d-d-d-d;!", "e-e-e-e-e;!"};
+
+    //vector<string> messages_to_send = {"a-a-a-a-a;!", "b-b-b-b-b;!", "c-c-c-c-c;!", "d-d-d-d-d;!", "e-e-e-e-e;!"};
+
 };
 
 TEST_F(SerialCommsTest, ConnectSerialSuccessfully){
@@ -33,12 +35,13 @@ TEST_F(SerialCommsTest, ConnectSerialSuccessfully){
 
 TEST_F(SerialCommsTest, ReadandWriteMessageSuccessfully){
     serialComm->connect_serial(0);
+    sleep(1);
     serialComm->isSerialPortOpen();
     
     for (size_t i = 0; i < messages_to_send.size(); i++){
         serialComm->publishToArduino(messages_to_send[i]);
     } 
-
+    sleep(1);
     ASSERT_FALSE(serialComm->get_connecting());
 
 }

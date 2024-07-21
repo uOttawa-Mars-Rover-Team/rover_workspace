@@ -14,7 +14,6 @@ SerialCommunication::SerialCommunication()
       connecting_(true),
       zeroing_(false),
       run_(true){
-      //tp_executor(5) { // Initialize tp_executor with 5 workers
 
     RETRY_DELAY.it_value.tv_sec = 0.1; // Set delay to 0.1s
     RETRY_DELAY.it_value.tv_usec = 0;
@@ -123,13 +122,13 @@ void SerialCommunication::read_serial() {
     sleep(1);
     cout << "Reading from serial port..." << endl;
     while (run_) {
-        if (!connecting_ && my_serial_) {
-            my_serial_->flushInput();
+        // Checks if arduino is already connected, serial port is open and there is data to read
+        if (!connecting_ && my_serial_ and my_serial_->waitReadable()) {
             string response = my_serial_->readline(65536, "!");
             //movement_ = response;  // save the message from serial
-            if (!response.empty())
+            if (!response.empty()){
                 publishMessage(response);
-            
+            }
         }
     }
 }
@@ -140,7 +139,6 @@ void SerialCommunication::write_serial() {
 
     if (!connecting_ && !zeroing_ && my_serial_) {
         try {
-            my_serial_->flushOutput();
             setitimer(ITIMER_REAL, &RETRY_DELAY, 0);
             my_serial_->write(movement_);
             cout << "Movement message to serial: " << movement_ << endl;

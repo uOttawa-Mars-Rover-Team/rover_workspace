@@ -5,5 +5,7 @@ void setup() {
 
 void loop() {
   while(Serial.available() == 0);
-  Serial.write(Serial.read());
+  
+  char input = Serial.read();
+  Serial.write(input);
 }

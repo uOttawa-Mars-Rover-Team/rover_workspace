@@ -1,0 +1,25 @@
+Running tests with a ros2 serial node:
+
+Build the test node
+1. cd rover_workspace/src/arm_controls/serial_communication_library/testing/ros2_serial_test
+2. colcon build --packages-select serial_ros2_testing
+3. . install/setup.bash
+
+Launch armjoy
+4. make sure the joystick is connected to the vm
+5. open another terminal
+6. cd rover_workspace/src/robotic_arm_controls/launch
+7. ros2 launch arm_joy.launch.xml
+
+Upload test sketch to the arduino
+8. open the arduino ide
+9. open test.ino found in rover_workspace/src/arm_controls/serial_communication_library/testing/arduino_sketch/test
+10. verify and upload
+
+Finally start the test node
+11. ros2 run serial_ros2_testing listener
+
+This node subscribes to the /arm_joy topic. It publishs the axes of the joystick to the arduino to which the arduino should simply 
+write them back.
+
+C++ Joy message: https://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/Joy.html

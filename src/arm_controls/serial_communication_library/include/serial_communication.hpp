@@ -105,16 +105,21 @@ public:
     void isSerialPortOpen();
 
     /**
+     * @brief Gets the current arm position
+     * @return vector<string> A vector of strings representing the arm position, ie ["f", "TW", "SL", "EL", "PT", "RL", "EE]
+     */
+    vector<string> get_arm_position();
+
+    /**
      * @brief Splits a string into a vector of strings based on a delimiter
      * @param delimiter The character to split the string on
      * @param message The string to split
      * @return vector<string> A vector of strings split by the delimiter
-     * 
-     * NOTE: This function is unused right now, but could be useful somewhere else?
      */
     vector<string> split_string(char delimiter, string message);
 
     // This method is used for testing purposes
+    // Returns connection status of the serial port
     bool get_connecting() { return connecting_; }
 };
 

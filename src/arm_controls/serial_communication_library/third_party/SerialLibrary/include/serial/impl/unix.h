@@ -40,7 +40,8 @@
 #ifndef SERIAL_IMPL_UNIX_H
 #define SERIAL_IMPL_UNIX_H
 
-#include "third_party/SerialLibrary/include/serial/serial.h"
+//#include "third_party/SerialLibrary/include/serial/serial.h"
+#include "serial/serial.h"
 
 #include <pthread.h>
 

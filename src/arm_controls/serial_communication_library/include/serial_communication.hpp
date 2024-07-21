@@ -39,7 +39,7 @@ private:
     string movement_;
 
     // Threading
-    ThreadPool tp_executor;
+    //ThreadPool tp_executor;
 
     // Timer and Signals
     struct itimerval RETRY_DELAY;
@@ -64,7 +64,6 @@ public:
     /**
      * @brief Sends a stop command to the Arduino to stop movement
      * @return None
-     * 
      */
     void force_stop();
 
@@ -80,12 +79,16 @@ public:
     /**
      * @brief Writes a message to the serial port
      * @return None
-     *
      */
     void write_serial();
 
 
     // Helper Methods
+    /**
+     * @brief Signal handler for the timer
+     * @param signum The signal number
+     * @return None
+     */
     static void signalHandler(int signum);
 
     /**
@@ -93,9 +96,15 @@ public:
      * @param message The message to publish
      * 
      * This function will only write to the arduino if it is different from the last message sent
+     * Use this method if you want to write to the arduino
      */
     void publishToArduino(string message);
 
+    /**
+     * @brief Publishes a message to the Arduino
+     * @param message The message to publish
+     * @return string The message that was published
+     */
     string publishMessage(string message);
 
     /**

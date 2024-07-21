@@ -23,3 +23,11 @@ This node subscribes to the /arm_joy topic. It publishs the axes of the joystick
 write them back.
 
 C++ Joy message: https://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/Joy.html
+
+--------------------------------------------------------
+
+Running basic unit tests to check serial read and write:
+
+1. cd rover_workspace/src/arm_controls/serial_communication_library/build
+2. make
+3. ./serial_comms_tests

@@ -13,8 +13,8 @@ SerialCommunication::SerialCommunication()
       startup_(true),
       connecting_(true),
       zeroing_(false),
-      run_(true),
-      tp_executor(5) { // Initialize tp_executor with 5 workers
+      run_(true){
+      //tp_executor(5) { // Initialize tp_executor with 5 workers
 
     RETRY_DELAY.it_value.tv_sec = 0.1; // Set delay to 0.1s
     RETRY_DELAY.it_value.tv_usec = 0;
@@ -184,7 +184,7 @@ void SerialCommunication::publishToArduino(string message) {
 
 
 string SerialCommunication::publishMessage(string message) {
-    cout << "\nMessage read from serial: " << message <<endl;
+    cout << "\nMessage read from serial: " << message << "\n";
         //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
     return message;
 }

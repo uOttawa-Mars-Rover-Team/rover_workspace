@@ -9,6 +9,7 @@
     <xacro:include filename="uorover_ik_urdf.ros2_control.xacro" />
 
 
-    <xacro:uorover_ik_urdf_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+    <!-- <xacro:uorover_ik_urdf_ros2_control name="ArmSystem" initial_positions_file="$(arg initial_positions_file)"/> -->
+    <xacro:uorover_ik_urdf_ros2_control name="ArmSystem" initial_positions_file="$(arg initial_positions_file)"/>
 
 </robot>

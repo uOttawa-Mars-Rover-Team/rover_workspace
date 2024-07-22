@@ -37,6 +37,7 @@ private:
     bool run_; // Threads stop running if false
     bool feedback_available_;
     string movement_;
+    string latest_position_;
 
     // Threading
     //ThreadPool tp_executor;
@@ -118,6 +119,12 @@ public:
      * @return vector<string> A vector of strings representing the arm position, ie ["f", "TW", "SL", "EL", "PT", "RL", "EE]
      */
     vector<string> get_arm_position();
+
+    /**
+     * @brief Gets the latest position of the arm
+     * @return string Instance variable with the latest position of the arm
+     */
+    string get_latest_position();
 
     /**
      * @brief Splits a string into a vector of strings based on a delimiter

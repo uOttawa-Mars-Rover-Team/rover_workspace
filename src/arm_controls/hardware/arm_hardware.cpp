@@ -7,7 +7,7 @@ namespace arm_controls
 {
     CallbackReturn ArmSystem::on_init(const hardware_interface::HardwareInfo & info){
         // Serial comms initialized when serial comm object is intialized
-        
+        cout <<"oninit"<< endl;
         // Parent class on init fills the info object out with URDF details 
         // If URDF can't be read, return ERROR
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
@@ -22,15 +22,17 @@ namespace arm_controls
 
         serialObject.connect_serial(0);
 
-
+        
         // for loop to check URDF
                 
         return CallbackReturn::SUCCESS;
     }
 
     std::vector<hardware_interface::StateInterface> ArmSystem::export_state_interfaces() {
+        cout <<"export states"<< endl;
+        
         std::vector<hardware_interface::StateInterface> state_interfaces;
-
+        
         // create the state interface objects and add them to the vector
         for (auto i = 0u; i < info_.joints.size(); i++){
             state_interfaces.emplace_back(hardware_interface::StateInterface(
@@ -44,6 +46,8 @@ namespace arm_controls
     }
 
     std::vector<hardware_interface::CommandInterface> ArmSystem::export_command_interfaces() {
+        cout <<"export commands"<< endl;
+        
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
         // create command interface objects and place them in the vector
@@ -57,17 +61,18 @@ namespace arm_controls
 
     hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
         //TO REMOVE AFTER IMPLEMENTING PROPER READ:
-        std::string serialReadResult = "";
-        //std::string serialReadResult = getLatestArduinoState(); // TODO: Implement this method in the serial library
+        //std::string serialReadResult = "";
+        std::string serialReadResult = serialObject.get_latest_position(); // TODO: Implement this method in the serial library
 
         //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE (all positions)
         //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
         //TODO: Decide what velocity feedback return messages will look like
-
+        
         if(serialReadResult[0] != 'f'){
             //probably better to log an error here
-            return hardware_interface::return_type::ERROR;;
+            return hardware_interface::return_type::OK;;
         }
+        
 
         std::string temp;
         std::istringstream ss(serialReadResult);

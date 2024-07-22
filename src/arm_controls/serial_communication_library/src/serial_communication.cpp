@@ -13,7 +13,9 @@ SerialCommunication::SerialCommunication()
       startup_(true),
       connecting_(true),
       zeroing_(false),
-      run_(true){
+      run_(true),
+      latest_position_{""}{
+      //tp_executor(5) { // Initialize tp_executor with 5 workers
 
     RETRY_DELAY.it_value.tv_sec = 0.1; // Set delay to 0.1s
     RETRY_DELAY.it_value.tv_usec = 0;
@@ -121,12 +123,13 @@ void SerialCommunication::force_stop() {
 void SerialCommunication::read_serial() {
     sleep(1);
     cout << "Reading from serial port..." << endl;
+    
     while (run_) {
-        // Checks if arduino is already connected, serial port is open and there is data to read
-        if (!connecting_ && my_serial_ and my_serial_->waitReadable()) {
+        if (!connecting_ && my_serial_) {
+            //my_serial_->flushInput();
             string response = my_serial_->readline(65536, "!");
-            //movement_ = response;  // save the message from serial
-            if (!response.empty()){
+            //latest_position_ = response;  // save the message from serial
+            if (!response.empty())
                 publishMessage(response);
             }
         }
@@ -182,8 +185,13 @@ void SerialCommunication::publishToArduino(string message) {
 
 
 string SerialCommunication::publishMessage(string message) {
-    cout << "\nMessage read from serial: " << message << "\n";
-        //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
+    cout << "\nMessage read from serial: " << message << "\n"; //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
+    
+    //TODO: Make this code not blow up if the message is something like "fun"
+    if(message[0] == 'f'){
+        latest_position_ = message;
+    }
+    
     return message;
 }
 
@@ -198,6 +206,7 @@ void SerialCommunication::isSerialPortOpen() {
 
 vector<string> SerialCommunication::get_arm_position(){
     // Checks if message starts with "f"
+    
     if (movement_[0] == 'f') {
         vector<string> split_message = split_string(';', movement_);
         // Checks if message conatins all the arm info, ie "f;TW;SL;EL;PT;RL;EE"
@@ -208,13 +217,19 @@ vector<string> SerialCommunication::get_arm_position(){
     return {"E", "Movement contains invalid arm position"}; // change format of message?  
 }
 
+string SerialCommunication::get_latest_position(){
+    return latest_position_;
+}
+
 vector<string> SerialCommunication::split_string(char delimiter, string message) {
     vector<string> new_vector;
     stringstream ss(message);
     string token;
+
     while (getline(ss, token, delimiter)) {
         new_vector.push_back(token);
     }
+
     return new_vector;
 }
 

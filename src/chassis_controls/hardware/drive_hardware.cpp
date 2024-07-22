@@ -26,8 +26,8 @@ namespace chassis_controls {
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
 
-  tested_pwm_ = 5.0;
-  RCLCPP_INFO(logger_, "!!! Testing at: %f.3%% PWM. !!!", tested_pwm_);
+  tested_pwm_ = 30.0;
+  RCLCPP_INFO(logger_, "!!! Testing at: %f%% PWM. !!!", tested_pwm_);
   
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
@@ -91,7 +91,7 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
   for (const auto &wheel : talons_) {
     err = (int)wheel->ConfigSelectedFeedbackSensor(
         ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
-        0, 100);
+        0, 0);
     wheel->SetSelectedSensorPosition(0.0);
 
     if (err) {
@@ -105,7 +105,8 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
   pids_[RR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
  
 
-  //talons_[RL]->SetSensorPhase(true);
+  talons_[FL]->SetSensorPhase(true);
+  talons_[RL]->SetSensorPhase(true);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 };
@@ -171,11 +172,16 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     wheel_position_[wheel] = talons_[wheel]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
-    wheel_velocities_[wheel] = talons_[wheel]->GetSelectedSensorVelocity() / (cfg_.controller_period * cfg_.enc_counts_per_rev);
+    wheel_velocities_[wheel] = 6.28 * talons_[wheel]->GetSelectedSensorVelocity() / (cfg_.controller_period * cfg_.enc_counts_per_rev);
+
+    if (wheel == FR){
+    wheel_position_[FR] = talons_[FL]->GetSelectedSensorPosition() / cfg_.enc_counts_per_rev;
+    wheel_velocities_[FR] = 6.28 * talons_[FL]->GetSelectedSensorVelocity() / (cfg_.controller_period * cfg_.enc_counts_per_rev);
+    }
 
     RCLCPP_INFO(logger_, "!!! Wheel feedback: %zu !!!", wheel);
     RCLCPP_INFO(logger_, "!!! Wheel velocity: %f !!!", wheel_velocities_[wheel]);
-    RCLCPP_INFO(logger_, "!!! Wheel feedback: %f !!!", talons_[wheel]->GetStatorCurrent());
+    RCLCPP_INFO(logger_, "!!! Wheel current consumption: %f !!!", talons_[wheel]->GetOutputCurrent());
 
 
   };
@@ -195,7 +201,7 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
 hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
                                                    const rclcpp::Duration &dt) {
   u_int64_t period = dt.nanoseconds();
-  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period*2);
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period);
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
@@ -205,6 +211,10 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     // REMOVE AFTER TESTING //
     pwm = tested_pwm_/100;
     // PLEASE //
+
+    if (wheel == FR){
+	    talons_[FR]->Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 10);
+    } 
     
     talons_[wheel]->Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
   }

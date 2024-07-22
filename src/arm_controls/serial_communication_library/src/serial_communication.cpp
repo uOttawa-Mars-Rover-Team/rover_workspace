@@ -129,7 +129,7 @@ void SerialCommunication::read_serial() {
             //my_serial_->flushInput();
             string response = my_serial_->readline(65536, "!");
             //latest_position_ = response;  // save the message from serial
-            if (!response.empty())
+            if (!response.empty()){
                 publishMessage(response);
             }
         }
@@ -142,6 +142,7 @@ void SerialCommunication::write_serial() {
 
     if (!connecting_ && !zeroing_ && my_serial_) {
         try {
+            //my_serial_->flushOutput();
             setitimer(ITIMER_REAL, &RETRY_DELAY, 0);
             my_serial_->write(movement_);
             cout << "Movement message to serial: " << movement_ << endl;

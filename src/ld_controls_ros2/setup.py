@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        	'LD_GUI = ld_controls_ros2.LD_Temp_GUI:main'
+        	'LD_GUI = ld_controls_ros2.LD_Temp_GUI:main',
+            'MCU = ld_controls_ros2.MCU_interface_node:main'
         ],
     },
 )

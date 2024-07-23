@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import Int32
 from std_msgs.msg import String
-from std_msgs.msg import Empty
 import threading
 
 class soilCollection(Node):
@@ -10,7 +10,7 @@ class soilCollection(Node):
         #Publisher Setup:
         self.soilCollectionPub = self.create_publisher(String, "soil_collection", 10)
         self.vacuumTubeControlPub = self.create_publisher(String, "vacuum_tube_control", 10)
-        self.weatherStationPub = self.create_publisher(Empty, "weather_station", 10)
+        self.weatherStationPub = self.create_publisher(String, "weather_station", 10)
         self.soilTestingPub = self.create_publisher(String, "soil_testing", 10)
         #Subscribers Setup:
         #self.soilTestingSub = self.create_subscription(String, "soil_data", 10)
@@ -18,32 +18,33 @@ class soilCollection(Node):
 
     def collectCache(self):
         msg = String()
-        msg.data = "cache"
+        msg.data = "1"
         self.soilCollectionPub.publish(msg)
     def collectSoilData(self):
         msg = String()
-        msg.data = "data"
+        msg.data = "2"
         self.soilCollectionPub.publish(msg)
 
     def moveVacDown(self):
         msg = String()
-        msg.data = "down"
+        msg.data = "3"
         self.vacuumTubeControlPub.publish(msg)
     def moveVacUp(self):
         msg = String()
-        msg.data = "up"
+        msg.data = "4"
         self.vacuumTubeControlPub.publish(msg)
     def stopVacMove(self):
         msg = String()
-        msg.data = "stop"
+        msg.data = "5"
         self.vacuumTubeControlPub.publish(msg)
     def toggleVac(self):
         msg = String()
-        msg.data = "toggle"
+        msg.data = "6"
         self.vacuumTubeControlPub.publish(msg)
 
     def collectWeatherData(self):
-        msg = Empty()
+        msg = String()
+        msg.data = "7"
         self.weatherStationPub.publish(msg)
         
     def initiate(args=None):

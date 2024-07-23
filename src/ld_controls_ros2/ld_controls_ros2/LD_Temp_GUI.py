@@ -101,10 +101,16 @@ class app:
         self.weatherUVLight = customtkinter.CTkTextbox(master = self.weatherStationContols, width = 180, height = 30, font= ("CTkFont", 15), fg_color="#50577A")
         self.weatherUVLight.place(x = 10, y = 320)
 
-        self.VacuumUpButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Up", command= soilCollectionNode.moveVacUp)
+        self.VacuumUpButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Up", command = soilCollectionNode.moveVacUp)
         self.VacuumUpButton.place(x = 10, y = 60)
-        self.VacuumDownButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Down", command= soilCollectionNode.moveVacDown)
+        #self.VacuumUpButton.bind('<Button>', soilCollectionNode.moveVacUp("1"))
+        self.VacuumUpButton.bind("<Button>", print("yo"))
+        self.VacuumUpButton.pack
+        self.VacuumDownButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Move Down", command = soilCollectionNode.moveVacDown)
         self.VacuumDownButton.place(x = 10, y = 120)
+        #self.VacuumDownButton.bind("<ButtonPress>", soilCollectionNode.moveVacDown("3"))
+        #self.VacuumDownButton.bind("<But
+        # tonRelease>", soilCollectionNode.moveVacDown("5"))
         self.VacuumStartButton = customtkinter.CTkButton(master = self.vacuumTubeControls, width = 180, height = 50, fg_color="#50577A", font= ("CTkFont", 20), text="Toggle On/Off", command= soilCollectionNode.toggleVac)
         self.VacuumStartButton.place(x = 10, y = 180)
 root = customtkinter.CTk()

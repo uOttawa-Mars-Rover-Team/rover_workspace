@@ -3,7 +3,8 @@ import {
   HomeOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
-  CloudDownloadOutlined
+  CloudDownloadOutlined,
+  ExperimentOutlined
 } from "@ant-design/icons";
 import { Button, Col, Row, Space, Card, Input } from "antd";
 import { Helmet } from "react-helmet";
@@ -11,6 +12,9 @@ import { Helmet } from "react-helmet";
 import { Header, Layout } from "../../components";
 import coring_icon from "../../assets/icons/drill-tip-svgrepo-com.svg";
 import weather_icon from "../../assets/icons/weather-symbol-4-svgrepo-com.svg"
+import start_icon from "../../assets/icons/play-circle-svgrepo-com.svg"
+import pause_icon from "../../assets/icons/pause-circle-svgrepo-com.svg"
+import stop_icon from "../../assets/icons/stop-circle-svgrepo-com.svg"
 
 const dummyWeatherData = [
   { label: 'Wind', value: '16 Km/h' },
@@ -124,6 +128,55 @@ const ScienceMission: React.FC = () => (
           ))}
         </Row>
       </Card>
+
+      {/* Soil Testing block */}
+      <Header title="Soil Testing" icon={<ExperimentOutlined />} />
+      <Row gutter={[32, 16]}>
+        <Col xs={24} sm={12} md={8} lg={8}>
+          <Card title="Site 1" style={{ height: 260 }}>
+            <Space direction="vertical" size="middle">
+              <Button
+                type="primary"
+                icon={<img src={start_icon} alt="Start Icon" style={{ width: 24, height: 24 }} />}
+                style={{
+                  width: '100px', padding: '8px 8px', height: 'auto', display: 'flex', alignItems: 'center'
+                }}>
+                Start
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12} md={8} lg={8}>
+          <Card title="Site 2" style={{ height: 260 }}>
+            <Space direction="vertical" size="middle">
+              <Button
+                type="primary"
+                icon={<img src={pause_icon} alt="Pause Icon" style={{ width: 24, height: 24 }} />}
+                style={{
+                  width: '100px', padding: '8px 8px', height: 'auto', display: 'flex', alignItems: 'center'
+                }}>
+                Pause
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12} md={8} lg={8}>
+          <Card title="Site 3" style={{ height: 260 }}>
+            <Space direction="vertical" size="middle">
+              <Button
+                type="primary"
+                icon={<img src={stop_icon} alt="Stop Icon" style={{ width: 24, height: 24 }} />}
+                style={{
+                  width: '100px', padding: '8px 8px', height: 'auto', display: 'flex', alignItems: 'center'
+                }}>
+                Stop
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
     </Layout>
   </>
 );

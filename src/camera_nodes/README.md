@@ -61,3 +61,29 @@ ros2 launch camera_nodes aruco.launch.py -- image_topic:=/image_raw
 ```bash
 ros2 run rqt_image_view rqt_image_view
 ```
+
+### Controlling cameras with `camera_control_app.py`
+
+The app from `camera_control_app.py` can be used to start and stop publishers for specified cameras quickly given a JSON config file. Compared to using traditional launch files, this app provides a user interface to start and stop publishers quickly and doesn't require multiple terminals to be opened to launch publishers for multiple cameras.
+
+Running this app requires a JSON config file . Example config file:
+
+```
+{
+  "title": "Camera Controls - Robotic Arm Config.",
+  "cameras": {
+    "arm": "params1.yaml",
+    "end_effector": "params2.yaml"
+  }
+}
+```
+
+To run the app, use the `camera_nodes` package's console script for the app and pass in the path to the JSON config file being used. Example:
+
+```
+ros2 run camera_nodes controls src/camera_nodes/config/arm_config.json
+```
+
+### Misc Resources
+
+- [Camera Information Wiki Page](https://gitlab.com/uorover/rover_workspace/-/wikis/Camera-Information)

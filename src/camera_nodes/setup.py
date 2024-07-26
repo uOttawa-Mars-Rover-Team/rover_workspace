@@ -29,6 +29,7 @@ setup(
             os.path.join("share", package_name, "launch"),
             glob(os.path.join("launch", "*launch.[pxy][yma]*")),
         ),
+        ("share/" + package_name + "/config/", glob("config/*")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -43,6 +44,7 @@ setup(
             "panorama = camera_nodes.panorama:main",
             "video = camera_nodes.video:main",
             "aruco = camera_nodes.aruco:main",
+            "controls = camera_nodes.camera_control_app:main",
         ],
     },
 )

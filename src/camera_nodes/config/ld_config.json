@@ -1,0 +1,8 @@
+{
+  "title": "Camera Controls - Life Detection Config.",
+  "cameras": {
+    "drive": "drive.yaml",
+    "ld_1": "ld_1.yaml",
+    "ld_2": "ld_2.yaml"
+  }
+}

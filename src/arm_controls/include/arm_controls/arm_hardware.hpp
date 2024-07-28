@@ -14,6 +14,8 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "../serial_communication_library/include/serial_communication.hpp"
 
+#define PI 3.14159265358979323846
+
 //#include <general_interfaces/msg/detail/arm_pose__struct.h>
 //#include <unordered_map>
 

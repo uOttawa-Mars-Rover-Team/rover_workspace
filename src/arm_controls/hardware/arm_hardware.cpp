@@ -18,7 +18,7 @@ namespace arm_controls
         
         joint_position_command_.assign(numInterfaces, 0);
 
-        serialObject.connect_serial(0);
+        serialObject.connect_serial(0); 
 
         
         //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces 
@@ -67,8 +67,12 @@ namespace arm_controls
         std::getline(ss, temp, ';'); //skip the f; part of the string
 
         for (size_t i = 0; i < numInterfaces; ++i) {
-            if (std::getline(ss, temp, ';') && temp != "!"){
-                joint_position_state_[i] = std::stod(temp);
+            //getline will load the  next part of the string up to the semicolon
+            //putting this in an if statement will ensure that the code doesn't break if the string stream is in a failure state
+            if (std::getline(ss, temp, ';') && temp != "!"){ 
+                // Arduino sends the position in degrees, but the controller needs it in radians
+                double positionInRad = std::stod(temp) * PI / 180;
+                joint_position_state_[i] = positionInRad;
             }
         }
 
@@ -79,12 +83,16 @@ namespace arm_controls
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // Example of typical command to send "I;TW;SL;EL;PT;RL;EE;!
+        // By default, the controllers should be sending positions for revolute joints in radians
+        //We have to do a conversion from radians to degrees for the arduino
 
         std::ostringstream command_stream;
         command_stream << "I;";
 
         for (size_t i = 0; i < numInterfaces; ++i) {
-            command_stream << joint_position_command_[i];
+            double positionInDegrees = joint_position_command_[i] * 180 / PI;
+            command_stream << positionInDegrees;
+            
             if (i < numInterfaces - 1) {
                 command_stream << ";";
             }

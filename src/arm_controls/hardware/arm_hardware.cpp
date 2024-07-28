@@ -68,10 +68,10 @@ namespace arm_controls
         //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
         //TODO: Decide what velocity feedback return messages will look like
         
-        if(serialReadResult[0] != 'f'){
-            //probably better to log an error here
-            return hardware_interface::return_type::OK;;
-        }
+        // if(serialReadResult[0] != 'f'){
+        //     //probably better to log an error here
+        //     return hardware_interface::return_type::OK;;
+        // }
         
 
         std::string temp;
@@ -79,10 +79,21 @@ namespace arm_controls
 
         std::getline(ss, temp, ';'); //skip the f; part of the string
 
-        //TODO: change this to a for loop with num interfaces
+        // TODO: change this to a for loop with num interfaces
         while (std::getline(ss, temp, ';')){
+            if(temp == "!")
+            {
+                break;
+            }
+            std::cout << "KIAN: " << std::stod(temp) << std::endl;
             joint_position_state_.push_back(std::stod(temp));
         }
+
+        // for(auto pos: joint_position_state_)
+        // {
+        //     std::cout << "KIAN: " << pos;
+        // }
+        // std::cout << std::endl;
 
         //joint velocity state will remain at 0 for the time being
 
@@ -99,12 +110,12 @@ namespace arm_controls
         command_stream << "I;";
 
         for (size_t i = 0; i < numInterfaces; ++i) {
-            command_stream << std::fixed << std::setprecision(2) << joint_position_command_[i];
+            command_stream << joint_position_command_[i];
             if (i < numInterfaces - 1) {
                 command_stream << ";";
             }
         }
-        command_stream << "!";
+        command_stream << ";!";
 
         std::string command = command_stream.str();
         

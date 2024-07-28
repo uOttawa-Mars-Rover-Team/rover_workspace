@@ -189,9 +189,12 @@ string SerialCommunication::publishMessage(string message) {
     cout << "\nMessage read from serial: " << message << "\n"; //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
     
     //TODO: Make this code not blow up if the message is something like "fun"
-    if(message[0] == 'I'){ // IMPORTANT, CHANGE TO I
-        latest_position_ = message;
-    }
+    
+    latest_position_ = message;
+
+    // if(message[0] == 'f'){ COMMENT BACK IN FOR ARDUINO
+    //     latest_position_ = message;
+    // }
     
     return message;
 }

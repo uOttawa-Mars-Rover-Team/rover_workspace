@@ -190,11 +190,11 @@ string SerialCommunication::publishMessage(string message) {
     
     //TODO: Make this code not blow up if the message is something like "fun"
     
-    latest_position_ = message;
+    //latest_position_ = message;
 
-    // if(message[0] == 'f'){ COMMENT BACK IN FOR ARDUINO
-    //     latest_position_ = message;
-    // }
+    if(message[0] == 'f'){ //COMMENT BACK IN FOR ARDUINO
+        latest_position_ = message;
+    }
     
     return message;
 }

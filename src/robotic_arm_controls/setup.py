@@ -46,7 +46,8 @@ setup(
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
             "template_node = robotic_arm_controls.template_pub_sub:main",
             "toggler = robotic_arm_controls.toggler:main",
-            "router = robotic_arm_controls.router:main"
+            "router = robotic_arm_controls.router:main",
+            "ikjoy = robotic_arm_controls.ik_toggler:main"
         ],
     },
 )

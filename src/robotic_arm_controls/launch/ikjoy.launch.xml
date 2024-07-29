@@ -3,7 +3,7 @@ Launch file for the toggler node
 -->
 <launch>
     <!-- Toggler Node -->
-    <node pkg="robotic_arm_controls" exec="toggler" name="toggler_node" output="screen" respawn="true">
+    <node pkg="robotic_arm_controls" exec="ikjoy" name="ik_joy_node" output="screen" respawn="true">
  
     </node>
 

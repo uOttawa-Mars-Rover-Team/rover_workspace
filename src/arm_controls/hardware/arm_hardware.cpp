@@ -19,7 +19,7 @@ namespace arm_controls
         joint_position_command_.assign(numInterfaces, 0);
 
         serialObject.connect_serial(0); 
-
+        serialObject.publishToArduino("I;!"); //this will set the arduino in IK mode
         
         //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces 
                 
@@ -61,6 +61,8 @@ namespace arm_controls
         //TODO: Decide what velocity feedback return messages will look like
         
         std::string serialReadResult = serialObject.get_latest_position();
+        //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
+        
         std::istringstream ss(serialReadResult);
         std::string temp; // string that we read into when using the istringstream
 
@@ -72,26 +74,31 @@ namespace arm_controls
             if (std::getline(ss, temp, ';') && temp != "!"){ 
                 // Arduino sends the position in degrees, but the controller needs it in radians
                 double positionInRad = std::stod(temp) * PI / 180;
-                joint_position_state_[i] = positionInRad;
+
+                if (abs(joint_position_state_[i] - positionInRad) < 1) {
+                    joint_position_state_[i] = joint_position_command_[i];
+                } else{
+                    joint_position_state_[i] = positionInRad;
+                }
             }
         }
 
-        //joint velocity state will remain at 1 for the time being
+        //Joint velocity state will remain at 0 for the time being
 
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
-        // Example of typical command to send "I;TW;SL;EL;PT;RL;EE;!
+        // Example of typical command to send "S;TW;SL;EL;PT;RL;EE;!
         // By default, the controllers should be sending positions for revolute joints in radians
-        //We have to do a conversion from radians to degrees for the arduino
+        // We have to do a conversion from radians to degrees for the arduino
 
         std::ostringstream command_stream;
-        command_stream << "I;";
+        command_stream << "S;";
 
         for (size_t i = 0; i < numInterfaces; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
-            command_stream << positionInDegrees;
+            command_stream << std::fixed << std:: setprecision(2)<<positionInDegrees;
             
             if (i < numInterfaces - 1) {
                 command_stream << ";";
@@ -100,6 +107,8 @@ namespace arm_controls
         command_stream << ";!";
 
         std::string command = command_stream.str();
+        //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+        
         serialObject.publishToArduino(command);
 
         return hardware_interface::return_type::OK;

@@ -13,8 +13,7 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "../serial_communication_library/include/serial_communication.hpp"
-
-#define PI 3.14159265358979323846
+#include "rclcpp/rclcpp.hpp"
 
 //#include <general_interfaces/msg/detail/arm_pose__struct.h>
 //#include <unordered_map>
@@ -22,6 +21,8 @@
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
     const int numInterfaces = 6;
+    const int PI = 3.14159265358979323846;
+    const string IK_START_COMMAND = "!I;!";
 
     class HARDWARE_INTERFACE_PUBLIC ArmSystem
     : public hardware_interface::SystemInterface {

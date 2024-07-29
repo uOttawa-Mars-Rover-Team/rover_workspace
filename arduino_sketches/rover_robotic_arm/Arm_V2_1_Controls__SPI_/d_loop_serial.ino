@@ -123,10 +123,7 @@
   if (millis() - dashb_t >= dashb_delay) {
 
     //Publishing/printing feedback below
-    Serial.print("f");
-    Serial.print(".");
-    Serial.print(millis());
-    Serial.print(";");
+    Serial.print("f;");
     for (int i = TW ; i < LAST ; i++) { 
       motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
       Serial.print(motor[i].currentPos);

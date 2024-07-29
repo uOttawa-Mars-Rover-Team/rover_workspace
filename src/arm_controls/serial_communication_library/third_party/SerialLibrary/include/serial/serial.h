@@ -178,7 +178,7 @@ public:
    * \throw std::invalid_argument
    */
   Serial (const std::string &port = "",
-          uint32_t baudrate = 9600,
+          uint32_t baudrate = 115200,
           Timeout timeout = Timeout(),
           bytesize_t bytesize = eightbits,
           parity_t parity = parity_none,

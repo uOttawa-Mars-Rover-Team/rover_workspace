@@ -71,7 +71,7 @@ int wristStopDown = 0;
 //Time in ms for:
 int ls_delay    = 20; //limit switch debounce time
 int enc_delay   = 20; //how often to check encoder data and move motors
-int dashb_delay = 100;//how often to publish via serial encoder data, etc...
+int dashb_delay = 200;//how often to publish via serial encoder data, etc...
 int fault_delay = 500;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates

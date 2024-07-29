@@ -131,7 +131,7 @@ void SerialCommunication::force_stop() {
 
 
 void SerialCommunication::read_serial() {
-    sleep(1);
+    //sleep(1);
     //RCLCPP_DEBUG(rclcpp::get_logger("SerialLibrary"), "Reading from serial port...");
     cout << "Reading from serial port..." << endl;
     

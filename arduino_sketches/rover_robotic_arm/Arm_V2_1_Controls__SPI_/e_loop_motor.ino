@@ -1,21 +1,34 @@
 
 //Everything to do with actuating the motors
 
-
   //Every enc_delay ms, sample encoder data and move motors when needed
   if (millis() - encoder_t >= enc_delay) {
 
+    //For joints TW - WP, retrive encoder position and store as radians
+    for (int i = TW ; i <= WP ; i++) {
+      updateEncoderPosition(i);
+    }
+    /*
+    for (int i = TW ; i <= WP ; i++) {
+      if (!enc_status[i]) {
+        Serial.println("!");
+        Serial.println("!");
+      }
+    }*/
+    
+    
+    
     if (equalsStr(mode,"M")) {
       for (int i = TW ; i < LAST ; i++) {
-        if (motor[i].desired < 0.0 and not motor[i].direction) {
+        if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
           moveMotors(i, -1);
         }
-        else if (motor[i].desired > 0.0 and not motor[i].direction) {
+        else if (motor[i].desiredPos > 0.0 and not motor[i].direction) {
           motor[i].direction = 1;
           moveMotors(i, 1);
         }
-        else if (floatsEqual(motor[i].desired, 0.0, 2) and motor[i].direction) {
+        else if (floatsEqual(motor[i].desiredPos, 0.0, 2) and motor[i].direction) {
           motor[i].direction = 0;
           moveMotors(i, 0);
         }
@@ -24,73 +37,59 @@
     } else {//IK mode
 
       //Move first 4 motors that have encoder data
-      for (int i = TW ; i <= WP ; i++) 
-        motorHomeToCount(i);
+      //Move tower up to 1 degree around the goal
+      motorHomeToCount(TW, 1.0);
+      //Move LA1 & 2 up to 0.5 degrees around the goal
+      motorHomeToCount(L1, 0.75);
+      motorHomeToCount(L2, 0.75);
+      //Move wrist up to 0.5 degrees around the goal
+      motorHomeToCount(WP, 1.0);
       
       //Move last 2 remaining motors by speed
-      for (int i = WR ; i <= EE ; i++) {
-        if (motor[i].desired < 0.0 and not motor[i].direction) {
+      for (int i = WR ; i < LAST ; i++) {
+        //move towards negative direction
+        if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
           moveMotors(i, -1);
         }
-        else if (motor[i].desired > 0.0 and not motor[i].direction) {
+        //move towards positive direction
+        else if (motor[i].desiredPos > 0.0 and not motor[i].direction) {
           motor[i].direction = 1;
           moveMotors(i, 1);
         }
-        else if (floatsEqual(motor[i].desired, 0.0, 2) and motor[i].direction) {
+        //stop if stop cmd is received
+        else if (floatsEqual(motor[i].desiredPos, 0.0, 2) and motor[i].direction) {
           motor[i].direction = 0;
           moveMotors(i, 0);
         }
       }
     }//end of IK mode
     
-    for (int i = TW ; i < LAST ; i++) {
-      tmpEncPos = getPositionSPI(motor[i].ENC, RES12);
-      if (tmpEncPos != 0xFFFF) {
-        if (i == TW) {
-          if (abs((int)tmpEncPos - (int)tmpEncPosPrev) > 1) {
-            Serial.print(((int)tmpEncPos - (int)tmpEncPosPrev));
-            if ((int)tmpEncPos < (int)tmpEncPosPrev and motor[i].direction == 1) {
-              section++;
-              Serial.print("Section switched to: ");
-              Serial.println(section);
-              Serial.print("!");
-            } else if ((int)tmpEncPos > (int)tmpEncPosPrev and motor[i].direction == -1) {
-              section--;
-              Serial.print("Section switched to: ");
-              Serial.println(section);
-              Serial.print("!");
-            }
-          }
-          motor[i].current = getResultingRadian(section, (float)tmpEncPos*0.00153398078789);
-        } else {
-          motor[i].current = (float)tmpEncPos*0.00153398078789;
-        }
-      }
-    }
-      
     //update timer until enc_delay is over
     encoder_t = millis();
   }//end of encoder delay if statement
 
   //Motor is allowed to run whenever it's in one of the cases
   //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
-  if (motor[0].direction)
+  if (motor[TW].direction)
     tower.run();
 
   //LAs handled by moveMotor
   
   //Similar to tower, just with extra limit switch logic
-  if (motor[3].direction or motor[4].direction)
+  if (motor[WP].direction)
     //Can move the wrist (differential) if:
     //- LS3 is not clicked and pitching down
     //- LS4 is not clicked and pitching up
     if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
-      wristEE.run();
+      wristPitch.run();
     }
+    
+  if (motor[WR].direction)
+    wristRoll.run();
   
   //similar to tower and similar limit switch logic to pitch
-  if (motor[5].direction)
+  if (motor[EE].direction)
     //EE only allowed to close if LS1 is not pressed
     //EE only allowed to open if LS2 is not pressed
     if ((LS1.getState() and motor[EE].direction == -1) | (LS2.getState() and motor[EE].direction == 1)) 
@@ -99,14 +98,14 @@
 } //end of loop()
 
 //Uses encoder data to home the motor to a position
-void motorHomeToCount(int i) {
+void motorHomeToCount(int i, float difference) {
 
   //Is current position equal to desired up to n decimal places
-  if (not floatsEqual(motor[i].current, motor[i].desired, 2)) {
+  if (not floatsEqual(motor[i].currentPos, motor[i].desiredPos, difference)) {
 
     //Current position lower than desired, move positive direction (dir = 1)
     //Want to run this once (blocking) so check if we are not already going (dir == 1)
-    if (motor[i].current < motor[i].desired and motor[i].direction != 1) {
+    if (motor[i].currentPos < motor[i].desiredPos and motor[i].direction != 1) {
       //distanceDelta[i] = abs(motor[i].desired-motor[i].direction);
       motor[i].direction = 1;
       moveMotors(i, 1);//starting speed (speeds < 150 result in no extension)
@@ -115,7 +114,7 @@ void motorHomeToCount(int i) {
 
     //Current position higher than desired, move towards negative direction (dir = 1)
     //Want to run this once (blocking) so check if we are not already going (dir == 1)
-    else if (motor[i].current > motor[i].desired and motor[i].direction != -1) {
+    else if (motor[i].currentPos > motor[i].desiredPos and motor[i].direction != -1) {
       //distanceDelta[i] = abs(motor[i].desired-motor[i].direction);
       motor[i].direction = 1;
       moveMotors(i, -1);
@@ -150,7 +149,7 @@ void moveMotors(int i, int dir) {
     //Moves to whichever direction towards a step goal
     if (dir != 0) {
       tower.setMaxSpeed(motor[i].speed);
-      tower.moveTo(dir*motor[i].MAX_RANGE);
+      tower.move(-dir*motor[i].MAX_RANGE);
     }
     //stops stepper
     else {
@@ -177,29 +176,30 @@ void moveMotors(int i, int dir) {
   //Wrist pitch
   else if (i == WP) {
     if (dir != 0) {
-      wristRight.setMaxSpeed(motor[i].speed);
-      wristLeft.setMaxSpeed(motor[i].speed);
-
-      long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, dir*motor[i].MAX_RANGE};
-      wristEE.moveTo(tmpPositions);
+      wristPitch.setMaxSpeed(motor[i].speed);
+      wristPitch.move(-dir*motor[i].MAX_RANGE);
     }
-  } 
+    else {
+      wristPitch.stop();
+      wristPitch.runToPosition();
+    }
+  }
   //Wrist roll
   else if (i == WR) {
     if (dir != 0) {
-      wristRight.setMaxSpeed(motor[i].speed);
-      wristLeft.setMaxSpeed(motor[i].speed);
-
-      //we set the target of the motors
-      long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, -dir*motor[i].MAX_RANGE};
-      wristEE.moveTo(tmpPositions);
+      wristRoll.setMaxSpeed(motor[i].speed);
+      wristRoll.move(-dir*motor[i].MAX_RANGE);
+    }
+    else {
+      wristRoll.stop();
+      wristRoll.runToPosition();
     }
   }
   //End effector 
   else {
     if (dir != 0) {
       endEffector.setMaxSpeed(motor[i].speed);
-      endEffector.moveTo(dir*motor[i].MAX_RANGE);
+      endEffector.move(dir*motor[i].MAX_RANGE);
     }
     else {
       endEffector.stop();
@@ -220,18 +220,18 @@ int calculateNextSpeed(int i) {
   //Temporary function that returns a speed depending on the motor
   //For use with IK when not PID'ing (constant speed)
   if (equalsStr(mode,"M")) {
-    return abs((int)motor[i].desired);
+    return abs((int)motor[i].desiredPos);
   } else {
     int speedMin = 0;
     int speedMax = 0;
     if (i == L1 or i == L2) {
       speedMin = 200;
       speedMax = 600;
-      return 600;
+      return 300;
     } else {
       speedMin = 0;
       speedMax = 500;
-      return 150;
+      return 220;
     }
   }
 
@@ -249,6 +249,9 @@ int calculateNextSpeed(int i) {
   return (int) s_final;*/
 }//end of calculateNextSpeed
 
-float getResultingRadian(int section, float radian) {
-  return section*0.628318530718 + radian*0.1;
+//Reboots the motor driver
+void rebootDriver(int i) {
+  digitalWrite(motor[i].BOOT_PIN, LOW);
+  delay(1); //takes ~7.5 microseconds so 1 ms = 1000 microseconds should be fine
+  digitalWrite(motor[i].BOOT_PIN, HIGH);
 }

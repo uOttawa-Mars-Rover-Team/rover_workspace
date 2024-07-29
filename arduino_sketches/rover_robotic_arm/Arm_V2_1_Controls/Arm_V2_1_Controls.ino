@@ -12,7 +12,11 @@
  *  - Olivier Caron     ocaro009@uottawa.ca
  *  
  *  
+<<<<<<< HEAD
  *  Up-to-date as of 2024-02-26
+=======
+ *  Up-to-date as of 2024-03-02
+>>>>>>> robot-arm-main-ROS2
  *  
  *  
  */

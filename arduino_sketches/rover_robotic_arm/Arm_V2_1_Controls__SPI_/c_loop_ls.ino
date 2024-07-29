@@ -2,7 +2,6 @@
 //Start of loop plus limit switch logic
 
 void loop() {
-
   //we do some of the needed setup to get the limitSwitches working
   LS1.loop(); //MUST call the loop() function first
   LS2.loop();

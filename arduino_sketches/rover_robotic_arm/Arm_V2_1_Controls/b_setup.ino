@@ -7,7 +7,7 @@
 //- ezButton (takes care of button debouncing)
 //- JrkG2 (used for linear actuator control)
 #include <AccelStepper.h>
-#include <MultiStepper.h>
+//#include <MultiStepper.h>
 #include <ezButton.h>
 #include <JrkG2.h>
 #include <math.h>
@@ -27,7 +27,7 @@ AccelStepper tower      (AccelStepper::DRIVER, 7,   6);
 AccelStepper endEffector(AccelStepper::DRIVER, 13,  12);
 
 //We set up the multistepper
-MultiStepper wristEE;
+//MultiStepper wristEE;
 
 //We declare objects for the linear actuator drivers
 JrkG2I2C LA1(11);
@@ -54,7 +54,7 @@ struct Motor {
   int           currentCount;
   float         current;    
   float         desired;
-  unsigned long dir_change; //time since dir has changed
+  unsigned long dirChange; //time since dir has changed
   const int     MAX_RANGE;  //max range allowed by motor/workspace
   int           ENC_A;      //encoder pin 1 if applicable
   int           ENC_B;      //encoder pin 2 if applicable
@@ -62,13 +62,14 @@ struct Motor {
 };
 
 //Create the motor objects
-Motor tw = {0, 0, 2000, 0,  0.0, 0.0, millis(), 2500,     18, 39,  millis()};
-Motor l1 = {0, 0, -1,   0,  0.0, 0.0, millis(), -1,       2,  -1,  millis()};    
-Motor l2 = {0, 0, -1,   0,  0.0, 0.0, millis(), -1,       3,  -1,  millis()};
-Motor wp = {0, 0, 2000, 0,  0.0, 0.0, millis(), 250000,   19, 41,  millis()};
-Motor wr = {0, 0, 2000, 0,  0.0, 0.0, millis(), 1750000,  -1, -1,  millis()};
-Motor ee = {0, 0, 2000, 0,  0.0, 0.0, millis(), 8610,      -1, -1,  millis()};
-//Note: added extra 2 zeroes for pitch and roll max ranges
+//         dir  speed  accel   ccnt   curr    des   dir_c    MAX_R     E_A   E_B  t_delay
+Motor tw = {0,    0,    3000,   0,    0.0,    0.0, millis(), 2500,     18,   39,  millis()};
+Motor l1 = {0,    0,    -1,     0,    0.0,    0.0, millis(), -1,        2,   -1,  millis()};    
+Motor l2 = {0,    0,    -1,     0,    0.0,    0.0, millis(), -1,        3,   -1,  millis()};
+Motor wp = {0,    0,    30000,  0,    0.0,    0.0, millis(), 25000,   19,   41,  millis()};
+Motor wr = {0,    0,    30000,  0,    0.0,    0.0, millis(), 175000,  -1,   -1,  millis()};
+Motor ee = {0,    0,    10000,   0,    0.0,    0.0, millis(), 8610,     -1,   -1,  millis()};
+//Note: added extra 1 zeroes for pitch and roll max ranges
 
 //Pack into an array for iterability
 Motor motor[] = {tw, l1, l2, wp, wr, ee};
@@ -92,7 +93,7 @@ unsigned long dashb_t    = millis();//timer for sending data to dashboard
 const int INPUT_SIZE = 130;
 char input[INPUT_SIZE + 1];
 char* tmp;     //stores chars as we tokenize
-char* mode = "M";    //"M" = manual, "I" = IK mode
+char* mode = "I";    //"M" = manual, "I" = IK mode
 
 //Everything setup related
 
@@ -114,15 +115,15 @@ void setup() {
   //we configure the default speed for each stepper
   //TODO: verify each of these speeds in a separate test and then modify these values
   //High acceleration values seem to work best (less struggling sounds)
-  wristLeft.  setAcceleration(2000.0);
-  wristRight. setAcceleration(2000.0);
-  tower.      setAcceleration(2000.0);
-  endEffector.setAcceleration(2000.0);
+  wristLeft.  setAcceleration(motor[WP].acceleration);
+  wristRight. setAcceleration(motor[WP].acceleration);
+  tower.      setAcceleration(motor[TW].acceleration);
+  endEffector.setAcceleration(motor[EE].acceleration);
 
   //we add the wristSteppers to the multiStepper object
   //Then give them to MultiStepper to manage
-  wristEE.addStepper(wristRight);
-  wristEE.addStepper(wristLeft);
+  //wristEE.addStepper(wristRight);
+  //wristEE.addStepper(wristLeft);
 
   pinMode(motor[TW].ENC_A, INPUT_PULLUP);
   pinMode(motor[TW].ENC_B, INPUT);

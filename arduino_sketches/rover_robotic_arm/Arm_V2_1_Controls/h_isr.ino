@@ -6,7 +6,7 @@ void counter_LA1(){
   //Serial.print("LA1 ISR!");
   if (millis() - motor[L1].trig_delay >= 13.24){
     motor[L1].trig_delay = millis();
-    motor[L1].current += motor[L1].direction;
+    motor[L1].currentCount += motor[L1].direction;
   }
 }//end of counter_LA1
 
@@ -15,7 +15,7 @@ void counter_LA2(){
   //Serial.print("LA2 ISR!");
   if (millis() - motor[L2].trig_delay >= 13.24){
     motor[L2].trig_delay = millis();
-    motor[L2].current += motor[L2].direction;
+    motor[L2].currentCount += motor[L2].direction;
   }
 }//end of counter_LA2
 

@@ -26,18 +26,16 @@
     if (equalsStr(tmp, "M")) {
 
       mode = "M";
-      Serial.print("Switched to mode: ");
-      Serial.println(mode);
+      Serial.println("Mode: Manual!");
       for (int i = TW ; i < LAST ; i++) {
         tmp = strtok(NULL, ";");
         motor[i].desired = 0;
       }
-      Serial.println("!");
+      Serial.println("Speeds = 0!");
     } else if (equalsStr(tmp, "I")) {
 
       mode = "I";
-      Serial.print("Switched to mode: ");
-      Serial.println(mode);
+      Serial.println("Mode: IK!");
       for (int i = TW ; i <= WP ; i++) {
         tmp = strtok(NULL, ";");
         motor[i].desired = motor[i].current;
@@ -46,11 +44,11 @@
         tmp = strtok(NULL, ";");
         motor[i].desired = 0.0;
       }
-      Serial.println("!");
+      Serial.println("Desired states/speeds = current/0!");
     } else if (equalsStr(tmp, "S")) {
 
       //Extract variables
-      Serial.print("Desired States: ");
+      Serial.print("Desired set to: ");
       for (int i = TW ; i < LAST ; i++) {
         tmp = strtok(NULL, ";");
         motor[i].desired = atof(tmp);
@@ -58,10 +56,10 @@
         Serial.print(";");
       }
       Serial.println("!");
-    }  else if (equalsStr(tmp, "reset")) {
+    } else if (equalsStr(tmp, "reset")) {
       for (int i = TW ; i < LAST ; i++) {
-        motor[i].direction = 0.0;
-        motor[i].current = 0.0;
+        motor[i].direction = 0;
+        motor[i].currentCount = 0;
         motor[i].desired = 0.0;
       }
       Serial.println("Direction, current and desired states reset!");

@@ -52,22 +52,28 @@
 
   //Motor is allowed to run whenever it's in one of the cases
   //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
-  if (motor[0].direction)
+  if (motor[TW].direction)
     tower.run();
 
   //LAs handled by moveMotor
   
   //Similar to tower, just with extra limit switch logic
-  if (motor[3].direction or motor[4].direction)
+  if (motor[WP].direction or motor[WR].direction)
     //Can move the wrist (differential) if:
     //- LS3 is not clicked and pitching down
     //- LS4 is not clicked and pitching up
     if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
-      wristEE.run();
+      //wristEE.run();
+      wristRight.run();
+      wristLeft.run();
+    } else if (not motor[WP].direction and motor[WR].direction) {
+      //wristEE.run();
+      wristRight.run();
+      wristLeft.run();
     }
   
   //similar to tower and similar limit switch logic to pitch
-  if (motor[5].direction)
+  if (motor[EE].direction)
     //EE only allowed to close if LS1 is not pressed
     //EE only allowed to open if LS2 is not pressed
     if ((LS1.getState() and motor[EE].direction == -1) | (LS2.getState() and motor[EE].direction == 1)) 
@@ -127,7 +133,7 @@ void moveMotors(int i, int dir) {
     //Moves to whichever direction towards a step goal
     if (dir != 0) {
       tower.setMaxSpeed(motor[i].speed);
-      tower.moveTo(-dir*motor[i].MAX_RANGE);
+      tower.move(-dir*motor[i].MAX_RANGE);
     }
     //stops stepper
     else {
@@ -155,28 +161,47 @@ void moveMotors(int i, int dir) {
   else if (i == WP) {
     if (dir != 0) {
       wristRight.setMaxSpeed(motor[i].speed);
-      wristLeft.setMaxSpeed(motor[i].speed);
+      //wristLeft.setMaxSpeed(motor[i].speed);
 
-      long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, dir*motor[i].MAX_RANGE};
-      wristEE.moveTo(tmpPositions);
+      //long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, dir*motor[i].MAX_RANGE};
+      //wristEE.move(tmpPositions);
+      
+      wristRight.move(-dir*motor[i].MAX_RANGE);
+      //wristLeft.move(-dir*motor[i].MAX_RANGE);
+    }
+    else {
+      wristRight.stop();
+      wristRight.runToPosition();
+      wristLeft.stop();
+      wristLeft.runToPosition();
     }
   }
   //Wrist roll
   else if (i == WR) {
     if (dir != 0) {
-      wristRight.setMaxSpeed(motor[i].speed);
+      Serial.println("ROLLLLLLLLLLLLLL!");
+      //wristRight.setMaxSpeed(motor[i].speed);
       wristLeft.setMaxSpeed(motor[i].speed);
 
       //we set the target of the motors
-      long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, -dir*motor[i].MAX_RANGE};
-      wristEE.moveTo(tmpPositions);
+      //long tmpPositions[2] = {-dir*motor[i].MAX_RANGE, -dir*motor[i].MAX_RANGE};
+      //wristEE.move(tmpPositions);
+      
+      //wristRight.move(-dir*motor[i].MAX_RANGE);
+      wristLeft.move(-dir*motor[i].MAX_RANGE);
+    }
+    else {
+      wristRight.stop();
+      wristRight.runToPosition();
+      wristLeft.stop();
+      wristLeft.runToPosition();
     }
   }
   //End effector 
   else {
     if (dir != 0) {
       endEffector.setMaxSpeed(motor[i].speed);
-      endEffector.moveTo(dir*motor[i].MAX_RANGE);
+      endEffector.move(dir*motor[i].MAX_RANGE);
     }
     else {
       endEffector.stop();

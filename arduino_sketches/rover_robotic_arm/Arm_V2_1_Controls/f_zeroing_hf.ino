@@ -70,7 +70,7 @@ void zeroEndEffector() {
 
 //Wrist zeroing function (to midpoint)
 //CHECK SIGNS
-//INCOMPLETE
+//INCOMPLETE (uses multistepper, adapt to current)
 void zeroWristPitch(){
   stopAll();
   // condition for while loop
@@ -80,10 +80,10 @@ void zeroWristPitch(){
   // set speeds and target positions
   wristRight.setMaxSpeed(500.0);
   wristLeft.setMaxSpeed(500.0);
-  wristEE.moveTo(positions);
+  //wristEE.moveTo(positions);
 
   while (homeFlag == 0){
-    wristEE.run(); // move stepper to target position
+    //wristEE.run(); // move stepper to target position
     if (LS2.getState() == LOW){ // if limit switch is pressed
       homeFlag = 1; // break out of while loop, so motors are not being run anymore
     }

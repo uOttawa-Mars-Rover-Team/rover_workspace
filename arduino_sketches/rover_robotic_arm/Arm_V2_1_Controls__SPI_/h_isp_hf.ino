@@ -1,5 +1,57 @@
 
-//Helper functions for SPI
+// Absolute Encoder helper functions below
+
+// For a motor with id i, update its associated position by converting SPI enc. data to radians
+void updateEncoderPosition(int i) {
+    //set attemps counter at 0 so we can try again if we get bad position    
+    attempts = 0;
+
+    //this function gets the encoder position and returns it as a uint16_t
+    //send the function either res12 or res14 for your encoders resolution
+    encoderPosition = getPositionSPI(motor[i].ENC_PIN, RES12); 
+
+    //if the position returned was 0xFFFF we know that there was an error calculating the checksum
+    //make 3 attempts for position. we will pre-increment attempts because we'll use the number later and want an accurate count
+    while (encoderPosition == 0xFFFF && ++attempts < 3)
+    {
+      encoderPosition = getPositionSPI(motor[i].ENC_PIN, RES12); //try again
+    }
+
+    if (encoderPosition == 0xFFFF) //position is bad, let the user know how many times we tried
+    {
+      //Update status of encoder to bad
+      if (motor[i].enc_status == 1) {
+        motor[i].enc_status = 0;
+      }
+      
+      //Serial.print("Encoder 0 error. Attempts: ");
+      //Serial.print(attempts, DEC); //print out the number in decimal format. attempts - 1 is used since we post incremented the loop
+      //Serial.write(NEWLINE);
+    }
+    else //position was good
+    {
+      //Update that the encoder is good
+      if (motor[i].enc_status == 0) {
+        motor[i].enc_status = 1;
+      }
+
+      //Huge jump in enc position => one full turn
+      //Difference is positive, so add 1 turn; eg 360 -> 0 so 360 diff > 0
+      if (motor[i].enc_count - encoderPosition >= 2000) {
+        motor[i].enc_turns++;
+      } else if (motor[i].enc_count - encoderPosition < -2000) {
+        motor[i].enc_turns--;
+      }
+      motor[i].enc_count = encoderPosition;
+     
+      //Serial.print("Encoder 0: ");
+      //Serial.print(encoderPosition, DEC); //print the position in decimal format
+      //Serial.write(NEWLINE);
+    }
+}
+
+
+//Example code below (not our code)
 
 /*
  * This function gets the absolute position from the AMT22 encoder using the SPI bus. The AMT22 position includes 2 checkbits to use

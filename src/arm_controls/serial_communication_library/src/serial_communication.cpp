@@ -2,6 +2,9 @@
 
 #include "serial_communication.hpp"
 #include <thread>
+#include <algorithm>
+#include <cctype>
+#include <string>
 
 SerialCommunication* SerialCommunication::instance = nullptr;
 
@@ -138,10 +141,22 @@ void SerialCommunication::read_serial() {
     while (run_) {
         if (!connecting_ && my_serial_) {
             //my_serial_->flushInput();
-            string response = my_serial_->readline(65536, "!");
+            string response = my_serial_->readline(200, "!");
             //latest_position_ = response;  // save the message from serial
-            if (!response.empty()){
-                publishMessage(response);
+            
+            //Accept only strings that fall between shortest and longest sensible strings
+            //shortest (33): d;0.00;0.00;0.00;0.00;0.00;!
+            //longest  (49): f;-100.00;-99.00;-99.00;-100.00;-1000.00;-99.00;!
+            if (!response.empty() and (response.size() > 32 and response.size() < 55)) {
+                
+                //Count the number of ';'; ensure we always have a valid string containing 7 ';'
+                std::string::difference_type n = std::count(response.begin(), response.end(), ';');
+                if (n == 7) {
+                    publishMessage(response);
+                    //adding this breaks the huge string chunk into a smooth real-time flow of strings
+                    cout << " " << endl;
+                }
+                
             }
         }
     }
@@ -156,7 +171,7 @@ void SerialCommunication::write_serial() {
             //my_serial_->flushOutput();
             setitimer(ITIMER_REAL, &RETRY_DELAY, 0);
             my_serial_->write(movement_);
-            cout << "Movement message to serial: " << movement_ << endl;
+            cout << "Movement message to serial: /n" << movement_ << endl;
             setitimer(ITIMER_REAL, 0, 0);
         } catch (...) {
             setitimer(ITIMER_REAL, 0, 0);
@@ -198,13 +213,15 @@ void SerialCommunication::publishToArduino(string message) {
 
 
 string SerialCommunication::publishMessage(string message) {
-    cout << "\nMessage read from serial: " << message << "\n"; //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
+    cout << "Message read from serial: " << message << "\n"; //"\n>>>>> threadId=" << tp_executor.getThreadId() << endl;
     
     //TODO: Make this code not blow up if the message is something like "fun"
     
     //latest_position_ = message;
-
-    if(message[0] == 'f'){ //COMMENT BACK IN FOR ARDUINO
+    
+    //Remove whitespaces
+    message.erase(std::remove_if(message.begin(), message.end(), ::isspace), message.end());
+    if(message.at(0) == 'f'){ //COMMENT BACK IN FOR ARDUINO
         latest_position_ = message;
     }
     
@@ -225,7 +242,9 @@ void SerialCommunication::isSerialPortOpen() {
 vector<string> SerialCommunication::get_arm_position(){
     // Checks if message starts with "f"
     
-    if (movement_[0] == 'f') {
+    // Remove whitespaces from movement_
+    movement_.erase(std::remove_if(movement_.begin(), movement_.end(), ::isspace), movement_.end());
+    if (movement_.at(0) == 'f') {
         vector<string> split_message = split_string(';', movement_);
         // Checks if message conatins all the arm info, ie "f;TW;SL;EL;PT;RL;EE"
         if (split_message.size() == 7) {

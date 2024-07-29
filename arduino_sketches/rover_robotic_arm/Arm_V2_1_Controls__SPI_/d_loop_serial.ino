@@ -123,21 +123,24 @@
   if (millis() - dashb_t >= dashb_delay) {
 
     //Publishing/printing feedback below
+    Serial.println();
     Serial.print("f;");
-    for (int i = TW ; i < LAST ; i++) { 
+    for (int i = TW ; i < LAST ; i++) {
       motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
+      motor[i].currentPos *= motor[i].sign; 
       Serial.print(motor[i].currentPos);
       Serial.print(";");
     }
-    Serial.println("!");
+    Serial.print("!");
     
     //Publishing/printing desired pos below
+    Serial.println();
     Serial.print("d;");
     for (int i = TW ; i < LAST ; i++) {
       Serial.print(motor[i].desiredPos);
       Serial.print(";");
     }
-    Serial.println("!");
+    Serial.print("!");
     /*
     //Publishing/printing turns below
     Serial.print("t;");

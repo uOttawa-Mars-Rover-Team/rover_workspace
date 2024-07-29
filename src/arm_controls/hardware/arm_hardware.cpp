@@ -75,11 +75,13 @@ namespace arm_controls
                 // Arduino sends the position in degrees, but the controller needs it in radians
                 double positionInRad = std::stod(temp) * PI / 180;
 
-                if (abs(joint_position_state_[i] - positionInRad) < 1) {
-                    joint_position_state_[i] = joint_position_command_[i];
-                } else{
+
+                //if (abs(joint_position_state_[i] - positionInRad) < 1) {
+                  //  joint_position_state_[i] = joint_position_command_[i];
+                 //   cout << " #"<< i << " :" << joint_position_command_[i] << " |";
+                //} else{
                     joint_position_state_[i] = positionInRad;
-                }
+                //}
             }
         }
 
@@ -89,9 +91,8 @@ namespace arm_controls
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
-        // Example of typical command to send "S;TW;SL;EL;PT;RL;EE;!
-        // By default, the controllers should be sending positions for revolute joints in radians
-        // We have to do a conversion from radians to degrees for the arduino
+        // Example of typical command to send "S;40;20;-20;0;0;200;!
+        // By default, the controllers should be sending positions for revolute joints in degrees
 
         std::ostringstream command_stream;
         command_stream << "S;";

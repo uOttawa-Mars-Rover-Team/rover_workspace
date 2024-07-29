@@ -38,12 +38,12 @@
 
       //Move first 4 motors that have encoder data
       //Move tower up to 1 degree around the goal
-      motorHomeToCount(TW, 1.0);
+      motorHomeToCount(TW, 0.75);
       //Move LA1 & 2 up to 0.5 degrees around the goal
       motorHomeToCount(L1, 0.75);
       motorHomeToCount(L2, 0.75);
       //Move wrist up to 0.5 degrees around the goal
-      motorHomeToCount(WP, 1.0);
+      motorHomeToCount(WP, 0.75);
       
       //Move last 2 remaining motors by speed
       for (int i = WR ; i < LAST ; i++) {
@@ -149,7 +149,7 @@ void moveMotors(int i, int dir) {
     //Moves to whichever direction towards a step goal
     if (dir != 0) {
       tower.setMaxSpeed(motor[i].speed);
-      tower.move(-dir*motor[i].MAX_RANGE);
+      tower.move(-motor[i].sign*dir*motor[i].MAX_RANGE);
     }
     //stops stepper
     else {
@@ -161,7 +161,7 @@ void moveMotors(int i, int dir) {
   else if (i == L1) {
     //extend (dir == 1) or retract (dir == -1)
     if (dir != 0)
-      LA1.setTarget(2048+dir*motor[i].speed);
+      LA1.setTarget(2048+dir*motor[i].sign*motor[i].speed);
     //stop LA motor
     else 
       LA1.stopMotor();
@@ -169,7 +169,7 @@ void moveMotors(int i, int dir) {
   //LA2 
   else if (i == L2) {
     if (dir != 0) 
-      LA2.setTarget(2048+dir*motor[i].speed);
+      LA2.setTarget(2048+dir*motor[i].sign*motor[i].speed);
     else 
       LA2.stopMotor();
   }
@@ -177,7 +177,7 @@ void moveMotors(int i, int dir) {
   else if (i == WP) {
     if (dir != 0) {
       wristPitch.setMaxSpeed(motor[i].speed);
-      wristPitch.move(-dir*motor[i].MAX_RANGE);
+      wristPitch.move(-motor[i].sign*dir*motor[i].MAX_RANGE);
     }
     else {
       wristPitch.stop();
@@ -188,7 +188,7 @@ void moveMotors(int i, int dir) {
   else if (i == WR) {
     if (dir != 0) {
       wristRoll.setMaxSpeed(motor[i].speed);
-      wristRoll.move(-dir*motor[i].MAX_RANGE);
+      wristRoll.move(motor[i].sign*dir*motor[i].MAX_RANGE);
     }
     else {
       wristRoll.stop();
@@ -199,7 +199,7 @@ void moveMotors(int i, int dir) {
   else {
     if (dir != 0) {
       endEffector.setMaxSpeed(motor[i].speed);
-      endEffector.move(dir*motor[i].MAX_RANGE);
+      endEffector.move(motor[i].sign*dir*motor[i].MAX_RANGE);
     }
     else {
       endEffector.stop();
@@ -219,21 +219,37 @@ int calculateNextSpeed(int i) {
 
   //Temporary function that returns a speed depending on the motor
   //For use with IK when not PID'ing (constant speed)
+  int nextSpeed = 0;
   if (equalsStr(mode,"M")) {
-    return abs((int)motor[i].desiredPos);
+    nextSpeed = abs((int)motor[i].desiredPos);
   } else {
-    int speedMin = 0;
-    int speedMax = 0;
-    if (i == L1 or i == L2) {
-      speedMin = 200;
-      speedMax = 600;
-      return 300;
-    } else {
-      speedMin = 0;
-      speedMax = 500;
-      return 220;
+    switch (i) {
+      case TW:
+        nextSpeed = 200;
+        break;
+      case L1:
+        nextSpeed = 300;
+        break;
+      case L2:
+        nextSpeed = 300;
+        break;
+      case WP:
+        nextSpeed = 200;
+        break;
+      case WR:
+        nextSpeed = 200;
+        break;
+      case EE:
+        nextSpeed = 200;
+        break;
+      default:
+        nextSpeed = 0;
+        break;
     }
+    
   }
+
+return nextSpeed;
 
 /*
   double r_steepness = 8;//acceleration

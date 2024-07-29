@@ -72,13 +72,25 @@ def generate_launch_description():
     uorover_arm_controller_spawner = launch_ros.actions.Node(
             package="controller_manager",
             executable="spawner",
-            arguments=["uorover_arm_controller", "-c", "/controller_manager"],
+            arguments=[
+                "uorover_arm_controller",
+                "--controller-manager-timeout",
+                "300",
+                "--controller-manager",
+                "/controller_manager",
+                ],
             )
 
     uorover_ee_controller_spawner = launch_ros.actions.Node(
             package="controller_manager",
             executable="spawner",
-            arguments=["uorover_ee_controller", "-c", "/controller_manager"],
+            arguments=[
+                "uorover_ee_controller",
+                "--controller-manager-timeout",
+                "300",
+                "--controller-manager",
+                "/controller_manager",
+                ],
             )
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(

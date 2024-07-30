@@ -164,14 +164,13 @@ void SerialCommunication::read_serial() {
 
 
 void SerialCommunication::write_serial() {
-    cout << "Writing to serial port..." << endl;
 
     if (!connecting_ && !zeroing_ && my_serial_) {
         try {
             //my_serial_->flushOutput();
             setitimer(ITIMER_REAL, &RETRY_DELAY, 0);
             my_serial_->write(movement_);
-            cout << "Movement message to serial: /n" << movement_ << endl;
+            cout << "Writing to serial: \n" << movement_ << endl;
             setitimer(ITIMER_REAL, 0, 0);
         } catch (...) {
             setitimer(ITIMER_REAL, 0, 0);

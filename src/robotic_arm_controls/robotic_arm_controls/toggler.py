@@ -58,7 +58,7 @@ class Toggler(Node):
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
         #Subscribers
-        self.subscriber = self.create_subscription(Joy, "/arm_joy", self.joy_callback, 20)
+        self.subscriber = self.create_subscription(Joy, "/arm_joy_logitech_throttled", self.joy_callback, 20)
 
         #Publishers
         self.ik_publisher = self.create_publisher(ToggleMessage, '/ik_joy', 20)

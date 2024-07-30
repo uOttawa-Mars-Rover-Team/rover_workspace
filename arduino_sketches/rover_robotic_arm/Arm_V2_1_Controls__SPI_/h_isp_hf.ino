@@ -2,7 +2,7 @@
 // Absolute Encoder helper functions below
 
 // For a motor with id i, update its associated position by converting SPI enc. data to radians
-void updateEncoderPosition(int i) {
+void updatePositionAndVelocity(int i, unsigned long encoder_t) {
     //set attemps counter at 0 so we can try again if we get bad position    
     attempts = 0;
 
@@ -42,6 +42,7 @@ void updateEncoderPosition(int i) {
       } else if (motor[i].enc_count - encoderPosition < -2000) {
         motor[i].enc_turns--;
       }
+      motor[i].velocity  = (encoderPosition-motor[i].enc_count)*1000000*(millis()-encoder_t);
       motor[i].enc_count = encoderPosition;
      
       //Serial.print("Encoder 0: ");

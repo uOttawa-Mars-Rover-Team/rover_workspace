@@ -75,13 +75,7 @@ namespace arm_controls
                 // Arduino sends the position in degrees, but the controller needs it in radians
                 double positionInRad = std::stod(temp) * PI / 180;
 
-
-                //if (abs(joint_position_state_[i] - positionInRad) < 1) {
-                  //  joint_position_state_[i] = joint_position_command_[i];
-                 //   cout << " #"<< i << " :" << joint_position_command_[i] << " |";
-                //} else{
-                    joint_position_state_[i] = positionInRad;
-                //}
+                joint_position_state_[i] = positionInRad;
             }
         }
 

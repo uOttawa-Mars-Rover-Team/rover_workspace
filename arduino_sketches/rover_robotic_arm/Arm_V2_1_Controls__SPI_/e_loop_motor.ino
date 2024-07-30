@@ -1,22 +1,21 @@
 
-//Everything to do with actuating the motors
 
   //Every enc_delay ms, sample encoder data and move motors when needed
   if (millis() - encoder_t >= enc_delay) {
 
     //For joints TW - WP, retrive encoder position and store as radians
     for (int i = TW ; i <= WP ; i++) {
-      updateEncoderPosition(i);
+      updatePositionAndVelocity(i, encoder_t);
     }
-    /*
-    for (int i = TW ; i <= WP ; i++) {
-      if (!enc_status[i]) {
-        Serial.println("!");
-        Serial.println("!");
-      }
-    }*/
-    
-    
+
+    //update timer until enc_delay is over
+    encoder_t = millis();
+  }//end of encoder delay if statement
+
+//Everything to do with actuating the motors
+
+  //Every enc_delay ms, sample encoder data and move motors when needed
+  if (millis() - motor_t >= motor_delay) {
     
     if (equalsStr(mode,"M")) {
       for (int i = TW ; i < LAST ; i++) {
@@ -38,15 +37,17 @@
 
       //Move first 4 motors that have encoder data
       //Move tower up to 1 degree around the goal
-      motorHomeToCount(TW, 0.75);
+      motorHomeToCount(TW, 1.00);
       //Move LA1 & 2 up to 0.5 degrees around the goal
       motorHomeToCount(L1, 0.75);
       motorHomeToCount(L2, 0.75);
       //Move wrist up to 0.5 degrees around the goal
       motorHomeToCount(WP, 0.75);
+      //Move wrist up to 0.5 degrees around the goal
+      motorHomeToCount(WR, 0.75);
       
       //Move last 2 remaining motors by speed
-      for (int i = WR ; i < LAST ; i++) {
+      for (int i = EE ; i < LAST ; i++) {
         //move towards negative direction
         if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
@@ -66,7 +67,7 @@
     }//end of IK mode
     
     //update timer until enc_delay is over
-    encoder_t = millis();
+    motor_t = millis();
   }//end of encoder delay if statement
 
   //Motor is allowed to run whenever it's in one of the cases

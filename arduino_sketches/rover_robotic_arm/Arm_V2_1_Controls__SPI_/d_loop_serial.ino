@@ -125,10 +125,22 @@
     //Publishing/printing feedback below
     Serial.println();
     Serial.print("f;");
-    for (int i = TW ; i < LAST ; i++) {
+    for (int i = TW ; i < WR ; i++) {
       motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
       motor[i].currentPos *= motor[i].sign; 
       Serial.print(motor[i].currentPos);
+      Serial.print(";");
+    }
+    motor[WR].currentPos = wristRoll.currentPosition();
+    Serial.print(motor[WR].currentPos*0.036);
+    Serial.print(";0.00;");
+    Serial.print("!");
+    
+    //Publishing/printing velocities
+    Serial.println();
+    Serial.print("v;");
+    for (int i = TW ; i < LAST ; i++) {
+      Serial.print(motor[i].velocity);
       Serial.print(";");
     }
     Serial.print("!");
@@ -141,22 +153,7 @@
       Serial.print(";");
     }
     Serial.print("!");
-    /*
-    //Publishing/printing turns below
-    Serial.print("t;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].enc_turns);
-      Serial.print(";");
-    }
-    Serial.println("!");
-    //Publishing/printing turns below
-    Serial.print("e;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].enc_count);
-      Serial.print(";");
-    }
-    Serial.println("!");
-    */
+
     //update timer until enc_delay is over
     dashb_t = millis();
   }//end of dashboard delay if statement

@@ -72,28 +72,28 @@
 
   //Motor is allowed to run whenever it's in one of the cases
   //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
-  if (motor[TW].direction)
+  //if (motor[TW].direction)
     tower.run();
 
   //LAs handled by moveMotor
   
   //Similar to tower, just with extra limit switch logic
-  if (motor[WP].direction)
+  //if (motor[WP].direction)
     //Can move the wrist (differential) if:
     //- LS3 is not clicked and pitching down
     //- LS4 is not clicked and pitching up
-    if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
+    //if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
       wristPitch.run();
-    }
+    //}
     
-  if (motor[WR].direction)
+  //if (motor[WR].direction)
     wristRoll.run();
   
   //similar to tower and similar limit switch logic to pitch
-  if (motor[EE].direction)
+  //if (motor[EE].direction)
     //EE only allowed to close if LS1 is not pressed
     //EE only allowed to open if LS2 is not pressed
-    if ((LS1.getState() and motor[EE].direction == -1) | (LS2.getState() and motor[EE].direction == 1)) 
+    //if ((LS1.getState() and motor[EE].direction == -1) | (LS2.getState() and motor[EE].direction == 1)) 
       endEffector.run();
   
 } //end of loop()

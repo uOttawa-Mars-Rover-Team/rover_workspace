@@ -38,7 +38,7 @@ JrkG2I2C LA2(12);
 ////// Constant/Variable Declaration //////
 
 // Serial rates for UART
-#define BAUDRATE        115200
+#define BAUDRATE        500000
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -125,7 +125,7 @@ struct Motor {
 
 //Create the motor objects
 //         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P 
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68};
+Motor tw = {0,    0,    0,   3000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68};
 Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30};    
 Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31};
 Motor wp = {0,    0,    0,  30000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62};
@@ -156,7 +156,7 @@ int LASER_PIN = 29;
 
 void setup() {
   //We start the serial comms at 115200 bps
-  Serial.begin(115200);
+  Serial.begin(BAUDRATE);
 
   //start I2C comms
   Wire.begin();

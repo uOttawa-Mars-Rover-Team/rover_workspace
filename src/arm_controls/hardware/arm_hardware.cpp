@@ -3,6 +3,8 @@
 #include <string>
 #include <iomanip> // For std::setprecision
 
+#include <thread>
+
 namespace arm_controls
 {
     CallbackReturn ArmSystem::on_init(const hardware_interface::HardwareInfo & info){
@@ -59,7 +61,7 @@ namespace arm_controls
         //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE;!
         //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
         //TODO: Decide what velocity feedback return messages will look like
-        
+
         std::string serialReadResult = serialObject.get_latest_position();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
         

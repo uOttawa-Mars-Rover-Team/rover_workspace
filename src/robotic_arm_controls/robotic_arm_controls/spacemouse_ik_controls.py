@@ -26,7 +26,7 @@ class SpacemouseNode(Node):
         super().__init__(node_name)
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
-        self.subscriber = self.create_subscription(Joy, "/arm_joy", self.callback_function, 20)
+        self.subscriber = self.create_subscription(Joy, "/arm_ik_joy", self.callback_function, 20)
 
         self.publisher = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
 

@@ -50,14 +50,18 @@
     } else if (equalsStr(tmp, "S")) {
 
       //Extract variables
-      Serial.print("Desired set to: ");
       for (int i = TW ; i < LAST ; i++) {
         tmp = strtok(NULL, ";");
         motor[i].desiredPos = atof(tmp);
-        Serial.print(motor[i].desiredPos);
-        Serial.print(";");
       }
-      Serial.println("!");
+      if (verbose) {
+        Serial.print("Desired set to: ");
+        for (int i = TW ; i < LAST ; i++) {
+          Serial.print(motor[i].desiredPos);
+          Serial.print(";");
+        }
+        Serial.println("!");
+      }
     } else if (equalsStr(tmp, "set0")) {
       for (int i = TW ; i < LAST ; i++) {
         motor[i].direction = 0;
@@ -139,9 +143,7 @@
   //Every dashb_delay ms, publish stuff
   if (millis() - dashb_t >= dashb_delay) {
 
-    if (graph) {
-      motor[TW].currentPos = (360*float(motor[TW].enc_count)/4096 + float(motor[TW].enc_turns)*360)/500;
-      motor[TW].currentPos *= motor[TW].sign;
+    if (not graph) {
 
       Serial.println();
       Serial.print("Tower_Pose:");
@@ -149,12 +151,23 @@
       Serial.print(",");
       Serial.print("Tower_Ideal:");
       Serial.println(motor[TW].desiredPos);
+      Serial.print("!");
     }
 
     //Publishing/printing feedback below
 
-       
+    
+
+
     //////testing: delete this block and replace with one below////////
+
+    motor[TW].currentPos = (360*float(motor[TW].enc_count)/4096 + float(motor[TW].enc_turns)*360)/50;
+    motor[TW].currentPos *= motor[TW].sign;
+    /*Serial.print("tower current ----------------");
+    Serial.print("!");
+    Serial.print(motor[TW].currentPos);
+    Serial.println("!");*/
+
     Serial.println();
     Serial.print("f;");
     for (int i = TW ; i < LAST ; i++) {
@@ -176,7 +189,7 @@
     Serial.print(motor[WR].currentPos*0.036);
     Serial.print(";0.00;");
     Serial.print("!");*/
-    
+    /*
     //Publishing/printing velocities
     Serial.println();
     Serial.print("v;");
@@ -185,7 +198,9 @@
       Serial.print(";");
     }
     Serial.print("!");
-    
+    */
+
+    /*debugging, uncomment later
     //Publishing/printing desired pos below
     Serial.println();
     Serial.print("d;");
@@ -194,6 +209,7 @@
       Serial.print(";");
     }
     Serial.print("!");
+    */
 
     //update timer until enc_delay is over
     dashb_t = millis();

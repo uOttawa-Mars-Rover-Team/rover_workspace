@@ -41,14 +41,13 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "ik_arm_controls = robotic_arm_controls.ik_arm_controls:main",
-            "old_manual = robotic_arm_controls.old_manual:main",
+            "logitech_ik_controls = robotic_arm_controls.logitech_ik_controls:main",
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
-            "template_node = robotic_arm_controls.template_pub_sub:main",
-            "spacemouse_node = robotic_arm_controls.spacemouse_node:main",
-            "toggler = robotic_arm_controls.toggler:main",
+            "old_manual = robotic_arm_controls.old_manual:main",
             "router = robotic_arm_controls.router:main",
-            "ikjoy = robotic_arm_controls.ik_toggler:main"
+            "spacemouse_ik_controls = robotic_arm_controls.spacemouse_ik_controls:main",
+            "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
+            "toggler = robotic_arm_controls.toggler:main"
         ],
     },
 )

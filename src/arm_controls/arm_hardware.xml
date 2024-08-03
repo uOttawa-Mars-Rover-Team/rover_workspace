@@ -6,4 +6,10 @@
             Robot hardware plugin for uORover 5-DoF arm.
         </description>
     </class>
+    
+    <class name="arm_controls/GPIOController" type="arm_controls::GPIOController" base_class_type="controller_interface::ControllerInterface">
+    <description>
+      This controller publishes the GPIOs.
+    </description>
+  </class>
 </library>

@@ -6,9 +6,10 @@
 #include <vector>
 
 #include "controller_interface/controller_interface.hpp"
+#include "general_interfaces/msg/arm_gpio.hpp"
 
-namespace ros2_control_demo_example_10 {
-    using CmdType = std_msgs::msg::Float64MultiArray; //change this to a custom message that the spacemouse node will also use
+namespace arm_controls {
+    using CmdType = general_interfaces::msg::ArmGpio; //change this to a custom message that the spacemouse node will also use
 
     class GPIOController : public controller_interface::ControllerInterface {
         public:

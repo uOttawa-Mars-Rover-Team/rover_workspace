@@ -52,6 +52,3 @@ namespace arm_controls {
 } // namespace arm_controls
 
 #endif
-
-//d;TW;EL;SH;PT;RL
-//f;TW;EL;SH;PT;RL

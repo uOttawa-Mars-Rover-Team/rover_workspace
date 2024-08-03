@@ -14,6 +14,7 @@ find_package(std_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(general_interfaces REQUIRED)
 find_package(hardware_interface REQUIRED)
+find_package(controller_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
@@ -28,6 +29,11 @@ add_library(
     hardware/arm_hardware.cpp
     )
 
+add_library(
+	gpio_controller
+	SHARED
+	control/gpio_controller.cpp
+	)
 
 add_subdirectory(serial_communication_library)
 target_link_libraries(arm_hardware PRIVATE serial_comms)
@@ -37,6 +43,11 @@ target_link_libraries(arm_hardware PRIVATE serial_comms)
 #### UNCOMMENT WHEN WE CREATE ARM_CONTROLS NODE ####
 
 target_include_directories(arm_hardware PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+
+target_include_directories(gpio_controller PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
@@ -62,8 +73,19 @@ ament_target_dependencies(
     "general_interfaces"
     "rclcpp"
     )
+    
+ament_target_dependencies(
+    gpio_controller PUBLIC
+    "pluginlib"
+    "rclcpp_lifecycle"
+    "controller_interface"
+    "general_interfaces"
+    "rclcpp"
+    )
 
 pluginlib_export_plugin_description_file(hardware_interface arm_hardware.xml)
+pluginlib_export_plugin_description_file(controller_interface arm_hardware.xml)
+
 
 
 install(
@@ -87,8 +109,15 @@ install(TARGETS arm_hardware
     RUNTIME DESTINATION lib
 )
 
-install(EXPORT serial_comms DESTINATION lib/${PROJECT_NAME})
-install(EXPORT serial DESTINATION lib/${PROJECT_NAME})
+install(TARGETS gpio_controller
+    EXPORT arm_hardware
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+)
+
+#install(EXPORT serial_comms DESTINATION lib/${PROJECT_NAME})
+#install(EXPORT serial DESTINATION lib/${PROJECT_NAME})
 
 # uncomment the following section in order to fill in
 # further dependencies manually.

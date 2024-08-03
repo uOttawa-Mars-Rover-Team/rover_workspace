@@ -23,14 +23,18 @@ namespace arm_controls
         serialObject.connect_serial(0); 
         serialObject.publishToArduino("I;!"); //this will set the arduino in IK mode
         
-        //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces 
+        //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces
+
+        //TODO: Initialize PID Objects here (call initPID)
                 
         return CallbackReturn::SUCCESS;
     }
 
     std::vector<hardware_interface::StateInterface> ArmSystem::export_state_interfaces() {
         std::vector<hardware_interface::StateInterface> state_interfaces;
-        
+
+        // TODO: Export state interfaces for GPIO
+
         // create the state interface objects and add them to the vector
         for (auto i = 0u; i < info_.joints.size(); i++){
             state_interfaces.emplace_back(hardware_interface::StateInterface(
@@ -48,6 +52,8 @@ namespace arm_controls
         
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
+        // TOOD: Export command interfaces for GPIO
+
         // create command interface objects and place them in the vector
         for (auto i = 0u; i < info_.joints.size(); i++){
             command_interfaces.emplace_back(hardware_interface::CommandInterface(
@@ -60,8 +66,8 @@ namespace arm_controls
     hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
         //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE;!
         //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
-        //TODO: Decide what velocity feedback return messages will look like
-
+        //TODO: Add filtering for velocity feedback and write it to the state interface for velocity 
+        
         std::string serialReadResult = serialObject.get_latest_position();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
         
@@ -89,7 +95,7 @@ namespace arm_controls
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // Example of typical command to send "S;40;20;-20;0;0;200;!
         // By default, the controllers should be sending positions for revolute joints in degrees
-
+        // TODO: Use PID here to adjust the position that we are sending
         std::ostringstream command_stream;
         command_stream << "S;";
 

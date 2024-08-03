@@ -1,0 +1,41 @@
+#ifndef ROS2_CONTROL_DEMO_EXAMPLE_10__GPIO_CONTROLLER_HPP_
+#define ROS2_CONTROL_DEMO_EXAMPLE_10__GPIO_CONTROLLER_HPP_
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "controller_interface/controller_interface.hpp"
+
+namespace ros2_control_demo_example_10 {
+    using CmdType = std_msgs::msg::Float64MultiArray; //change this to a custom message that the spacemouse node will also use
+
+    class GPIOController : public controller_interface::ControllerInterface {
+        public:
+            /*
+            Defines aliases for making shared pointers of this class.
+            Defines a static function that returns a shared pointer of this class
+            */
+            RCLCPP_SHARED_PTR_DEFINITIONS(GPIOController);
+
+            controller_interface::InterfaceConfiguration command_interface_configuration() const override;
+            controller_interface::InterfaceConfiguration state_interface_configuration() const override;
+            controller_interface::return_type update(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+            CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+            CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+            CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+            CallbackReturn on_init() override;
+
+        private:
+            std::vector<std::string> inputs_; //Stores the input parameters that we put into the YAML file for this controller 
+
+        protected:
+            // internal commands
+            std::shared_ptr<CmdType> output_cmd_ptr_; //The data we read on the subscriber callback should be stored here
+
+            // subscriber
+            rclcpp::Subscription<CmdType>::SharedPtr subscription_command_;
+    };
+}  // namespace ros2_control_demo_example_10
+
+#endif  // ROS2_CONTROL_DEMO_EXAMPLE_10__GPIO_CONTROLLER_HPP_

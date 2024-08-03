@@ -8,6 +8,7 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
+// import the controls toolbox here for PID control
 
 #include "general_interfaces/msg/arm_pose.hpp" // IWYU pragma: keep
 #include "rclcpp/node.hpp"
@@ -40,6 +41,11 @@ namespace arm_controls {
 
             SerialCommunication serialObject;
             //std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
+
+            // Declare PID objects here
+            // Need 1 per joint that is providing feedback
+
+            // Declare vectors for GPIO command and state
 
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
     };

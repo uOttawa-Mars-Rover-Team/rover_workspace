@@ -35,7 +35,7 @@ uorover_ee_controller:
 gpio_controller:
   ros_parameters:
     type: "arm_controls/GPIOController"
-    inputs:
+    outputs:
       - stepper_1/enable
       - stepper_2/enable
       - stepper_3/enable

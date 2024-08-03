@@ -18,8 +18,10 @@
     //Typical command example:
     //Manual: "M;1024;-1024;0;0;0;0;!"
     //IK: "I;1.57;2.0;3.0;0.5;-1024;-1024;!"
-    Serial.print("\nNew command received: ");
-    Serial.println(input);
+    if (verbose) {
+      Serial.print("\nNew command received: ");
+      Serial.println(input);
+    }
 
     tmp = strtok(input, ";");
 
@@ -77,7 +79,10 @@
         motor[i].currentPos = atof(tmp);
       }
       Serial.println("Current states changed!");
-    } else if (equalsStr(tmp, "reboot_tw")) {
+    }
+    
+    //Driver related stuff
+    else if (equalsStr(tmp, "reboot_tw")) {
       rebootDriver(TW);
       Serial.println("Tower driver rebooted!");
       
@@ -92,8 +97,20 @@
     } else if (equalsStr(tmp, "reboot_ee")) {
       rebootDriver(EE);
       Serial.println("End effector driver rebooted!");
-      
-    } else if (equalsStr(tmp, "test_laser")) {
+    } else if (equalsStr(tmp, "power_saving_on")) {
+      digitalWrite(motor[TW].BOOT_PIN, LOW);
+      digitalWrite(motor[WP].BOOT_PIN, LOW);
+      digitalWrite(motor[WR].BOOT_PIN, LOW);
+      digitalWrite(motor[EE].BOOT_PIN, LOW);
+    } else if (equalsStr(tmp, "power_saving_off")) {
+      digitalWrite(motor[TW].BOOT_PIN, HIGH);
+      digitalWrite(motor[WP].BOOT_PIN, HIGH);
+      digitalWrite(motor[WR].BOOT_PIN, HIGH);
+      digitalWrite(motor[EE].BOOT_PIN, HIGH);
+    }
+    
+    //LED related stuff
+    else if (equalsStr(tmp, "test_laser")) {
       digitalWrite(LASER_PIN, LOW);
       delay(100);
       digitalWrite(LASER_PIN, HIGH);
@@ -122,19 +139,43 @@
   //Every dashb_delay ms, publish stuff
   if (millis() - dashb_t >= dashb_delay) {
 
+    if (graph) {
+      motor[TW].currentPos = (360*float(motor[TW].enc_count)/4096 + float(motor[TW].enc_turns)*360)/500;
+      motor[TW].currentPos *= motor[TW].sign;
+
+      Serial.println();
+      Serial.print("Tower_Pose:");
+      Serial.println(motor[TW].currentPos); //apply conversion using wrist mtr 1:50 and belt 1:10 => div by 500
+      Serial.print(",");
+      Serial.print("Tower_Ideal:");
+      Serial.println(motor[TW].desiredPos);
+    }
+
     //Publishing/printing feedback below
+
+       
+    //////testing: delete this block and replace with one below////////
     Serial.println();
+    Serial.print("f;");
+    for (int i = TW ; i < LAST ; i++) {
+      Serial.print(motor[i].desiredPos);
+      Serial.print(";");
+    }
+    Serial.print("!");
+    //////testing: delete this block and replace with one below////////
+
+    /*Serial.println();
     Serial.print("f;");
     for (int i = TW ; i < WR ; i++) {
       motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
-      motor[i].currentPos *= motor[i].sign; 
+      motor[i].currentPos *= motor[i].sign;
       Serial.print(motor[i].currentPos);
       Serial.print(";");
     }
     motor[WR].currentPos = wristRoll.currentPosition();
     Serial.print(motor[WR].currentPos*0.036);
     Serial.print(";0.00;");
-    Serial.print("!");
+    Serial.print("!");*/
     
     //Publishing/printing velocities
     Serial.println();

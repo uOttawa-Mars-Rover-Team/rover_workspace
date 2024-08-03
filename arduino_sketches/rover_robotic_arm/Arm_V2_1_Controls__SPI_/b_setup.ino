@@ -62,6 +62,9 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
+#define verbose         false
+#define graph           true
+
 //Stop variables for steppers & limit switch purposes
 int EEStopClose   = 0;
 int EEStopOpen    = 0;
@@ -105,29 +108,29 @@ struct Motor {
   int           direction;
   int           speed;//motor move speedd
   float         velocity;//calculated speed w/ encoders
-  int           acceleration;
+  long          acceleration;
   int           enc_status;   
   int           enc_turns;    
-  int           enc_count;   
+  long          enc_count;   
   float         currentPos;    
   float         desiredPos;
   int           sign;
   unsigned long dirChange;    //time since dir has changed
   unsigned long trig_delay;   //for mainly la encoder
-  const int     MAX_RANGE;    //max range allowed by motor/workspace
+  long          MAX_RANGE;    //max range allowed by motor/workspace
   int           ENC_PIN;      //enable pin for encoder, active low 
   int           BOOT_PIN;     //used to reboot the stepper drivers
   int           FAULT_PIN;    //to manage faults for all drivers
 };
 
 //Create the motor objects
-//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign    dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P 
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,       0.0,    0.0,   -1  , millis(),   millis(),   2500,    56,      17,     68};
-Motor l1 = {0,    0,    0,     -1,     0,         0,          0,       0.0,    0.0,   -1  , millis(),   millis(),   -1,      63,     -1,      30};    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,       0.0,    0.0,    1  , millis(),   millis(),   -1,      64,     -1,      31};
-Motor wp = {0,    0,    0,  30000,     0,         0,          0,       0.0,    0.0,    1  , millis(),   millis(),   25000,   57,      16,     62};
-Motor wr = {0,    0,    0,  30000,     0,         0,          0,       0.0,    0.0,   -1  , millis(),   millis(),   175000,  -1,      4,      55};
-Motor ee = {0,    0,    0,  10000,     0,         0,          0,       0.0,    0.0,    1  , millis(),   millis(),   8610,    -1,      5,      54};
+//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P 
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68};
+Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30};    
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31};
+Motor wp = {0,    0,    0,  30000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62};
+Motor wr = {0,    0,    0,  30000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55};
+Motor ee = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54};
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 

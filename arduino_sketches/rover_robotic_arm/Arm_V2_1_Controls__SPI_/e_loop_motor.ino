@@ -226,7 +226,7 @@ int calculateNextSpeed(int i) {
   } else {
     switch (i) {
       case TW:
-        nextSpeed = 200;
+        nextSpeed = 300;
         break;
       case L1:
         nextSpeed = 300;
@@ -235,13 +235,13 @@ int calculateNextSpeed(int i) {
         nextSpeed = 300;
         break;
       case WP:
-        nextSpeed = 200;
+        nextSpeed = 300;
         break;
       case WR:
-        nextSpeed = 200;
+        nextSpeed = 300;
         break;
       case EE:
-        nextSpeed = 200;
+        nextSpeed = 300;
         break;
       default:
         nextSpeed = 0;

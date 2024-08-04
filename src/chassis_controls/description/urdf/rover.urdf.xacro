@@ -5,12 +5,12 @@
 
     <xacro:property name="wheel_diameter" value="0.40601"/>
     <xacro:property name="wheel_max_velocity" value="20.0"/>
-    <xacro:property name="wheel_enc_counts_per_rev" value="1024"/>
+    <xacro:property name="wheel_enc_counts_per_rev" value="4096"/>
     <xacro:property name="controller_period" value="0.1"/>
-    <xacro:property name="FL_id" value="20"/>
+    <xacro:property name="FL_id" value="30"/>
     <xacro:property name="FR_id" value="40"/>
     <xacro:property name="RR_id" value="10"/>
-    <xacro:property name="RL_id" value="30"/>
+    <xacro:property name="RL_id" value="20"/>
 
     <xacro:include filename="drive_urdf.urdf" />
 

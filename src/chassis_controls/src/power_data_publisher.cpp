@@ -51,7 +51,7 @@ private:
     double currents [16] = {-1};
     double voltage;
 
-    int err = (int)c_PDP_GetValues(0,&voltage,currents,16,&filled);
+    int err = (int)c_PDP_GetValues(0,&voltage,currents,5,&filled);
   
     if (!err){
       RCLCPP_INFO(get_logger(), "Updated PDP values.");

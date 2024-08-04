@@ -8,38 +8,37 @@
 namespace arm_controls
 {
     CallbackReturn ArmSystem::on_init(const hardware_interface::HardwareInfo & info){
-        // Parent class on init fills the info object out with URDF details 
+        // Parent class' on_init fills the info object out with URDF details 
         // If URDF can't be read, return ERROR
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
             return CallbackReturn::ERROR;
         }
 
-        //This vector is updated is used by the coontrollers to read the state after exporting
-        joint_position_state_.assign(numInterfaces, 0); 
-        joint_velocity_state_.assign(numInterfaces, 0);
-        joint_position_command_.assign(numInterfaces, 0);
-
-        serialObject.connect_serial(0); 
-        serialObject.publishToArduino("I;!"); //this will set the arduino in IK mode
-
-        prev_command_ = "";
-
-
-        
         //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces
 
+        //References to the elements of these vectors will be passed to the controllers so that they can be updated/read
+        //This allows the controller and the hardware interface to communicate with each other
+        joint_position_state_.assign(NUM_JOINT_INTERFACES, 0); 
+        joint_velocity_state_.assign(NUM_JOINT_INTERFACES, 0);
+        joint_position_command_.assign(NUM_JOINT_INTERFACES, 0);
+        //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en
+        gpio_command_ = {true, true, true, true, false}; //this means that on init we enable all of the steppers and disable the laser
+
+        prev_gpio_command_ = gpio_command_;
+        prev_position_command_ = "";
         //TODO: Initialize PID Objects here (call initPID)
-                
+
+        serialObject.connect_serial(0); 
+        serialObject.publishToArduino(IK_START_COMMAND); //this will set the arduino in IK mode
+        
         return CallbackReturn::SUCCESS;
     }
 
     std::vector<hardware_interface::StateInterface> ArmSystem::export_state_interfaces() {
         std::vector<hardware_interface::StateInterface> state_interfaces;
 
-        // TODO: Export state interfaces for GPIO
-
-        // create the state interface objects and add them to the vector
-        for (auto i = 0u; i < info_.joints.size(); i++){
+        //Create the state interface objects and add them to the vector
+        for (int i = 0; i < info_.joints.size(); i++){
             state_interfaces.emplace_back(hardware_interface::StateInterface(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &joint_position_state_[i]));
             
@@ -51,26 +50,30 @@ namespace arm_controls
     }
 
     std::vector<hardware_interface::CommandInterface> ArmSystem::export_command_interfaces() {
-        cout <<"export commands"<< endl;
-        
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-        // TOOD: Export command interfaces for GPIO
-
-        // create command interface objects and place them in the vector
-        for (auto i = 0u; i < info_.joints.size(); i++){
+        //Create command interface objects from the joint information and place them in the vector
+        for (int i = 0; i < info_.joints.size(); i++){
             command_interfaces.emplace_back(hardware_interface::CommandInterface(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &joint_position_command_[i]));
+        }
+
+        //NOTE: The order of names in info_.joint and info_.gpio  is the same as the order in the xacro file
+
+        //Create command interface objects from gpio information and place them in the vector
+        for (int i = 0; i < info_.gpios.size(); i++){
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(
+                info_.gpios[i].name, GPIO_ENABLE, &gpio_command_[i]));
         }
 
         return command_interfaces;
     }
 
     hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
-        //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE;!
-        //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
-        //TODO: Add filtering for velocity feedback and write it to the state interface for velocity 
-    
+       //Typical position feedback command: f;TW;SL;EL;PT;RL;EE;!
+        //Typical velocity feedback command: v;TW;SL;EL;PT;RL;EE;!
+        //TODO: Serial library is performing most of the checking for us. We should move the error checking here to decouple the library. 
+        
         std::string serialReadResult = serialObject.get_latest_position();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
         
@@ -79,13 +82,12 @@ namespace arm_controls
 
         std::getline(ss, temp, ';'); //skip the f; part of the string
 
-        for (size_t i = 0; i < numInterfaces; ++i) {
+        for (size_t i = 0; i < NUM_JOINT_INTERFACES; ++i) {
             //getline will load the  next part of the string up to the semicolon
             //putting this in an if statement will ensure that the code doesn't break if the string stream is in a failure state
             if (std::getline(ss, temp, ';') && temp != "!"){ 
                 // Arduino sends the position in degrees, but the controller needs it in radians
                 double positionInRad = std::stod(temp) * PI / 180;
-
                 joint_position_state_[i] = positionInRad;
             }
         }
@@ -97,18 +99,36 @@ namespace arm_controls
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
-        // Example of typical command to send "S;40;20;-20;0;0;200;!
-        // By default, the controllers should be sending positions for revolute joints in degrees
-        // TODO: Use PID here to adjust the position that we are sending
+        // By default, the controllers should be sending positions for revolute joints in radians
         
+        // GPIO COMMANDS HANDLING
+        // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
+        if (gpio_command_[0] != prev_gpio_command_[0]){
+            serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
+        }
+        if (gpio_command_[1] != prev_gpio_command_[1]){
+            serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
+        }
+        if (gpio_command_[2] != prev_gpio_command_[2]){
+            serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
+        }
+        if (gpio_command_[3] != prev_gpio_command_[3]){
+            serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
+        }
+        if (gpio_command_[4] != prev_gpio_command_[4]){
+            serialObject.publishToArduino("laser;!"); //toggle laser
+        }
+
+        // POSITION COMMANDS HANDLING 
+        // Example of typical position command to send: "S;40;20;-20;0;0;200;!
         std::ostringstream command_stream;
         command_stream << "S;";
 
-        for (size_t i = 0; i < numInterfaces; ++i) {
+        for (size_t i = 0; i < NUM_JOINT_INTERFACES; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
             command_stream << std::fixed << std:: setprecision(2)<<positionInDegrees;
-            
-            if (i < numInterfaces - 1) {
+            // TODO: Use PID here to adjust the position that we are sending
+            if (i < NUM_JOINT_INTERFACES - 1) {
                 command_stream << ";";
             }
         }
@@ -121,9 +141,9 @@ namespace arm_controls
         //std::cout << "Current time: " << std::ctime(&now);
         //std::cout << "write" << endl;
 
-        if (command != prev_command_) {
+        if (command != prev_position_command_) {
             serialObject.publishToArduino(command);
-            prev_command_ = command;
+            prev_position_command_ = command;
         }
         return hardware_interface::return_type::OK;
 

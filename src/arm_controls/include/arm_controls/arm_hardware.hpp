@@ -21,9 +21,10 @@
 
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-    const int numInterfaces = 6;
+    const int NUM_JOINT_INTERFACES = 6;
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
+    const char GPIO_ENABLE[] = "enable"; //this is the type of gpio hardware component we are looking for from the ros2 control xacro file
 
     class HARDWARE_INTERFACE_PUBLIC ArmSystem
     : public hardware_interface::SystemInterface {
@@ -34,24 +35,23 @@ namespace arm_controls {
             hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
             hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration &period) override;
         
-            // interfaces
+            enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
+
+            //Vectors for joint interfaces
+            //NOTE: These vectors must contain doubles beacause of the way the CommandInterface and StateInterface constructors are defined in ros2 control
             std::vector<double> joint_position_command_;
             std::vector<double> joint_position_state_;
             std::vector<double> joint_velocity_state_;
+            //Vectors for gpio interfaces 
+            std::vector<double> gpio_command_;
+            std::vector<double> prev_gpio_command_;
 
-            std::string prev_command_;
-            
-
+            std::string prev_position_command_; // string to save the previous position command sent ot the arduino
+           
             SerialCommunication serialObject;
-            //std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {{"position", {}}, {"velocity", {}}};
 
             // Declare PID objects here
             // Need 1 per joint that is providing feedback
-
-            // Declare vectors for GPIO command and state
-            std::vector<bool> gpio_command_;
-
-            enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
     };
 } // namespace arm_controls
 

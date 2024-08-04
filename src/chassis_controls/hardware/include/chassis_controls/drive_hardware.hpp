@@ -52,6 +52,8 @@ protected:
     double controller_period;
     control_toolbox::Pid::Gains pid_gains_l;
     control_toolbox::Pid::Gains pid_gains_r;
+    std::vector<double> wheel_m;
+    std::vector<double> wheel_b;
   };
 
   std::vector<double> wheel_velocity_command_;

@@ -1,0 +1,48 @@
+clc;
+syms t;
+
+FL_coeffs = [-1.7238220223558122e-05 0.002816956999768833 0.14885816662057763 -0.19266472093086462];
+FR_coeffs = [-1.7111621233623797e-05 0.00279226997639584 0.150337596142198 -0.21895300969754944];
+RR_coeffs = [-1.9440463673964255e-05 0.003144753005625452 0.1453769716006714 -0.39351307534279073];
+RL_coeffs = [-2.000160634244534e-05 0.003218677509336908 0.13509604455844051 -0.32789606752440015];
+
+% FLp = piecewise( ...
+%     subs(poly2sym(FL_coeffs, t), t, t) < 0, 0, ...
+%     t <= 100, poly2sym(FL_coeffs, t), ...
+%     t > 100, subs(poly2sym(FL_coeffs, t), t, 100));
+
+curve = poly2sym(FL_coeffs, t)
+roots = solve(curve,t,"MaxDegree",3,"Real",true);
+deadband = vpa(min(roots(roots>0)),8)
+pwm_domain = heaviside(t-deadband)*(curve) - (curve-subs(curve,t,100))*heaviside(t-100)
+
+pwm_domain_approx = series(pwm_domain,t, 50, 'Direction', 'realAxis')
+fplot([pwm_domain pwm_domain_approx], [-5, 105]);
+xlabel = ""
+title('Velocity v. PWM')
+
+freq_domain = laplace(pwm_domain);
+[freq_num, freq_den] = numden(freq_domain)
+freq_num = double(sym2poly(freq_num));
+freq_den = double(sym2poly(freq_den));
+Ps = tf(freq_num, freq_den);
+
+
+t = 0:0.01:2;
+step(Ps,t);
+
+% PEqn = P(s) == laplace(pwm_domain)*(1/s);
+% p(t) = ilaplace(rhs(PEqn));
+% fplot(@(t) p(t), [0 150]);
+% grid on;
+% xlabel('Time, t');
+% ylabel('p(t)');
+
+% Kp = 300;
+% Ki = 0;
+% Kd = 10;
+% Ps = 1/(s^2+10*s+20);
+% Cs = pid(Kp, Ki, Kd);
+% Ts = feedback(Cs*Ps,1)
+% t = 0:0.01:2;
+% step(Ts,t)

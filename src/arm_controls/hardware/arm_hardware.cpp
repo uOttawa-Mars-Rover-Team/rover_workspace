@@ -110,6 +110,7 @@ namespace arm_controls
         } if (gpio_command_[4] != prev_gpio_command_[4]){
             serialObject.publishToArduino("laser;!"); //toggle laser
         }
+        prev_gpio_command_ = gpio_command_;
 
         // POSITION COMMAND HANDLING 
         // Example of typical position command to send: "S;40;20;-20;0;0;200;!

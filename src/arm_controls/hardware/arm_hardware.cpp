@@ -1,9 +1,5 @@
 #include "arm_controls/arm_hardware.hpp"
 #include "pluginlib/class_list_macros.hpp"
-#include <string>
-#include <iomanip> // For std::setprecision
-
-#include <thread>
 
 namespace arm_controls
 {
@@ -18,14 +14,15 @@ namespace arm_controls
 
         //References to the elements of these vectors will be passed to the controllers so that they can be updated/read
         //This allows the controller and the hardware interface to communicate with each other
-        joint_position_state_.assign(NUM_JOINT_INTERFACES, 0); 
-        joint_velocity_state_.assign(NUM_JOINT_INTERFACES, 0);
-        joint_position_command_.assign(NUM_JOINT_INTERFACES, 0);
+        joint_position_state_.assign(NUM_JOINTS, 0); 
+        joint_velocity_state_.assign(NUM_JOINTS, 0);
+        joint_position_command_.assign(NUM_JOINTS, 0);
         //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en
         gpio_command_ = {true, true, true, true, false}; //this means that on init we enable all of the steppers and disable the laser
 
         prev_gpio_command_ = gpio_command_;
         prev_position_command_ = "";
+
         //TODO: Initialize PID Objects here (call initPID)
 
         serialObject.connect_serial(0); 
@@ -70,7 +67,7 @@ namespace arm_controls
     }
 
     hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
-       //Typical position feedback command: f;TW;SL;EL;PT;RL;EE;!
+        //Typical position feedback command: f;TW;SL;EL;PT;RL;EE;!
         //Typical velocity feedback command: v;TW;SL;EL;PT;RL;EE;!
         //TODO: Serial library is performing most of the checking for us. We should move the error checking here to decouple the library. 
         
@@ -80,9 +77,9 @@ namespace arm_controls
         std::istringstream ss(serialReadResult);
         std::string temp; // string that we read into when using the istringstream
 
-        std::getline(ss, temp, ';'); //skip the f; part of the string
+        std::getline(ss, temp, ';'); //skip the first characters (i.e. f;) of the string
 
-        for (size_t i = 0; i < NUM_JOINT_INTERFACES; ++i) {
+        for (size_t i = 0; i < NUM_JOINTS; ++i) {
             //getline will load the  next part of the string up to the semicolon
             //putting this in an if statement will ensure that the code doesn't break if the string stream is in a failure state
             if (std::getline(ss, temp, ';') && temp != "!"){ 
@@ -95,40 +92,35 @@ namespace arm_controls
         //Joint velocity state will remain at 0 for the time being
 
         return hardware_interface::return_type::OK;
-
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // By default, the controllers should be sending positions for revolute joints in radians
         
-        // GPIO COMMANDS HANDLING
+        // GPIO COMMAND HANDLING
         // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
         if (gpio_command_[0] != prev_gpio_command_[0]){
             serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
-        }
-        if (gpio_command_[1] != prev_gpio_command_[1]){
+        } if (gpio_command_[1] != prev_gpio_command_[1]){
             serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
-        }
-        if (gpio_command_[2] != prev_gpio_command_[2]){
+        } if (gpio_command_[2] != prev_gpio_command_[2]){
             serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
-        }
-        if (gpio_command_[3] != prev_gpio_command_[3]){
+        } if (gpio_command_[3] != prev_gpio_command_[3]){
             serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
-        }
-        if (gpio_command_[4] != prev_gpio_command_[4]){
+        } if (gpio_command_[4] != prev_gpio_command_[4]){
             serialObject.publishToArduino("laser;!"); //toggle laser
         }
 
-        // POSITION COMMANDS HANDLING 
+        // POSITION COMMAND HANDLING 
         // Example of typical position command to send: "S;40;20;-20;0;0;200;!
         std::ostringstream command_stream;
         command_stream << "S;";
 
-        for (size_t i = 0; i < NUM_JOINT_INTERFACES; ++i) {
+        for (size_t i = 0; i < NUM_JOINTS; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
             command_stream << std::fixed << std:: setprecision(2)<<positionInDegrees;
             // TODO: Use PID here to adjust the position that we are sending
-            if (i < NUM_JOINT_INTERFACES - 1) {
+            if (i < NUM_JOINTS - 1) {
                 command_stream << ";";
             }
         }
@@ -145,9 +137,8 @@ namespace arm_controls
             serialObject.publishToArduino(command);
             prev_position_command_ = command;
         }
+
         return hardware_interface::return_type::OK;
-
-
     }
 
 } // namespace arm_controls

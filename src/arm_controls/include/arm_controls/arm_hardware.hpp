@@ -2,6 +2,9 @@
 #define ARM_CONTROLS__ARM_HARDWARE_HPP_
 
 #include <sstream>
+#include <string>
+#include <iomanip> // For std::setprecision
+#include <chrono>
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
@@ -9,19 +12,15 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "control_toolbox/pid.hpp"
-
 #include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
-#include "../serial_communication_library/include/serial_communication.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include <chrono>
 
-//#include <general_interfaces/msg/detail/arm_pose__struct.h>
-//#include <unordered_map>
+#include "../serial_communication_library/include/serial_communication.hpp"
 
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-    const int NUM_JOINT_INTERFACES = 6;
+    const int NUM_JOINTS = 6;
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
     const char GPIO_ENABLE[] = "enable"; //this is the type of gpio hardware component we are looking for from the ros2 control xacro file

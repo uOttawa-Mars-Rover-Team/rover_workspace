@@ -17,6 +17,7 @@ find_package(hardware_interface REQUIRED)
 find_package(controller_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 # Comment out to enable warnings
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -72,6 +73,7 @@ ament_target_dependencies(
     "hardware_interface"
     "general_interfaces"
     "rclcpp"
+    "control_toolbox"
     )
     
 ament_target_dependencies(

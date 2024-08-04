@@ -41,4 +41,3 @@ gpio_controller:
       - stepper_3/enable
       - stepper_4/enable
       - laser/enable
-      - full_stop/enable

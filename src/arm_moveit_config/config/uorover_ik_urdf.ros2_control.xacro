@@ -66,9 +66,6 @@
             <gpio name="laser">
               <command_interface name="enable"/>
             </gpio>
-            <gpio name="full_stop">
-              <command_interface name="enable"/>
-            </gpio>
         </ros2_control>
     </xacro:macro>
 </robot>

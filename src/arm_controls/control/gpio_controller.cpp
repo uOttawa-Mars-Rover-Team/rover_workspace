@@ -54,8 +54,6 @@ namespace arm_controls
         command_interfaces_[2].set_value(output_cmd_ptr_->stepper_3);
         command_interfaces_[3].set_value(output_cmd_ptr_->stepper_4);
         command_interfaces_[4].set_value(output_cmd_ptr_->laser_en);
-        command_interfaces_[5].set_value(output_cmd_ptr_->full_stop);
-
 
         return controller_interface::return_type::OK;
     }

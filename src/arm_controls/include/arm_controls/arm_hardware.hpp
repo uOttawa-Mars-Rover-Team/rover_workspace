@@ -8,9 +8,8 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-// import the controls toolbox here for PID control
+#include "control_toolbox/pid.hpp"
 
-#include "general_interfaces/msg/arm_pose.hpp" // IWYU pragma: keep
 #include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "../serial_communication_library/include/serial_communication.hpp"
@@ -22,7 +21,7 @@
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
     const int numInterfaces = 6;
-    const int PI = 3.14159265358979323846;
+    const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
 
     class HARDWARE_INTERFACE_PUBLIC ArmSystem
@@ -46,6 +45,7 @@ namespace arm_controls {
             // Need 1 per joint that is providing feedback
 
             // Declare vectors for GPIO command and state
+            std::vector<bool> gpio_command_;
 
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
     };

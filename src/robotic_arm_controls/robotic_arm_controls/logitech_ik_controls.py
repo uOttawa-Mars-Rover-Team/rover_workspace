@@ -44,7 +44,7 @@ class SpacemouseNode(Node):
         self.curr = []
 
         # Params
-        self.pub_rate = 10.0 #Hz
+        self.pub_rate = 20.0 #Hz
         self.deadband = 0.4
 
         # All about the publishing loop

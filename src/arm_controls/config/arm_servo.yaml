@@ -7,15 +7,15 @@
 
 ## Properties of outgoing commands
 publish_period: 0.2  # 1/Nominal publish rate [seconds]
-max_expected_latency: 0.05  # delay between sending a command and the robot executing it [seconds]
+max_expected_latency: 0.01  # delay between sending a command and the robot executing it [seconds]
 
 command_in_type: "unitless"  # "unitless"> in the range [-1:1], as if from joystick. "speed_units"> cmds are in m/s and rad/s
 scale:
   # Scale parameters are only used if command_in_type=="unitless"
-  linear:  0.2  # Max linear velocity. Unit is [m/s]. Only used for Cartesian commands.
-  rotational:  0.3  # Max angular velocity. Unit is [rad/s]. Only used for Cartesian commands.
+  linear:  0.5  # Max linear velocity. Unit is [m/s]. Only used for Cartesian commands.
+  rotational:  0.6  # Max angular velocity. Unit is [rad/s]. Only used for Cartesian commands.
   # Max joint angular/linear velocity. Only used for joint commands on joint_command_in_topic.
-  joint: 0.3
+  joint: 0.6
 
 # What type of topic does your robot driver expect?
 # Currently supported are std_msgs/Float64MultiArray or trajectory_msgs/JointTrajectory

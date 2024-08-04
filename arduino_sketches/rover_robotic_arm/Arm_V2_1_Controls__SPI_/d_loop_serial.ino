@@ -170,7 +170,9 @@
 
     Serial.println();
     Serial.print("f;");
-    for (int i = TW ; i < LAST ; i++) {
+    Serial.print(motor[TW].currentPos);
+    Serial.print(";");
+    for (int i = L1 ; i < LAST ; i++) {
       Serial.print(motor[i].desiredPos);
       Serial.print(";");
     }

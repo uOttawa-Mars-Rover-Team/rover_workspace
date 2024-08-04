@@ -6,6 +6,9 @@
 #include <cctype>
 #include <string>
 
+#include <chrono>
+#include <ctime>
+
 SerialCommunication* SerialCommunication::instance = nullptr;
 
 //============== Constructor ===============
@@ -32,7 +35,6 @@ SerialCommunication::SerialCommunication()
     });
     //TODO: Decouple this from the hardware interface by passing a variable in the constructor for the logger and a start and end delimiter
     read_thread.detach(); // read thread now runs independently
-    
 
     instance = this; // Assign the instance pointer
     signal(SIGINT, signalHandler); // When Ctrl+C is pressed, run signalHandler (Destructor)
@@ -168,10 +170,8 @@ void SerialCommunication::write_serial() {
 
     if (!connecting_ && !zeroing_ && my_serial_) {
         try {
-            //my_serial_->flushOutput();
             setitimer(ITIMER_REAL, &RETRY_DELAY, 0);
             my_serial_->write(movement_);
-            //cout << "Writing to serial: \n" << movement_ << endl;
             setitimer(ITIMER_REAL, 0, 0);
         } catch (...) {
             setitimer(ITIMER_REAL, 0, 0);

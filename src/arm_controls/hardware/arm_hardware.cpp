@@ -17,11 +17,14 @@ namespace arm_controls
         //This vector is updated is used by the coontrollers to read the state after exporting
         joint_position_state_.assign(numInterfaces, 0); 
         joint_velocity_state_.assign(numInterfaces, 0);
-        
         joint_position_command_.assign(numInterfaces, 0);
 
         serialObject.connect_serial(0); 
         serialObject.publishToArduino("I;!"); //this will set the arduino in IK mode
+
+        prev_command_ = "";
+
+
         
         //TODO: implement logic to check if URDF is providing all of the correct joints and interfaces
 
@@ -67,7 +70,7 @@ namespace arm_controls
         //parsing a string like this into the state interface values f;TW;SL;EL;PT;RL;EE;!
         //the state interface values are stored in the joint_velocity_state_ and joint_position_state_ vectors
         //TODO: Add filtering for velocity feedback and write it to the state interface for velocity 
-        
+    
         std::string serialReadResult = serialObject.get_latest_position();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
         
@@ -90,12 +93,14 @@ namespace arm_controls
         //Joint velocity state will remain at 0 for the time being
 
         return hardware_interface::return_type::OK;
+
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // Example of typical command to send "S;40;20;-20;0;0;200;!
         // By default, the controllers should be sending positions for revolute joints in degrees
         // TODO: Use PID here to adjust the position that we are sending
+        
         std::ostringstream command_stream;
         command_stream << "S;";
 
@@ -111,10 +116,18 @@ namespace arm_controls
 
         std::string command = command_stream.str();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
-        
-        serialObject.publishToArduino(command);
 
+        //std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        //std::cout << "Current time: " << std::ctime(&now);
+        //std::cout << "write" << endl;
+
+        if (command != prev_command_) {
+            serialObject.publishToArduino(command);
+            prev_command_ = command;
+        }
         return hardware_interface::return_type::OK;
+
+
     }
 
 } // namespace arm_controls

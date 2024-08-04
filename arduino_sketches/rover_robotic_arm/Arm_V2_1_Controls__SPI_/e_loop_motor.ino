@@ -226,7 +226,7 @@ int calculateNextSpeed(int i) {
   } else {
     switch (i) {
       case TW:
-        nextSpeed = 300;
+        nextSpeed = 200;
         break;
       case L1:
         nextSpeed = 300;

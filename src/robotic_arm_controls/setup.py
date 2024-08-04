@@ -41,7 +41,9 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
+            "keyboard_ik_controls = robotic_arm_controls.keyboard_ik_controls:main",
             "logitech_ik_controls = robotic_arm_controls.logitech_ik_controls:main",
+            "logitech_ik_keyboard_controls = robotic_arm_controls.logitech_ik_keyboard_controls:main",
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
             "old_manual = robotic_arm_controls.old_manual:main",
             "router = robotic_arm_controls.router:main",

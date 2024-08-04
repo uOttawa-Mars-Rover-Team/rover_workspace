@@ -1,5 +1,6 @@
-bool stepper_1 true
-bool stepper_2 true
-bool stepper_3 true
-bool stepper_4 true
+bool stepper1_en true
+bool stepper2_en true
+bool stepper3_en true
+bool stepper4_en true
 bool laser_en false
+bool stop false

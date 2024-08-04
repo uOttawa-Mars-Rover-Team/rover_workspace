@@ -17,8 +17,8 @@ namespace arm_controls
         joint_position_state_.assign(NUM_JOINTS, 0); 
         joint_velocity_state_.assign(NUM_JOINTS, 0);
         joint_position_command_.assign(NUM_JOINTS, 0);
-        //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en
-        gpio_command_ = {true, true, true, true, false}; //this means that on init we enable all of the steppers and disable the laser
+        //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en, stop
+        gpio_command_ = {true, true, true, true, false, false}; //this means that on init we enable all of the steppers, disable the laser, and stop the motor from moving
 
         prev_gpio_command_ = gpio_command_;
         prev_position_command_ = "";
@@ -109,6 +109,8 @@ namespace arm_controls
             serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
         } if (gpio_command_[4] != prev_gpio_command_[4]){
             serialObject.publishToArduino("laser;!"); //toggle laser
+        } if (gpio_command_[5] != prev_gpio_command_[5]){
+            serialObject.publishToArduino("stop;!"); //toggle stop
         }
         prev_gpio_command_ = gpio_command_;
 

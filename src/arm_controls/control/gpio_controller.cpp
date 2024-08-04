@@ -49,11 +49,12 @@ namespace arm_controls
             return controller_interface::return_type::OK;
         }
 
-        command_interfaces_[0].set_value(output_cmd_ptr_->stepper_1);
-        command_interfaces_[1].set_value(output_cmd_ptr_->stepper_2);
-        command_interfaces_[2].set_value(output_cmd_ptr_->stepper_3);
-        command_interfaces_[3].set_value(output_cmd_ptr_->stepper_4);
+        command_interfaces_[0].set_value(output_cmd_ptr_->stepper1_en);
+        command_interfaces_[1].set_value(output_cmd_ptr_->stepper2_en);
+        command_interfaces_[2].set_value(output_cmd_ptr_->stepper3_en);
+        command_interfaces_[3].set_value(output_cmd_ptr_->stepper4_en);
         command_interfaces_[4].set_value(output_cmd_ptr_->laser_en);
+        command_interfaces_[5].set_value(output_cmd_ptr_->stop);
 
         return controller_interface::return_type::OK;
     }

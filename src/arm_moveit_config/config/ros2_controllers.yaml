@@ -32,12 +32,13 @@ uorover_ee_controller:
   ros__parameters:
     joint: q6
 
-gpio_controller:
-  ros_parameters:
-    type: "arm_controls/GPIOController"
-    outputs:
-      - stepper_1/enable
-      - stepper_2/enable
-      - stepper_3/enable
-      - stepper_4/enable
-      - laser/enable
+
+#gpio_controller:
+#  ros_parameters:
+#    type: "arm_controls/GPIOController"
+#    outputs:
+#      - stepper_1/enable
+#      - stepper_2/enable
+#      - stepper_3/enable
+#      - stepper_4/enable
+#      - laser/enable

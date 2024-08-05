@@ -40,8 +40,8 @@ check_octomap_collisions: false  # Check collision against the octomap (if a 3D 
 ## MoveIt properties
 move_group_name: uorover_arm  # Often 'manipulator' or 'arm'
 planning_frame: base_footprint
-ee_frame_name: L6
-robot_link_command_frame: L6
+ee_frame_name: L7
+robot_link_command_frame: L7
 
 ## Configure handling of singularities and joint limits
 lower_singularity_threshold:  17.0  # Start decelerating when the condition number hits this (close to singularity)

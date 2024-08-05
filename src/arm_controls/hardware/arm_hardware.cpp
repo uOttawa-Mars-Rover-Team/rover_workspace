@@ -20,9 +20,10 @@ namespace arm_controls
         joint_position_state_.assign(num_joints, 0); 
         joint_velocity_state_.assign(num_joints, 0);
         joint_position_command_.assign(num_joints, 0);
+
         //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en, stop
-        peripheral_command_ = {true, true, true, true, false, false}; //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
-        peripheral_state_ = {true, true, true, true, false, false}; //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
+        peripheral_command_ = vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
+        peripheral_state_ =  vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
 
         prev_position_command_ = "";
 
@@ -76,14 +77,12 @@ namespace arm_controls
     }
 
     hardware_interface::return_type ArmSystem::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
+        //TODO: Serial library is performing most of the checking for us. We should move the error checking here to decouple the library and make it reusable. 
+        
+        //PROCESSING POSITION DATA        
         //Typical position feedback command: f;TW;SL;EL;PT;RL;EE;!
-        //Typical velocity feedback command: v;TW;SL;EL;PT;RL;EE;!
-        //Typical gpio feedback command: g;S1;S2;S3;S4;L;ST;!
-        //TODO: Serial library is performing most of the checking for us. We should move the error checking here to decouple the library. 
-        
         std::string serialReadResult = serialObject.get_latest_position();
-        //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Read: %s", serialReadResult.c_str());
-        
+
         std::istringstream ss(serialReadResult);
         std::string temp; // string that we read into when using the istringstream
 
@@ -99,10 +98,13 @@ namespace arm_controls
             }
         }
 
+        //PROCESSING PERIPHERAL DATA
+        //Typical gpio feedback command: g;S1;S2;S3;S4;L;ST;!
         ss.clear(); //clear the error flags
         ss.str(""); //clear the contents of the string stream
 
         serialReadResult = serialObject.get_peripheral_feedback();
+        std::getline(ss, temp, ';'); //skip the first characters (i.e. g;) of the string
 
         for (size_t i = 0; i < num_peripherals; ++i) {
             if (std::getline(ss, temp, ';') && temp != "!"){
@@ -111,6 +113,7 @@ namespace arm_controls
         }
 
         //Joint velocity state will remain at 0 for the time-being
+        //Typical velocity feedback command: v;TW;SL;EL;PT;RL;EE;!
 
         return hardware_interface::return_type::OK;
     }
@@ -120,7 +123,6 @@ namespace arm_controls
         
         // PERIPHERAL COMMAND HANDLING
         // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
-        
         if (peripheral_command_[0] != peripheral_state_[0]){
             //serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
         } if (peripheral_command_[1] != peripheral_state_[1]){

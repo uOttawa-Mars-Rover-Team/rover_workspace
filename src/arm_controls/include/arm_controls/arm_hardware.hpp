@@ -20,10 +20,11 @@
 
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-    const int NUM_JOINTS = 6;
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
-    const char GPIO_ENABLE[] = "enable"; //this is the type of gpio hardware component we are looking for from the ros2 control xacro file
+
+    int num_joints;
+    int num_peripherals;
 
     class HARDWARE_INTERFACE_PUBLIC ArmSystem
     : public hardware_interface::SystemInterface {
@@ -42,8 +43,8 @@ namespace arm_controls {
             std::vector<double> joint_position_state_;
             std::vector<double> joint_velocity_state_;
             //Vectors for gpio interfaces 
-            std::vector<double> gpio_command_;
-            std::vector<double> prev_gpio_command_;
+            std::vector<double> peripheral_command_;
+            std::vector<double> peripheral_state_;
 
             std::string prev_position_command_; // string to save the previous position command sent ot the arduino
            

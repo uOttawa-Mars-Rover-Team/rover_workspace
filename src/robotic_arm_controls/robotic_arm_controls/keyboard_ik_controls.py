@@ -10,7 +10,7 @@ class KeyboardListener(Node):
     def __init__(self):
         super().__init__('keyboard_listener')
         self.joy_vel_pub = self.create_publisher(Float32, '/joy_vel', 10)
-        self.gpio_pub = self.create_publisher(ArmGpio, '/gpio_controller/peripheral_enables', 10)
+        self.gpio_pub = self.create_publisher(ArmGpio, '/peripheral_controller/peripheral_enables', 10)
         self.listener = keyboard.Listener(on_press=self.on_press)
         self.listener.start()
 

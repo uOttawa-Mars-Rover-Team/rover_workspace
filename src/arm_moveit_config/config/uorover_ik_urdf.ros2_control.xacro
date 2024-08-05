@@ -5,7 +5,6 @@
 
         <ros2_control name="${name}" type="system">
             <hardware>
-                <!-- By default, set up controllers for simulation. This won't work on real hardware -->
                 <!--<plugin>mock_components/GenericSystem</plugin>-->
                 <plugin>arm_controls/ArmSystem</plugin>
             </hardware>
@@ -52,20 +51,29 @@
                 <state_interface name="velocity"/>
             </joint>
             <gpio name="stepper_1">
-              <command_interface name="enable"/>
+		            <command_interface name="command"/>
+                <state_interface name="feedback"/>
             </gpio>
             <gpio name="stepper_2">
-              <command_interface name="enable"/>
+		            <command_interface name="command"/>
+                <state_interface name="feedback"/>
             </gpio>
             <gpio name="stepper_3">
-              <command_interface name="enable"/>
+              	<command_interface name="command"/>
+                <state_interface name="feedback"/>
             </gpio>
             <gpio name="stepper_4">
-              <command_interface name="enable"/>
+             	 <command_interface name="command"/>
+               <state_interface name="feedback"/>
             </gpio>
             <gpio name="laser">
-              <command_interface name="enable"/>
+             	 <command_interface name="command"/>
+               <state_interface name="feedback"/>
             </gpio>
+            <gpio name="emergency_stop">
+            	<command_interface name="command"/>
+              <state_interface name="feedback"/>
+	          </gpio>
         </ros2_control>
     </xacro:macro>
 </robot>

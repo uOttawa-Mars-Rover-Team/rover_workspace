@@ -148,9 +148,9 @@ void SerialCommunication::read_serial() {
             //latest_position_ = response;  // save the message from serial
             
             //Accept only strings that fall between shortest and longest sensible strings
-            //shortest (33): d;0.00;0.00;0.00;0.00;0.00;!
+            //shortest (15): g;0;0;0;0;0;0;!
             //longest  (49): f;-100.00;-99.00;-99.00;-100.00;-1000.00;-99.00;!
-            if (!response.empty() and (response.size() > 32 and response.size() < 55)) {
+            if (!response.empty() and (response.size() > 15 and response.size() < 55)) {
                 
                 //Count the number of ';'; ensure we always have a valid string containing 7 ';'
                 //std::string::difference_type n = std::count(response.begin(), response.end(), ';');
@@ -224,7 +224,9 @@ string SerialCommunication::publishMessage(string message) {
     if(message.at(0) == 'f'){ //COMMENT BACK IN FOR ARDUINO
         latest_position_ = message;
     }
-    
+    else if (message.at(0) == 'g') {
+        latest_peripherals_ = message;
+    } 
     return message;
 }
 
@@ -256,6 +258,10 @@ vector<string> SerialCommunication::get_arm_position(){
 
 string SerialCommunication::get_latest_position(){
     return latest_position_;
+}
+
+string SerialCommunication::get_peripheral_feedback(){
+    return latest_peripherals_;
 }
 
 vector<string> SerialCommunication::split_string(char delimiter, string message) {

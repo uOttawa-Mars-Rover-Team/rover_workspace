@@ -3,4 +3,4 @@ bool stepper2_en true
 bool stepper3_en true
 bool stepper4_en true
 bool laser_en false
-bool stop false
+bool emergency_stop_en false

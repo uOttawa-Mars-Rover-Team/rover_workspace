@@ -31,9 +31,9 @@ add_library(
     )
 
 add_library(
-	gpio_controller
+	peripheral_controller
 	SHARED
-	control/gpio_controller.cpp
+	controllers/peripheral_controller.cpp
 	)
 
 add_subdirectory(serial_communication_library)
@@ -48,7 +48,7 @@ target_include_directories(arm_hardware PUBLIC
     $<INSTALL_INTERFACE:include>
     )
 
-target_include_directories(gpio_controller PUBLIC
+target_include_directories(peripheral_controller PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
@@ -77,7 +77,7 @@ ament_target_dependencies(
     )
     
 ament_target_dependencies(
-    gpio_controller PUBLIC
+    peripheral_controller PUBLIC
     "pluginlib"
     "rclcpp_lifecycle"
     "controller_interface"
@@ -88,17 +88,15 @@ ament_target_dependencies(
 pluginlib_export_plugin_description_file(hardware_interface arm_hardware.xml)
 pluginlib_export_plugin_description_file(controller_interface arm_hardware.xml)
 
-
-
 install(
     DIRECTORY launch
     DESTINATION share/${PROJECT_NAME}
     )
+
 install(
     DIRECTORY config
     DESTINATION share/${PROJECT_NAME}
     )
-
 
 install(
     DIRECTORY include/${PROJECT_NAME}/
@@ -111,8 +109,8 @@ install(TARGETS arm_hardware
     RUNTIME DESTINATION lib
 )
 
-install(TARGETS gpio_controller
-    EXPORT arm_hardware
+install(TARGETS peripheral_controller
+    EXPORT peripheral_controller
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib
@@ -138,4 +136,5 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_targets(arm_hardware HAS_LIBRARY_TARGET)
+ament_export_targets(peripheral_controller HAS_LIBRARY_TARGET)
 ament_package()

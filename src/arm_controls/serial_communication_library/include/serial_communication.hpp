@@ -41,6 +41,7 @@ private:
     bool feedback_available_;
     string movement_;
     string latest_position_;
+    string latest_peripherals_;
 
     // Threading
     //ThreadPool tp_executor;
@@ -128,6 +129,12 @@ public:
      * @return string Instance variable with the latest position of the arm
      */
     string get_latest_position();
+
+    /**
+     * @brief Gets the latest peripherals of the arm
+     * @return string Instance variable with the latest peripherals of the arm
+     */
+    string get_peripheral_feedback();
 
     /**
      * @brief Splits a string into a vector of strings based on a delimiter

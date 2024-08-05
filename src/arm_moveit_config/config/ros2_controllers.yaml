@@ -13,6 +13,9 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
+      
+    peripheral_controller:
+      type: arm_controls/PeripheralController
 
 uorover_arm_controller:
   ros__parameters:
@@ -32,13 +35,12 @@ uorover_ee_controller:
   ros__parameters:
     joint: q6
 
-
-#gpio_controller:
-#  ros_parameters:
-#    type: "arm_controls/GPIOController"
-#    outputs:
-#      - stepper_1/enable
-#      - stepper_2/enable
-#      - stepper_3/enable
-#      - stepper_4/enable
-#      - laser/enable
+peripheral_controller:
+  ros__parameters:
+    peripherals:
+      - stepper_1
+      - stepper_2
+      - stepper_3
+      - stepper_4
+      - laser
+      - emergency_stop

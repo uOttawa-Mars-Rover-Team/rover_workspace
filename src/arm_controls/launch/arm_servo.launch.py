@@ -92,6 +92,17 @@ def generate_launch_description():
                 "/controller_manager",
                 ],
             )
+    peripheral_controller_spawner = launch_ros.actions.Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=[
+                "peripheral_controller",
+                "--controller-manager-timeout",
+                "300",
+                "--controller-manager",
+                "/controller_manager",
+                ],
+            )
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
         name="moveit_servo_demo_container",
@@ -136,6 +147,7 @@ def generate_launch_description():
                 joint_state_broadcaster_spawner,
                 uorover_arm_controller_spawner,
                 uorover_ee_controller_spawner,
+                peripheral_controller_spawner,
                 container,
                 ]
             )

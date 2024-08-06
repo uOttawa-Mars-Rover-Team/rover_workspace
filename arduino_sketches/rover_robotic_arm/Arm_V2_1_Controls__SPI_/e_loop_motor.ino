@@ -275,9 +275,3 @@ return nextSpeed;
   return (int) s_final;*/
 }//end of calculateNextSpeed
 
-//Reboots the motor driver
-void rebootDriver(int i) {
-  digitalWrite(motor[i].BOOT_PIN, LOW);
-  delay(1); //takes ~7.5 microseconds so 1 ms = 1000 microseconds should be fine
-  digitalWrite(motor[i].BOOT_PIN, HIGH);
-}

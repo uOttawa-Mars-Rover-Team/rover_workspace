@@ -49,6 +49,7 @@ namespace arm_controls {
             std::string prev_position_command_; // string to save the previous position command sent ot the arduino
            
             SerialCommunication serialObject;
+            bool gpio_command_sent; //flag to keep peripheral command from being sent multiple times between a write cycle of the arduino
 
             // Declare PID objects here
             // Need 1 per joint that is providing feedback

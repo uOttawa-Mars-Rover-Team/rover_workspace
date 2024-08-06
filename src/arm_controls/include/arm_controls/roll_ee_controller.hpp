@@ -1,5 +1,5 @@
-#ifndef PERIPHERAL_CONTROLLER_HPP_
-#define PERIPHERAL_CONTROLLER_HPP_
+#ifndef ROLL_EE_CONTROLLER_HPP_
+#define ROLL_EE_CONTROLLER_HPP_
 
 #include <memory>
 #include <string>
@@ -11,13 +11,13 @@
 namespace arm_controls {
     using CmdType = general_interfaces::msg::ArmGpio; //change this to a custom message that the spacemouse node will also use
 
-    class PeripheralController : public controller_interface::ControllerInterface {
+    class RollEEController : public controller_interface::ControllerInterface {
         public:
             /*
             Defines aliases for making shared pointers of this class.
             Defines a static function that returns a shared pointer of this class
             */
-            RCLCPP_SHARED_PTR_DEFINITIONS(PeripheralController);
+            RCLCPP_SHARED_PTR_DEFINITIONS(RollEEController);
 
             CallbackReturn on_init() override;
             controller_interface::InterfaceConfiguration command_interface_configuration() const override;
@@ -37,4 +37,4 @@ namespace arm_controls {
     };
 }  // namespace ros2_control_demo_example_10
 
-#endif  // PERIPHERAL_CONTROLLER_HPP_
+#endif  // ROLL_EE_CONTROLLER_HPP_

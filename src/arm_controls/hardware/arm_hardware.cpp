@@ -110,6 +110,8 @@ namespace arm_controls
             }
         }
 
+        gpio_command_sent = false;        
+
         //Joint velocity state will remain at 0 for the time-being
 
         return hardware_interface::return_type::OK;
@@ -120,21 +122,23 @@ namespace arm_controls
         
         // PERIPHERAL COMMAND HANDLING
         // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
-        
-        if (peripheral_command_[0] != peripheral_state_[0]){
-            //serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
-        } if (peripheral_command_[1] != peripheral_state_[1]){
-            //serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
-        } if (peripheral_command_[2] != peripheral_state_[2]){
-            //serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
-        } if (peripheral_command_[3] != peripheral_state_[3]){
-            //serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
-        } if (peripheral_command_[4] != peripheral_state_[4]){
-            //serialObject.publishToArduino("laser;!"); //toggle laser
-        } if (peripheral_command_[5] != peripheral_state_[5]){
-            //serialObject.publishToArduino("stop;!"); //toggle stop
-        }
-        
+        if (!gpio_command_sent){
+            if (peripheral_command_[0] != peripheral_state_[0]){
+                serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
+            } if (peripheral_command_[1] != peripheral_state_[1]){
+                serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
+            } if (peripheral_command_[2] != peripheral_state_[2]){
+                serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
+            } if (peripheral_command_[3] != peripheral_state_[3]){
+                serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
+            } if (peripheral_command_[4] != peripheral_state_[4]){
+                serialObject.publishToArduino("laser;!"); //toggle laser
+            } if (peripheral_command_[5] != peripheral_state_[5]){
+                serialObject.publishToArduino("stop;!"); //toggle stop
+            }
+            
+            gpio_command_sent = true;
+        } 
         // POSITION COMMAND HANDLING 
         // Example of typical position command to send: "S;40;20;-20;0;0;200;!
         std::ostringstream command_stream;

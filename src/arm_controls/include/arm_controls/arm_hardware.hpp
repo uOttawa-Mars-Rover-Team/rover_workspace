@@ -20,21 +20,22 @@
 
 namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
+    double DEFLT_PERIPHERAL_STATE[] = {true, true, true, true, false, false};
 
     int num_joints;
     int num_peripherals;
 
-    class HARDWARE_INTERFACE_PUBLIC ArmSystem
-    : public hardware_interface::SystemInterface {
+    class HARDWARE_INTERFACE_PUBLIC ArmSystem: public hardware_interface::SystemInterface {
         public:
             CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
             std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
             std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
             hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
             hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration &period) override;
-        
+                    
             enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
 
             //Vectors for joint interfaces

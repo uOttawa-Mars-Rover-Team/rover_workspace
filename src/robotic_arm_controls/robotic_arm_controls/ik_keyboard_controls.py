@@ -5,13 +5,12 @@ from pynput import keyboard
 from std_msgs.msg import Float32
 from general_interfaces.msg import ArmGpio
 from std_srvs.srv import Trigger
-from sync_service_client import SyncServiceClient
 
 
 class KeyboardListener(Node):
     def __init__(self):
         super().__init__('keyboard_listener')
-        self.joy_vel_pub = self.create_publisher(Float32, '/joy_vel', 10)
+        self.joy_vel_pub = self.create_publisher(Float32, '/keyboard/arm_vel', 10)
         self.gpio_pub = self.create_publisher(ArmGpio, '/peripheral_controller/peripheral_enables', 10)
         self.listener = keyboard.Listener(on_press=self.on_press)
         self.listener.start()
@@ -21,17 +20,8 @@ class KeyboardListener(Node):
 
         self.gpio_cmd = ArmGpio()
 
-        # Send action to start servo control
-        try:
-            # Create a synchronous service client for the "servo_node/start_servo" service
-            sync_client = SyncServiceClient("servo_node/start_servo")
-            # Call the service
-            if sync_client.call_service():
-                print("Servo stopped successfully.")
-            else:
-                print("Failed to stop servo.")
-        except Exception as e:
-            print(f"Error: {str(e)}")
+        # Service client setup
+        self.client = self.create_client(Trigger, 'servo_node/start_servo')
 
 
     def on_press(self, key):
@@ -45,6 +35,13 @@ class KeyboardListener(Node):
             return
 
         #self.get_logger().info(f'Key pressed: {key_str}')
+
+        # Call service when 's' key is pressed
+        if key.char == 's':
+            if self.client.wait_for_service(timeout_sec=1.0):
+                self.send_request()
+            else:
+                self.get_logger().info('Service not available.')
                 
         # Handling velocity from dial
         if key_str == 'm':#vel +0.1 up to 1.0 max
@@ -59,7 +56,6 @@ class KeyboardListener(Node):
                 self.vel.data = round(self.vel.data, 1)
                 self.joy_vel_pub.publish(self.vel)
                 self.get_logger().info('Max vel: '+str(self.vel.data))
-
 
         # Handling stepper toggling
         if key_str == 'z':#stepper1 en
@@ -90,6 +86,18 @@ class KeyboardListener(Node):
             self.gpio_cmd.emergency_stop_en = not self.gpio_cmd.emergency_stop_en
             self.get_logger().info('Stop toggled: '+str(self.gpio_cmd.emergency_stop_en))
             self.gpio_pub.publish(self.gpio_cmd)
+
+    def send_request(self):
+            request = Trigger.Request()
+            self.future = self.client.call_async(request)
+            self.future.add_done_callback(self.callback)
+    
+    def callback(self, future):
+        try:
+            response = future.result()
+            self.get_logger().info(f'Success: {response.success}, Message: {response.message}')
+        except Exception as e:
+            self.get_logger().error(f'Service call failed: {e}')
 
 def main(args=None):
     rclpy.init(args=args)

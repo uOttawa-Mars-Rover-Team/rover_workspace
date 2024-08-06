@@ -41,12 +41,12 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "joy_ik_controls = robotic_arm_controls.joy_ik_controls:main",
+            "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
+            "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
             "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
-            "old_manual = robotic_arm_controls.old_manual:main",
-            "router = robotic_arm_controls.router:main",
+            "m_router = robotic_arm_controls.m_router:main",
             "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
-            "toggler = robotic_arm_controls.toggler:main"
+            "m_toggler = robotic_arm_controls.m_toggler:main"
         ],
     },
 )

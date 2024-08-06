@@ -205,10 +205,9 @@ void SerialCommunication::signalHandler(int signum) {
 
 
 void SerialCommunication::publishToArduino(string message) {
-    if (message != movement_) {
         movement_ = message;
         write_serial();
-    }
+    
 }
 
 

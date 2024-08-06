@@ -28,21 +28,21 @@ and the servo node (sends TwistStamped msgs)
 """
 class Joy_IK_Controller(Node):
 
-    class Motor(Enum):
-        TW = 0
-        L1 = 1
-        L2 = 2
-        WP = 3
-        WR = 4
-        EE = 5
+    class Velocity(Enum):
+        x = 0
+        y = 1
+        z = 2
+        lx = 3
+        ly = 4
+        lz = 5
 
     def __init__(self, node_name: str = "joy_ik_controls"):
         super().__init__(node_name)
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
         # Pubs and subs
-        self.joy_sub = self.create_subscription(Joy, "/arm_ik_joy", self.joy_cb, 20)
-        self.keyb_vel_sub = self.create_subscription(Float32, "/joy_vel", self.keyb_cb, 20)
+        self.joy_sub = self.create_subscription(Joy, "/joy/arm_cmd", self.joy_cb, 20)
+        self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
         self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
 
         # Create an instance of TwistStamped
@@ -50,8 +50,8 @@ class Joy_IK_Controller(Node):
         self.twist_stamped_msg.header.frame_id = 'base_footprint'
 
         self.STOP = [0.0,0.0,0.0,0.0,0.0,0.0] # default of what stop is
-        self.prev = [] # previous array of joy values (float array)
-        self.curr = [] # current  array of joy values
+        self.prev = [0.0,0.0,0.0,0.0,0.0,-2.0] # previous array of joy values (float array)
+        self.curr = [0.0,0.0,0.0,0.0,0.0,0.0] # current  array of joy values
 
         # Parameters obtained from launch file, otherwise default
         self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) # pub rate in Hz
@@ -69,7 +69,14 @@ class Joy_IK_Controller(Node):
         self.sm_btns = [0, 1]
         self.sm_axes = [1, 0, 3, 4, 5, 2]
         self.lt_btns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12] # TODO: map btns correctly
-        self.lt_axes = [0, 1, 2, 3, 4, 5]
+        self.lt_axes = [1, 0, 3, 4, 5, 2]
+
+    axes_0: float 
+    actuator: float 
+    tower: float 
+    speed_axis: float 
+    wrist_roll: float
+    wrist_pitch: float
 
     # Callback this time around just changes self.twist_stamped_msg
     # so that self.pub_loop can publish at a constant self.pub_rate
@@ -78,22 +85,22 @@ class Joy_IK_Controller(Node):
         # Determines if we have the spacemouse or logitech connected
         if (len(message.buttons) == 2): # spacemouse
             for i in range(6):
-                self.curr[i] = message.axes[self.sm_axes]
+                self.curr[i] = message.axes[self.sm_axes[i]]
         elif (len(message.buttons) == 12): # more than 2 btns -> must be logitech controller
             for i in range(6):
-                self.curr[i] = message.axes[self.lt_axes]
+                self.curr[i] = message.axes[self.lt_axes[i]]
         else:
             self.get_logger().info("Wrong controller brotha")
 
-        # Add current time to timestamp
-        self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
-
-        # Rounds floats in self.curr to either 0 or sign*max_vel (set by keyboard)
-        self.arrayRoundToMaxVelocity()
-
         # Compares to prev array of cmds, runs only if it's different
-        if self.curr != self.prev:
+        if not self.floatArrayEqual(self.curr, self.prev):
             self.prev = self.curr
+
+            # Add current time to timestamp
+            self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
+
+            # Rounds floats in self.curr to either 0 or sign*max_vel (set by keyboard)
+            self.arrayRoundToMaxVelocity()
 
             # Stop the whole arm
             if self.floatArrayEqual(self.curr, self.STOP):
@@ -118,8 +125,8 @@ class Joy_IK_Controller(Node):
 
                 # Print array
                 self.get_logger().info("\n")
-                for m in self.Motor:
-                    self.get_logger().info(str(m) + ": " + str(self.curr[m.value]))
+                for v in self.Velocity:
+                    self.get_logger().info(str(v) + ": " + str(self.curr[v.value]))
 
     """
     Makes sure messages are always being published and at a specific rate

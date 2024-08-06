@@ -115,9 +115,7 @@ namespace arm_controls
                 //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "thing: %d of %lf", i, std::stod(temp));
                 peripheral_state_[i] = std::stod(temp);
             }
-        }
-
-        gpio_command_sent = false;        
+        }      
 
         //Joint velocity state will remain at 0 for the time-being
         //Typical velocity feedback command: v;TW;SL;EL;PT;RL;EE;!

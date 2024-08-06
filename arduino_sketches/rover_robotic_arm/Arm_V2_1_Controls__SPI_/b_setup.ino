@@ -62,8 +62,9 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-#define verbose         false
-#define graph           true
+#define verbose             false
+#define graph               true
+bool emergency_stop_en =    false;
 
 //Stop variables for steppers & limit switch purposes
 int EEStopClose   = 0;
@@ -200,7 +201,7 @@ void setup() {
 
   //Turn laser on
   pinMode(LASER_PIN, OUTPUT);
-  digitalWrite(LASER_PIN, HIGH);
+  digitalWrite(LASER_PIN, LOW);
 
   //Set high to dip switch pins
   pinMode(motor[TW].BOOT_PIN, OUTPUT);

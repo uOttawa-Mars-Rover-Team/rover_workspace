@@ -29,46 +29,7 @@ class KeyboardListener(Node):
         if key_str in ['Key.alt', 'Key.ctrl', 'Key.shift', 'Key.backspace']:
             return
 
-        msg = String()
-        msg.data = key_str
-
         #self.get_logger().info(f'Key pressed: {key_str}')
-
-
-        # Handling stepper toggling
-        if key_str == 'z':#stepper1 en
-            self.get_logger().info('TW toggled')
-            if self.gpio_cmd.stepper1_en:
-                self.gpio_cmd.stepper1_en = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.stepper1_en = True
-                self.gpio_pub.publish(self.gpio_cmd)
-        if key_str == 'x':#stepper2
-            self.get_logger().info('WP toggled')
-            if self.gpio_cmd.stepper2_en:
-                self.gpio_cmd.stepper2_en = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.stepper2_en = True
-                self.gpio_pub.publish(self.gpio_cmd)
-        if key_str == 'c':#stepper3 
-            self.get_logger().info('WR toggled')
-            if self.gpio_cmd.stepper3_en:
-                self.gpio_cmd.stepper3_en = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.stepper3_en = True
-                self.gpio_pub.publish(self.gpio_cmd)
-            self.joy_vel_pub.publish(self.vel)
-        if key_str == 'v':#stepper4
-            self.get_logger().info('EE toggled')
-            if self.gpio_cmd.stepper4_en:
-                self.gpio_cmd.stepper4_en = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.stepper4_en = True
-                self.gpio_pub.publish(self.gpio_cmd)
                 
         # Handling velocity from dial
         if key_str == 'm':#vel +0.1 up to 1.0 max
@@ -84,25 +45,36 @@ class KeyboardListener(Node):
                 self.joy_vel_pub.publish(self.vel)
                 self.get_logger().info('Max vel: '+str(self.vel.data))
 
+
+        # Handling stepper toggling
+        if key_str == 'z':#stepper1 en
+            self.gpio_cmd.stepper1_en = not self.gpio_cmd.stepper1_en
+            self.get_logger().info('TW toggled: '+str(self.gpio_cmd.stepper1_en))
+            self.gpio_pub.publish(self.gpio_cmd)
+        if key_str == 'x':#stepper2
+            self.gpio_cmd.stepper2_en = not self.gpio_cmd.stepper2_en
+            self.get_logger().info('WP toggled: '+str(self.gpio_cmd.stepper2_en))
+            self.gpio_pub.publish(self.gpio_cmd)
+        if key_str == 'c':#stepper3 
+            self.gpio_cmd.stepper3_en = not self.gpio_cmd.stepper3_en
+            self.get_logger().info('WR toggled: '+str(self.gpio_cmd.stepper3_en))
+            self.gpio_pub.publish(self.gpio_cmd)
+        if key_str == 'v':#stepper4
+            self.gpio_cmd.stepper4_en = not self.gpio_cmd.stepper4_en
+            self.get_logger().info('EE toggled: '+str(self.gpio_cmd.stepper4_en))
+            self.gpio_pub.publish(self.gpio_cmd)
+
         #Handling laser
-        if key_str == 'f':#stepper4
-            self.get_logger().info('Laser toggled')
-            if self.gpio_cmd.laser_en:
-                self.gpio_cmd.laser_en = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.laser_en = True
-                self.gpio_pub.publish(self.gpio_cmd)
+        if key_str == '4':#laserr
+            self.gpio_cmd.laser_en = not self.gpio_cmd.laser_en
+            self.get_logger().info('Laser toggled: '+str(self.gpio_cmd.laser_en))
+            self.gpio_pub.publish(self.gpio_cmd)
 
         #Handling emergency stop button
-        if key_str == '1':#stepper4
-            self.get_logger().info('Stop toggled')
-            if self.gpio_cmd.stop:
-                self.gpio_cmd.stop = False
-                self.gpio_pub.publish(self.gpio_cmd)
-            else:
-                self.gpio_cmd.stop = True
-                self.gpio_pub.publish(self.gpio_cmd)
+        if key_str == '1':
+            self.gpio_cmd.emergency_stop_en = not self.gpio_cmd.emergency_stop_en
+            self.get_logger().info('Stop toggled: '+str(self.gpio_cmd.emergency_stop_en))
+            self.gpio_pub.publish(self.gpio_cmd)
 
 def main(args=None):
     rclpy.init(args=args)

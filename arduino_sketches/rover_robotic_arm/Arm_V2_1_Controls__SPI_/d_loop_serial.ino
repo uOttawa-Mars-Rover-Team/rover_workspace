@@ -85,32 +85,46 @@
       Serial.println("Current states changed!");
     }
     
-    //Driver related stuff
-    else if (equalsStr(tmp, "reboot_tw")) {
-      rebootDriver(TW);
-      Serial.println("Tower driver rebooted!");
+    //Toggle related stuff (steppers, laser and emergency stop)
+    else if (equalsStr(tmp, "stepper1")) {
+      if (digitalRead(motor[TW].BOOT_PIN))
+        digitalWrite(motor[TW].BOOT_PIN, LOW);
+      else
+        digitalWrite(motor[TW].BOOT_PIN, HIGH);
+      Serial.print("stepper1111111111111;!");
+
+    } else if (equalsStr(tmp, "stepper2")) {
+      if (digitalRead(motor[WP].BOOT_PIN))
+        digitalWrite(motor[WP].BOOT_PIN, LOW);
+      else
+        digitalWrite(motor[WP].BOOT_PIN, HIGH);
+      Serial.print("stepper22222222222;!");
       
-    } else if (equalsStr(tmp, "reboot_wp")) {
-      rebootDriver(WP);
-      Serial.println("Wrist pitch driver rebooted!");
+    } else if (equalsStr(tmp, "stepper3")) {
+      if (digitalRead(motor[WR].BOOT_PIN))
+        digitalWrite(motor[WR].BOOT_PIN, LOW);
+      else
+        digitalWrite(motor[WR].BOOT_PIN, HIGH);
+      Serial.print("stepper333333333;!");
       
-    } else if (equalsStr(tmp, "reboot_wr")) {
-      rebootDriver(WR);
-      Serial.println("Wrist roll driver rebooted!");
-      
-    } else if (equalsStr(tmp, "reboot_ee")) {
-      rebootDriver(EE);
-      Serial.println("End effector driver rebooted!");
-    } else if (equalsStr(tmp, "power_saving_on")) {
-      digitalWrite(motor[TW].BOOT_PIN, LOW);
-      digitalWrite(motor[WP].BOOT_PIN, LOW);
-      digitalWrite(motor[WR].BOOT_PIN, LOW);
-      digitalWrite(motor[EE].BOOT_PIN, LOW);
-    } else if (equalsStr(tmp, "power_saving_off")) {
-      digitalWrite(motor[TW].BOOT_PIN, HIGH);
-      digitalWrite(motor[WP].BOOT_PIN, HIGH);
-      digitalWrite(motor[WR].BOOT_PIN, HIGH);
-      digitalWrite(motor[EE].BOOT_PIN, HIGH);
+    } else if (equalsStr(tmp, "stepper4")) {
+      if (digitalRead(motor[EE].BOOT_PIN))
+        digitalWrite(motor[EE].BOOT_PIN, LOW);
+      else
+        digitalWrite(motor[EE].BOOT_PIN, HIGH);
+      Serial.print("stepper444444444;!");
+
+    } else if (equalsStr(tmp, "laser")) {
+      if (digitalRead(LASER_PIN))
+        digitalWrite(LASER_PIN, LOW);
+      else
+        digitalWrite(LASER_PIN, HIGH);
+      Serial.print("laserrrrrrrrrrrr;!");
+
+    } else if (equalsStr(tmp, "stop")) {
+      emergency_stop_en = not emergency_stop_en;
+      Serial.print("emergencyycyyycyy;!");
+
     }
     
     //LED related stuff
@@ -212,6 +226,22 @@
     }
     Serial.print("!");
     */
+
+    //Publishing gpio feedback
+    Serial.println();
+    Serial.print("g;");
+    Serial.print(digitalRead(motor[TW].BOOT_PIN));
+    Serial.print(";");
+    Serial.print(digitalRead(motor[WP].BOOT_PIN));
+    Serial.print(";");
+    Serial.print(digitalRead(motor[WR].BOOT_PIN));
+    Serial.print(";");
+    Serial.print(digitalRead(motor[EE].BOOT_PIN));
+    Serial.print(";");
+    Serial.print(digitalRead(LASER_PIN));
+    Serial.print(";");
+    Serial.print(emergency_stop_en);
+    Serial.print(";!");
 
     //update timer until enc_delay is over
     dashb_t = millis();

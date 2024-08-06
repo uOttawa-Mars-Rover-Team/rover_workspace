@@ -24,6 +24,7 @@ namespace arm_controls {
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
     double DEFLT_PERIPHERAL_STATE[] = {true, true, true, true, false, false};
+    rclcpp::Duration peripheral_msg_period_(0, 200000000);
 
     int num_joints;
     int num_peripherals;
@@ -46,6 +47,7 @@ namespace arm_controls {
             //Vectors for gpio interfaces 
             std::vector<double> peripheral_command_;
             std::vector<double> peripheral_state_;
+
 
             std::string prev_position_command_; // string to save the previous position command sent ot the arduino
            

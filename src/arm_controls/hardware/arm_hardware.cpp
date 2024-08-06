@@ -26,6 +26,7 @@ namespace arm_controls
         peripheral_state_ =  vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
 
         prev_position_command_ = "";
+        
 
        //TODO: Initialize PID Objects here (call initPID)
 
@@ -104,10 +105,14 @@ namespace arm_controls
         ss.str(""); //clear the contents of the string stream
 
         serialReadResult = serialObject.get_peripheral_feedback();
+        ss.str(serialReadResult);
+               // RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "ser read res: %s", serialReadResult.c_str());
+
         std::getline(ss, temp, ';'); //skip the first characters (i.e. g;) of the string
 
         for (size_t i = 0; i < num_peripherals; ++i) {
             if (std::getline(ss, temp, ';') && temp != "!"){
+                //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "thing: %d of %lf", i, std::stod(temp));
                 peripheral_state_[i] = std::stod(temp);
             }
         }
@@ -122,10 +127,12 @@ namespace arm_controls
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
         // By default, the controllers should be sending positions for revolute joints in radians
-        
         // PERIPHERAL COMMAND HANDLING
         // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
-        if (!gpio_command_sent){
+
+        static rclcpp::Time last_time = time;
+        if (time - last_time > peripheral_msg_period_) {
+            last_time = time;
             if (peripheral_command_[0] != peripheral_state_[0]){
                 serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
             } if (peripheral_command_[1] != peripheral_state_[1]){
@@ -139,9 +146,9 @@ namespace arm_controls
             } if (peripheral_command_[5] != peripheral_state_[5]){
                 serialObject.publishToArduino("stop;!"); //toggle stop
             }
-            
-            gpio_command_sent = true;
-        } 
+
+        }
+
 
         // POSITION COMMAND HANDLING 
         // Example of typical position command to send: "S;40;20;-20;0;0;200;!
@@ -150,7 +157,11 @@ namespace arm_controls
 
         for (size_t i = 0; i < num_joints; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
-            command_stream << std::fixed << std:: setprecision(2)<<positionInDegrees;
+            positionInDegrees = std::round(positionInDegrees * 100.0) / 100.0; //bruh
+            if (positionInDegrees == -0.00) {
+                positionInDegrees = 0.00;
+            }
+            command_stream << std::fixed << std:: setprecision(2) << positionInDegrees;
             // TODO: Use PID here to adjust the position that we are sending
             if (i < num_joints - 1) {
                 command_stream << ";";
@@ -161,11 +172,10 @@ namespace arm_controls
         std::string command = command_stream.str();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
 
-        //std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        //std::cout << "Current time: " << std::ctime(&now);
-        //std::cout << "write" << endl;
 
         if (command != prev_position_command_) {
+            RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+            RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", prev_position_command_.c_str());
             serialObject.publishToArduino(command);
             prev_position_command_ = command;
         }

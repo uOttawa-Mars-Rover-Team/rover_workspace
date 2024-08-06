@@ -1,0 +1,16 @@
+<!--
+Launch file for manual mode for the rover pc
+-->
+<launch>
+
+	<!-- Router Node -->
+	<node pkg="robotic_arm_controls" exec="router" name="router_node" output="screen"
+	respawn="true">
+		<param name="serial_dev" value="/dev/ttyACM0" />
+		<param name="baudrate" type="int" value="115200" />
+		<param name="timeout_delay" type="float" value="0.5" />
+		<param name="deadband" type="float" value="0.35" />
+		<param name="actuator_cap" type="int" value="600" />
+	</node>
+
+</launch>

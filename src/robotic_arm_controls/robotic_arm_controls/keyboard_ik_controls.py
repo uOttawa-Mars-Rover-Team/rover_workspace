@@ -4,6 +4,8 @@ from std_msgs.msg import String
 from pynput import keyboard
 from std_msgs.msg import Float32
 from general_interfaces.msg import ArmGpio
+from std_srvs.srv import Trigger
+from sync_service_client import SyncServiceClient
 
 
 class KeyboardListener(Node):
@@ -18,6 +20,19 @@ class KeyboardListener(Node):
         self.vel.data = 1.0
 
         self.gpio_cmd = ArmGpio()
+
+        # Send action to start servo control
+        try:
+            # Create a synchronous service client for the "servo_node/start_servo" service
+            sync_client = SyncServiceClient("servo_node/start_servo")
+            # Call the service
+            if sync_client.call_service():
+                print("Servo stopped successfully.")
+            else:
+                print("Failed to stop servo.")
+        except Exception as e:
+            print(f"Error: {str(e)}")
+
 
     def on_press(self, key):
         try:

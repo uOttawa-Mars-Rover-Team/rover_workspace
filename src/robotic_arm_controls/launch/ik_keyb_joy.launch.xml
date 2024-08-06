@@ -1,0 +1,13 @@
+<!--
+Launch file for the arm keyboard joy node
+-->
+<launch>
+    
+    <!-- Spacemouse Node -->
+    <node pkg="joy" exec ="joy_node" name="keyboard_joy">
+        <param name="dev" value="/dev/input/js2" />
+        <remap from="joy" to="arm_ik_keyboard_joy" />
+    </node>
+
+</launch>
+  

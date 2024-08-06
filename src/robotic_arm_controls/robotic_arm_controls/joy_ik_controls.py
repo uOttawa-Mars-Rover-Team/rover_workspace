@@ -26,7 +26,7 @@ T = TypeVar("T")
 Node that interfaces between spacemouse joy node (receive spacemouse arrays) 
 and the servo node (sends TwistStamped msgs)
 """
-class IK_Controller(Node):
+class Joy_IK_Controller(Node):
 
     class Motor(Enum):
         TW = 0
@@ -36,30 +36,26 @@ class IK_Controller(Node):
         WR = 4
         EE = 5
 
-    def __init__(self, node_name: str = "controller"):
+    def __init__(self, node_name: str = "joy_ik_controls"):
         super().__init__(node_name)
-
-        # Pubs and subs
-        self.keyb_vel_sub = self.create_subscription(Float32, "/joy_vel", self.keyb_cb, 20)
-        self.joy_sub = self.create_subscription(Joy, "/arm_ik_joy", self.joy_cb, 20)
-        self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
-
-        # Info
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
+        # Pubs and subs
+        self.joy_sub = self.create_subscription(Joy, "/arm_ik_joy", self.joy_cb, 20)
+        self.keyb_vel_sub = self.create_subscription(Float32, "/joy_vel", self.keyb_cb, 20)
+        self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
 
         # Create an instance of TwistStamped
         self.twist_stamped_msg = TwistStamped()
         self.twist_stamped_msg.header.frame_id = 'base_footprint'
 
-
         self.STOP = [0.0,0.0,0.0,0.0,0.0,0.0] # default of what stop is
-        self.prev = [] #prev array of joy values (float array)
-        self.curr = []
+        self.prev = [] # previous array of joy values (float array)
+        self.curr = [] # current  array of joy values
 
         # Parameters obtained from launch file, otherwise default
-        self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) #Hz
-        self.deadband = self.get_param("deadband", rclpy.Parameter.Type.DOUBLE, 0.35) #spacemouse deadband
+        self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) # pub rate in Hz
+        self.deadband = self.get_param("deadband", rclpy.Parameter.Type.DOUBLE, 0.40) # spacemouse deadband
 
         # Local parameters
         self.max_vel = 1.0 #controls vels for all joints, can in/decrease with keyboard
@@ -69,27 +65,42 @@ class IK_Controller(Node):
         self.tp_executor = ThreadPoolExecutor(max_workers=1)
         self.pub_loop = self.tp_executor.submit(self.publishLoop)
 
+        # Permutations for the mapping for the spacemouse (sm) and logitech (lt) controllers
+        self.sm_btns = [0, 1]
+        self.sm_axes = [1, 0, 3, 4, 5, 2]
+        self.lt_btns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12] # TODO: map btns correctly
+        self.lt_axes = [0, 1, 2, 3, 4, 5]
+
     # Callback this time around just changes self.twist_stamped_msg
     # so that self.pub_loop can publish at a constant self.pub_rate
     def joy_cb(self, message: Joy) -> None:
 
-        # print message
-        #self.get_logger().info(str(message.axes))
-        #self.get_logger().info(str(message.buttons))
+        # Determines if we have the spacemouse or logitech connected
+        if (len(message.buttons) == 2): # spacemouse
+            for i in range(6):
+                self.curr[i] = message.axes[self.sm_axes]
+        elif (len(message.buttons) == 12): # more than 2 btns -> must be logitech controller
+            for i in range(6):
+                self.curr[i] = message.axes[self.lt_axes]
+        else:
+            self.get_logger().info("Wrong controller brotha")
 
+        # Add current time to timestamp
         self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
 
-        self.curr = [message.axes[1],message.axes[0],message.axes[3],message.axes[4],message.axes[5],message.axes[2]]
-        self.arrayNearestInt()
+        # Rounds floats in self.curr to either 0 or sign*max_vel (set by keyboard)
+        self.arrayRoundToMaxVelocity()
 
+        # Compares to prev array of cmds, runs only if it's different
         if self.curr != self.prev:
-
             self.prev = self.curr
 
+            # Stop the whole arm
             if self.floatArrayEqual(self.curr, self.STOP):
+                
+                #ros2 control handles 1st 4 joints#
 
-                # twist already 0
-                # handle roll and ee
+                # TODO: handle roll and ee
                 self.get_logger().info("handle roll ee")
 
             else: # send cmds
@@ -105,19 +116,10 @@ class IK_Controller(Node):
                 self.twist_stamped_msg.twist.angular.y = self.curr[4] #forward backward small joy
                 self.twist_stamped_msg.twist.angular.z = self.curr[5] #twist main joy
 
-
                 # Print array
                 self.get_logger().info("\n")
                 for m in self.Motor:
                     self.get_logger().info(str(m) + ": " + str(self.curr[m.value]))
-
-
-    """
-    Gets a velocity from the publisher on the keyboard node
-    Updates what the max velocity will be when publishing delta twist cmds
-    """
-    def keyb_cb(self, message: Float32) -> None:
-        self.max_vel = round(message.data, 1)
 
     """
     Makes sure messages are always being published and at a specific rate
@@ -132,7 +134,7 @@ class IK_Controller(Node):
     ex: 0.11166 -> 0.0 since < 0.35 deadband
         0.5 -> 1.0 since > 0.35 deadband and max is 1.0
     """
-    def arrayNearestInt(self):
+    def arrayRoundToMaxVelocity(self):
 
         for i in range(len(self.curr)):
             if (self.curr[i] > self.deadband):
@@ -142,7 +144,16 @@ class IK_Controller(Node):
             else:
                 self.curr[i] = 0.0
 
-    
+    """
+    Gets a velocity from the publisher on the keyboard node
+    Updates what the max velocity will be when publishing delta twist cmds
+    """
+    def keyb_cb(self, message: Float32) -> None:
+        self.max_vel = round(message.data, 1)
+
+    """
+    Helper function to compare two float arrays
+    """
     def floatArrayEqual(self, arr1, arr2, tol=1e-5):
         arr1 = np.array(arr1)
         arr2 = np.array(arr2)
@@ -182,9 +193,8 @@ Most of the code below should remain unchanged except maybe the node names
 """ 
 def main(args=None):
     rclpy.init(args=args)           # if any args specified on node startup (via ros2 run <package> <node> args...)
-    ikcontroller = IK_Controller()   # class above
-    rclpy.spin(ikcontroller)        # spin = debounce (run for as long as it's on)
-    IK_Controller.run = False      # to stop running pub loop, so thread can die gracefully
+    controller = Joy_IK_Controller()   # class above
+    rclpy.spin(controller)        # spin = debounce (run for as long as it's on)
     rclpy.shutdown()                # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
 
 

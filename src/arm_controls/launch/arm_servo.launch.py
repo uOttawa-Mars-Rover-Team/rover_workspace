@@ -26,22 +26,6 @@ def generate_launch_description():
     acceleration_filter_update_period = {"update_period": 0.05}
     planning_group_name = {"planning_group_name": "uorover_arm"}
 
-    rviz_config_file = (
-            get_package_share_directory("arm_controls")
-            + "/config/rviz_config.rviz"
-            )
-    rviz_node = launch_ros.actions.Node(
-            package="rviz2",
-            executable="rviz2",
-            name="rviz2",
-            output="log",
-            arguments=["-d", rviz_config_file],
-            parameters=[
-                moveit_config.robot_description,
-                moveit_config.robot_description_semantic,
-                ],
-            )
-
     ros2_controllers_path = os.path.join(
             get_package_share_directory("arm_moveit_config"),
             "config",
@@ -142,7 +126,6 @@ def generate_launch_description():
 
     return launch.LaunchDescription(
             [
-                rviz_node,
                 ros2_control_node,
                 joint_state_broadcaster_spawner,
                 uorover_arm_controller_spawner,

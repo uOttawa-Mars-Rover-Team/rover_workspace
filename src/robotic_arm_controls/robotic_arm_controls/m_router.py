@@ -293,7 +293,7 @@ def main(args=None):
     # For some weird reason, raising an error in try makes it
     # so that the node shuts down properly on Ctrl-C
     try:
-        raise ValueError("Ignore this message")
+        raise ValueError("This is an intentional error; for unknown reasons, this allows the threads to die immediately upon Ctrl+C")
     except KeyboardInterrupt:
         print("Spin interrupted by user (Ctrl+C)")
     

@@ -49,6 +49,9 @@ private:
     // Timer and Signals
     struct itimerval RETRY_DELAY;
 
+    // To display current time in print statements
+    struct timespec current_time_;
+
     static SerialCommunication* instance; // Pointer to the instance of the class
 
 public:

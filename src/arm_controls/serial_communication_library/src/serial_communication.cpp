@@ -27,9 +27,10 @@ SerialCommunication::SerialCommunication()
     RETRY_DELAY.it_value.tv_usec = 100000; // reconnect every 0.1 seconds
     RETRY_DELAY.it_interval.tv_sec = 0;
     RETRY_DELAY.it_interval.tv_usec = 0;
-
+    
+    clock_gettime(CLOCK_REALTIME, &current_time_);
     std::thread read_thread([this](){
-        cout << "[DEBUG] Read thread is running" << endl;
+        cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Read thread is running" << endl;
         read_serial();
     });
     //TODO: Decouple this from the hardware interface by passing a variable in the constructor for the logger and a start and end delimiter
@@ -44,7 +45,8 @@ SerialCommunication::SerialCommunication()
 
 //============== Destructor ==============
 SerialCommunication::~SerialCommunication() {
-    cout << "[DEBUG] Destructor called" << endl;
+    clock_gettime(CLOCK_REALTIME, &current_time_);
+    cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Destructor called" << endl;
     run_ = false;
 
     force_stop(); // Stop the arm before closing the serial port
@@ -59,15 +61,16 @@ SerialCommunication::~SerialCommunication() {
 void SerialCommunication::connect_serial(int i) {
     try {
         connecting_ = true;
-        cout << "[DEBUG] Establishing serial connection..." << endl;
-
+        clock_gettime(CLOCK_REALTIME, &current_time_);
+        cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Establishing serial connection..." << endl;
         setitimer(ITIMER_REAL, &RETRY_DELAY, NULL);
 
         my_serial_ = make_unique<serial::Serial>(port_, baudrate_, timeout_delay_);
 
         if (my_serial_->isOpen()) {
             setitimer(ITIMER_REAL, 0, NULL);
-            cout << "[DEBUG] Serial connection established." << endl;
+            clock_gettime(CLOCK_REALTIME, &current_time_);
+            cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Serial connection established." << endl;
 
             double delay = 0.0; // Default delay
             if (!startup_) {
@@ -83,24 +86,27 @@ void SerialCommunication::connect_serial(int i) {
             force_stop();
             
         } else {
-            throw serial::PortNotOpenedException("[ERROR] Port failed to open.");
+            clock_gettime(CLOCK_REALTIME, &current_time_);
+            cerr << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]";
+            throw serial::PortNotOpenedException(" [ERROR] Port failed to open.");
         }
 
+    clock_gettime(CLOCK_REALTIME, &current_time_);
     // Catching the different exceptions that can be thrown by the serial library
     } catch (const serial::PortNotOpenedException& e) {
-        cerr << "[ERROR] Serial port could not be opened: " << e.what() << 
+        cerr << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] Serial port could not be opened: " << e.what() << 
                     " trying every " << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
         connecting_ = true;
     } catch (const serial::IOException& e) {
-        cerr << "[ERROR] I/O error while accessing serial port: " << e.what() << 
+        cerr << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] I/O error while accessing serial port: " << e.what() << 
                     " trying every " << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
         connecting_ = true;
     } catch (const invalid_argument& e) {
-        cerr << "[ERROR] Invalid argument provided to serial port: " << e.what() << 
+        cerr << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] Invalid argument provided to serial port: " << e.what() << 
                     " trying every " << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
         connecting_ = true;
     } catch (const exception& e) {
-        cerr << "[ERROR] General exception during connection: " << e.what() << 
+        cerr << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] General exception during connection: " << e.what() << 
                     " trying every " << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
         connecting_ = true;
     }
@@ -115,11 +121,14 @@ void SerialCommunication::force_stop() {
             my_serial_->write("stop;!");
             setitimer(ITIMER_REAL, 0, 0);
 
-            cout << "[DEBUG] Movement message sent to serial: stop;!" << endl;
+            clock_gettime(CLOCK_REALTIME, &current_time_);
+            cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Movement message sent to serial: stop;!" << endl;
             connecting_ = false;
         }
     } catch (...) {
-        cout << "[ERROR] Connection Error: serial failed, trying every " << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
+        clock_gettime(CLOCK_REALTIME, &current_time_);
+        cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] Connection Error: serial failed, trying every "
+                    << RETRY_DELAY.it_value.tv_usec/1000000.0 << "s" << endl;
         connecting_ = true;
         connect_serial(0);
     }
@@ -127,7 +136,8 @@ void SerialCommunication::force_stop() {
 
 
 void SerialCommunication::read_serial() {
-    cout << "[DEBUG] Reading from serial port..." << endl;
+    clock_gettime(CLOCK_REALTIME, &current_time_);
+    cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Reading from serial port..." << endl;
     
     while (run_) {
         if (!connecting_ && my_serial_) {
@@ -154,7 +164,8 @@ void SerialCommunication::write_serial() {
             setitimer(ITIMER_REAL, 0, NULL);
         } catch (...) {
             setitimer(ITIMER_REAL, 0, NULL);
-            cout << "[ERROR] Connection Error: could not write serial" << endl;
+            clock_gettime(CLOCK_REALTIME, &current_time_);
+            cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] Connection Error: could not write serial" << endl;
             setitimer(ITIMER_REAL, &RETRY_DELAY, NULL);
         }
     } else {
@@ -190,7 +201,8 @@ void SerialCommunication::publishToArduino(string message) {
 
 
 string SerialCommunication::publishMessage(string message) {
-    cout << "Message read from serial:\n " << message << "\n";
+    clock_gettime(CLOCK_REALTIME, &current_time_);
+    cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Message read from serial:\n " << message << "\n";
     
     //TODO: Make this code not blow up if the message is something like "fun"
     
@@ -209,10 +221,11 @@ string SerialCommunication::publishMessage(string message) {
 
 
 void SerialCommunication::isSerialPortOpen() {
+    clock_gettime(CLOCK_REALTIME, &current_time_);
     if (my_serial_->isOpen()) {
-        cout << "[DEBUG] Serial port is open." << endl;
+        cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Serial port is open." << endl;
     } else {
-        cout << "[ERROR] Serial port is not open." << endl;
+        cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [ERROR] Serial port is not open." << endl;
     }
 }
 

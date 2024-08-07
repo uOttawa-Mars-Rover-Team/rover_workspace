@@ -1,18 +1,12 @@
 #!/usr/bin/python3
 
-from typing import TypeVar
-
-import rclpy
-from rclpy.node import Node
-
-T = TypeVar("T")
-
-
-#!/usr/bin/python3
-
 import rclpy
 from rclpy.node import Node
 from general_interfaces.msg import ToggleMessage
+from typing import TypeVar
+
+
+T = TypeVar("T")
 
 class MArmControllerNode(Node):
 

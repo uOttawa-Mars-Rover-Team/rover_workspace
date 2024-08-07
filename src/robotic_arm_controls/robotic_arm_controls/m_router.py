@@ -12,12 +12,10 @@ import serial
 import rclpy # rospy for ROS2
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
 from std_msgs.msg import String # msg used by publisher and subscriber
 from general_interfaces.msg import ArmPose, ArmError, ToggleMessage
-from general_interfaces.action import ZeroArm
 import time
 
 """
@@ -25,7 +23,6 @@ Ignore this; this is for parameter helper function when we launch the
 node via a launch file and not running it directly; 'ros2 launch' instead of 'ros2 run'
 """
 T = TypeVar("T")
-
 
 class Router(Node):
 
@@ -44,9 +41,6 @@ class Router(Node):
         self.state_publisher = self.create_publisher(ArmPose, '/arm_feedback', 20)
         self.error_publisher = self.create_publisher(ArmError, '/arm_faults', 20)
         
-        #Action Servers
-        self.zero_server = ActionServer(self, ZeroArm, 'zero_arm', callback_group = ReentrantCallbackGroup(), execute_callback = self.zero_execute_callback, cancel_callback = self.zero_cancel_callback)
-        
         #Parameters
         self.RETRY_DELAY = self.get_param("timeout_delay", rclpy.Parameter.Type.DOUBLE, 0.1)  # time (s) to attempt serial connection
         self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING)
@@ -54,29 +48,19 @@ class Router(Node):
 
         #Threading
         #self.pool_executor = Pool()
-        self.run = True  # threads will stop running if false
+        self.run = True
         self.tp_executor = ThreadPoolExecutor(max_workers=5) #creating 3 threads
-        self.reader = self.tp_executor.submit(self.read_loop) #reading from serial will be done in one thread
-        #self.publisher = self.tp_executor.submit(self.publishing_loop) #publishing to serial will be done in another thread
+        #reading from serial will be done in one thread
+        self.reader = self.tp_executor.submit(self.read_loop) 
+        
+        # whether to connect or not; reconnector will then try to establish a serial conn.
+        self.connect = True  
+        # connection to serial will be handled by this thread
+        self.reconnector = self.tp_executor.submit(self.connect_serial) 
 
         # Initialising variables
         self.movement = ""
-        self.zeroing = False
-        self.startup = True  # if true, next connection will send the stop cmd at a delay of 1s, else 0.001s
-        self.connecting = True  # boolean for connection status
         self.feedback_available = False  # boolean for arduino feedback status
-
-        # Graceful shutdown of the code when the interrupt signal is recieved (ctrl+c)
-        signal.signal(signal.SIGINT, self.graceful_shutdown)
-
-        #Signals for serial connection
-        # when SIGALRM triggers, run self.connect_serial
-        signal.signal(signal.SIGALRM, self.connect_serial)  
-        # once itimer expires, SIGALRM is triggered and connect_serial is run
-        signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
-
-        time.sleep(0.5)
-
 
     # Serial communication methods
     """
@@ -84,84 +68,39 @@ class Router(Node):
     signal_num represents the signal that triggered the function
     frame represents the stack frame when the signal was triggered
     """
-    def connect_serial(self, signal_num, frame) -> None:
-        
-        self.get_logger().info("OHHHHEYAAA?")
-        try:
-            self.connecting = True
-            self.get_logger().info("Establishing serial connection...")
-            
-            signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
+    def connect_serial(self):
+        self.get_logger().info("Running serial connector thread...")
+        time.sleep(1)
+    
+        while self.run:
+            if self.connect:
+                time.sleep(self.RETRY_DELAY)
+                try:
+                    self.get_logger().info("Establishing serial connection...")
+                    self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
+                    
+                    self.get_logger().info("Connection to serial established:")
+                    self.connect = True
 
-            self.ARDUINO = serial.Serial(
-                port=self.serial_device,
-                baudrate=self.baudrate,
-                timeout=self.RETRY_DELAY,
-                parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE,
-                bytesize=serial.EIGHTBITS,
-            )
+                except:
+                    self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
 
-            signal.setitimer(signal.ITIMER_REAL, 0, 0) #this resets the timer
-            self.get_logger().info("Connection to serial established:")
-            
-            if not self.startup:
-                # if not starting up we can immediately send a stop command
-                timer = threading.Timer(0.001, self.force_stop)
-            else:
-                # if starting up, we must wait for the arduino to fully boot up before sending a stop command
-                timer = threading.Timer(1, self.force_stop)
-                self.startup = False
-            
-            timer.start()
-        
-        except:
-            self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
-            self.connecting = True
-            self.connect_serial
+        # sends kill signal to the read process
+        os.kill(os.getpid(), 9)
 
     """
-    Sends stop command to arduino and tries to reconnect if the connection is lost
-    """
-    def force_stop(self):
-        try:
-            signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
-            self.ARDUINO.write(bytes("stop;!",'utf-8'))
-            signal.setitimer(signal.ITIMER_REAL, 0, 0)
-
-            self.get_logger().info("Movement msg to serial: stop;!")
-            self.connecting = False
-        except:
-            self.get_logger().warn(
-                f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s"
-            )
-            self.connecting = True
-            self.connect_serial
-
-    '''
-    Shuts down node, serves as a callback for interrupt signal
-    '''
-    def graceful_shutdown(self, sig, frame) -> None:
-        self.get_logger().info("Terminating all threads...")
-        self.run = False
-        self.tp_executor.shutdown()
-        self.get_logger().info("Shutting node down...")
-        rclpy.shutdown()
-        raise SystemExit
-
-    """
-    Reader thread loop running read_serial as long as self.run
+    Reader thread loop running read_serial as long as run
     Publishes the ArmState to the /arm_feedback topic
     """
     def read_loop(self):
-        time.sleep(1)
-        self.get_logger().info("Reading from serial...")
+        self.get_logger().info("Running serial read loop thread...")
+        time.sleep(1) # delay upon start of this thread
         
         while self.run:
 
-            #self.get_logger().info(str(self.connecting))
+            #self.get_logger().info(str(self.connect))
             #self.get_logger().info(str(self.ARDUINO.in_waiting))
-            if not self.connecting and self.ARDUINO.in_waiting:
+            if not self.connect and self.ARDUINO.in_waiting:
                 
                 byte_chunk = self.ARDUINO.read_until(b'!')
                 
@@ -175,29 +114,38 @@ class Router(Node):
     Executes derived movement from the Joy (usually "/joy") topic
     """
     def write_serial(self):
-        if not self.connecting and not self.zeroing:
+        if not self.connect:
             try:
-                signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
                 self.ARDUINO.write(bytes(self.movement,'utf-8'))
                 self.get_logger().info(f"Movement msg to serial: {self.movement}")
-                signal.setitimer(signal.ITIMER_REAL, 0, 0)
-
-                #self.check_threads()
 
             except:
-                signal.setitimer(signal.ITIMER_REAL, 0, 0)
-                self.get_logger().warn("Connection Error: could not write serial")
-                signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
+                self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
+                self.connect = True
 
-                #self.check_threads()
+    """
+    Sends stop command to arduino and tries to reconnect if the connection is lost
+    """
+    def force_stop(self):
+        if not self.connect:
+            try:
+                self.ARDUINO.write(bytes("stop;!",'utf-8'))
+                self.get_logger().info("Movement msg to serial: stop;!")
+            except:
+                self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
+                self.connect = True # connect flag true -> connector will try to establish a connection
 
-        else:
-            signal.setitimer(signal.ITIMER_REAL, self.RETRY_DELAY, 0)
-
+    """
+    Checks whether threads are alive, revives them if they're not
+    """
     def check_threads(self):
         if (self.reader.done()):
             self.get_logger().info("Reader thread is dead, restarting...")
             self.reader = self.tp_executor.submit(self.read_loop)
+
+        if (self.reconnector.done()):
+            self.get_logger().info("Reconnector thread is dead, restarting...")
+            self.reconnector = self.tp_executor.submit(self.connect_serial)
         
         '''
         if (self.publisher.done()):
@@ -276,7 +224,7 @@ class Router(Node):
         
         string_message = str(byte_chunk, 'UTF-8')
         
-        if "f" in string_message and not self.zeroing:
+        if "f" in string_message:
             #self.get_logger().info("Publishing arm state")
             state_values = string_message.split(";") # Split string into array using ';' as the delimiter
 
@@ -302,47 +250,6 @@ class Router(Node):
             
             if (message_to_send != None):
                 self.state_publisher.publish(message_to_send)
-
-        elif (string_message == "zeroingDone;!"):
-            self.zeroing = False
-            self.get_logger().info("Zeroing done")
-        
-                
-    # Action Server Callbacks
-    '''
-    Callback for when a zeroing goal is recieved
-    '''
-    def zero_execute_callback(self, goal_handle):
-        self.get_logger().info('Executing goal...')
-
-        joint = goal_handle.request.joint
-
-        self.movement = f"zero{joint};!"
-        self.write_serial()
-        
-        self.zeroing = True
-        
-        result = ZeroArm.Result()
-        
-        while self.zeroing:
-            if goal_handle.is_cancel_requested:
-                self.zeroing = False
-                self.get_logger().info('Canceling goal...')
-                self.force_stop()
-                goal_handle.canceled()
-                return result
-
-        result.result = True
-        goal_handle.succeed()
-
-        return result
-        
-    '''
-    Callback for when a cancel request is recieved
-    '''    
-    def zero_cancel_callback(self, goal_handle):
-        self.get_logger().info('Received cancel request')
-        return CancelResponse.ACCEPT
         
     """
     Helper function to declare and get the value of a ROS launch parameter,
@@ -374,19 +281,27 @@ class Router(Node):
 
 def main(args=None):
     rclpy.init(args=args) # if any args specified on node startup (via ros2 run <package> <node> args...)
-    router_node = Router() # class above
     
     '''
     rclpy.spin(router_node) # spin = debounce (run for as long as it's on)
     rclpy.shutdown() # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
     '''
+    router_node = Router() # class above
 
     executor = MultiThreadedExecutor()  # for multiple threads
 
-    rclpy.spin(router_node, executor = executor) # spin = debounce (run for as long as it's on)
-    rclpy.shutdown() # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
+    # For some weird reason, raising an error in try makes it
+    # so that the node shuts down properly on Ctrl-C
+    try:
+        raise ValueError("Ignore this message")
+    except KeyboardInterrupt:
+        print("Spin interrupted by user (Ctrl+C)")
     
+    rclpy.spin(router_node, executor = executor) # spin = debounce (run for as long as it's on)
 
+
+    router_node.destroy_node()
+    rclpy.shutdown() # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
 
 if __name__ == "__main__":
     main()

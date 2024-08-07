@@ -91,39 +91,33 @@
         digitalWrite(motor[TW].BOOT_PIN, LOW);
       else
         digitalWrite(motor[TW].BOOT_PIN, HIGH);
-      Serial.print("stepper1111111111111;!");
 
     } else if (equalsStr(tmp, "stepper2")) {
       if (digitalRead(motor[WP].BOOT_PIN))
         digitalWrite(motor[WP].BOOT_PIN, LOW);
       else
         digitalWrite(motor[WP].BOOT_PIN, HIGH);
-      Serial.print("stepper22222222222;!");
       
     } else if (equalsStr(tmp, "stepper3")) {
       if (digitalRead(motor[WR].BOOT_PIN))
         digitalWrite(motor[WR].BOOT_PIN, LOW);
       else
         digitalWrite(motor[WR].BOOT_PIN, HIGH);
-      Serial.print("stepper333333333;!");
       
     } else if (equalsStr(tmp, "stepper4")) {
       if (digitalRead(motor[EE].BOOT_PIN))
         digitalWrite(motor[EE].BOOT_PIN, LOW);
       else
         digitalWrite(motor[EE].BOOT_PIN, HIGH);
-      Serial.print("stepper444444444;!");
 
     } else if (equalsStr(tmp, "laser")) {
       if (digitalRead(LASER_PIN))
         digitalWrite(LASER_PIN, LOW);
       else
         digitalWrite(LASER_PIN, HIGH);
-      Serial.print("laserrrrrrrrrrrr;!");
 
     } else if (equalsStr(tmp, "stop")) {
       emergency_stop_en = not emergency_stop_en;
-      Serial.print("emergencyycyyycyy;!");
 
     }
     
@@ -156,7 +150,6 @@
 
   //Every dashb_delay ms, publish stuff
   if (millis() - dashb_t >= dashb_delay) {
-
     if (not graph) {
 
       Serial.println();

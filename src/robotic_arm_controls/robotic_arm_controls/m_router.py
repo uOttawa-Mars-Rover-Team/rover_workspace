@@ -36,6 +36,7 @@ class Router(Node):
         self.m_subscriber = self.create_subscription(ToggleMessage, "/manual_states", self.mn_callback_function, qos_profile = 20, callback_group = sub_callback_group)
         self.ik_subscriber = self.create_subscription(ArmPose, "/goal_states", self.ik_callback_function, qos_profile = 20, callback_group = sub_callback_group)
         self.mode_subscriber = self.create_subscription(String, "/mode", self.mode_callback_function, qos_profile = 20, callback_group = sub_callback_group)
+        self.enables_subscriber = self.create_subscription(String, "/enable_cmd", self.enable_callback_function, qos_profile = 20, callback_group = sub_callback_group)
 
         #Publishers
         self.state_publisher = self.create_publisher(ArmPose, '/arm_feedback', 20)
@@ -50,13 +51,11 @@ class Router(Node):
         #self.pool_executor = Pool()
         self.run = True
         self.tp_executor = ThreadPoolExecutor(max_workers=5) #creating 3 threads
-        #reading from serial will be done in one thread
-        self.reader = self.tp_executor.submit(self.read_loop) 
-        
+        self.reader = self.tp_executor.submit(self.read_loop)
         # whether to connect or not; reconnector will then try to establish a serial conn.
-        self.connect = True  
+        self.connecting = True  
         # connection to serial will be handled by this thread
-        self.reconnector = self.tp_executor.submit(self.connect_serial) 
+        self.reconnector = self.tp_executor.submit(self.connect_serial)
 
         # Initialising variables
         self.movement = ""
@@ -73,39 +72,41 @@ class Router(Node):
         time.sleep(1)
     
         while self.run:
-            if self.connect:
+            if self.connecting:
                 time.sleep(self.RETRY_DELAY)
                 try:
                     self.get_logger().info("Establishing serial connection...")
                     self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
                     
                     self.get_logger().info("Connection to serial established:")
-                    self.connect = True
+                    self.connecting = False
 
                 except:
                     self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
+                    self.connecting = True
 
         # sends kill signal to the read process
         os.kill(os.getpid(), 9)
 
     """
-    Reader thread loop running read_serial as long as run
-    Publishes the ArmState to the /arm_feedback topic
+    Reading done on a seaparate thread to not block main
     """
     def read_loop(self):
-        self.get_logger().info("Running serial read loop thread...")
-        time.sleep(1) # delay upon start of this thread
-        
+        self.get_logger().info("Running serial reader thread...")
+        time.sleep(1)
+    
         while self.run:
-
-            #self.get_logger().info(str(self.connect))
-            #self.get_logger().info(str(self.ARDUINO.in_waiting))
-            if not self.connect and self.ARDUINO.in_waiting:
-                
-                byte_chunk = self.ARDUINO.read_until(b'!')
-                
-                self.tp_executor.submit(self.publishMessage, byte_chunk[:-1])
-                self.get_logger().info(byte_chunk)
+            try:
+                if not self.connecting and self.ARDUINO.in_waiting:
+                    
+                    byte_chunk = self.ARDUINO.read_until(b'!')
+                        
+                    self.tp_executor.submit(self.publishMessage, byte_chunk[:-1])
+                    self.get_logger().info(byte_chunk[:-1])
+            except:
+                self.get_logger().info("Could not publish message even while connected!")
+                self.get_logger().info("Will attempt to reconnect")
+                self.connecting = True
 
         # sends kill signal to the read process
         os.kill(os.getpid(), 9)
@@ -114,34 +115,31 @@ class Router(Node):
     Executes derived movement from the Joy (usually "/joy") topic
     """
     def write_serial(self):
-        if not self.connect:
+        if not self.connecting:
             try:
                 self.ARDUINO.write(bytes(self.movement,'utf-8'))
                 self.get_logger().info(f"Movement msg to serial: {self.movement}")
 
             except:
                 self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
-                self.connect = True
+                self.connecting = True
 
     """
     Sends stop command to arduino and tries to reconnect if the connection is lost
     """
     def force_stop(self):
-        if not self.connect:
+        if not self.connecting:
             try:
                 self.ARDUINO.write(bytes("stop;!",'utf-8'))
                 self.get_logger().info("Movement msg to serial: stop;!")
             except:
                 self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
-                self.connect = True # connect flag true -> connector will try to establish a connection
+                self.connecting = True # connect flag true -> connector will try to establish a connection
 
     """
     Checks whether threads are alive, revives them if they're not
     """
     def check_threads(self):
-        if (self.reader.done()):
-            self.get_logger().info("Reader thread is dead, restarting...")
-            self.reader = self.tp_executor.submit(self.read_loop)
 
         if (self.reconnector.done()):
             self.get_logger().info("Reconnector thread is dead, restarting...")
@@ -207,6 +205,16 @@ class Router(Node):
     """
     def mode_callback_function(self, message: String) -> None:
         self.publishToArduino(str(message.data))
+
+    """
+    Sends serial messages to the arduino based on messages recieved from the Manual node
+    """
+    def enable_callback_function(self, message: String) -> None:
+        string_message = message.data
+
+        
+        self.get_logger().info(string_message)
+        self.publishToArduino(string_message)
 
     """
     Helper method to publish messages to the arduino over serial
@@ -293,15 +301,15 @@ def main(args=None):
     # For some weird reason, raising an error in try makes it
     # so that the node shuts down properly on Ctrl-C
     try:
-        raise ValueError("This is an intentional error; for unknown reasons, this allows the threads to die immediately upon Ctrl+C")
+        rclpy.spin(router_node, executor = executor) # spin = debounce (run for as long as it's on)
     except KeyboardInterrupt:
         print("Spin interrupted by user (Ctrl+C)")
-    
-    rclpy.spin(router_node, executor = executor) # spin = debounce (run for as long as it's on)
-
 
     router_node.destroy_node()
     rclpy.shutdown() # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
+    
+
+
 
 if __name__ == "__main__":
     main()

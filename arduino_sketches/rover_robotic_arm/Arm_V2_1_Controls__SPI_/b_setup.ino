@@ -126,12 +126,12 @@ struct Motor {
 
 //Create the motor objects
 //         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P 
-Motor tw = {0,    0,    0,   3000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68};
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68};
 Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30};    
 Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31};
-Motor wp = {0,    0,    0,  30000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62};
-Motor wr = {0,    0,    0,  30000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55};
-Motor ee = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54};
+Motor wp = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62};
+Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55};
+Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54};
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 

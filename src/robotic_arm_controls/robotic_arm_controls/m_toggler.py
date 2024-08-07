@@ -36,15 +36,15 @@ class ButtonValues(NamedTuple):
 
     ee_close_btn: int
     ee_open_btn: int
-    second_speed_btn: int
-    third_speed_btn: int
-    lowest_speed_btn: int
-    norm_speed_btn: int
-    btn_6: int 
-    mn_mode_switch: int 
-    ik_mode_switch: int 
-    btn_9: int 
-    btn_10: int 
+    laser_btn: int
+    btn_3: int
+    btn_4: int
+    btn_5: int
+    stepper1_btn: int 
+    stepper2_btn: int 
+    stepper3_btn: int 
+    stepper4_btn: int 
+    stop_btn: int 
     actuator_hold_btn: int 
 
 class Toggler(Node):
@@ -62,6 +62,8 @@ class Toggler(Node):
         self.ik_publisher = self.create_publisher(ToggleMessage, '/ik_joy', 20)
         self.m_publisher = self.create_publisher(ToggleMessage, '/m_joy', 20)
         self.mode_publisher = self.create_publisher(String, '/mode', 20)
+        self.mode_publisher = self.create_publisher(String, '/mode', 20)
+        self.enable_pub = self.create_publisher(String, '/enable_cmd', 20)
 
         # The node's logger, may just use print() instead
         self.get_logger().info(f"Subscribing to messages from: {self.subscriber.topic_name}")
@@ -70,6 +72,14 @@ class Toggler(Node):
         
         self.prevMessageSent = self.setAllMessageValues(ToggleMessage(), 3)
         self.prevBtnValues = ButtonValues(3,3,3,3,3,3,3,3,3,3,3,3)
+
+        self.stepper1_en = True
+        self.stepper2_en = True
+        self.stepper3_en = True
+        self.stepper4_en = True
+        self.laser_en = False
+        self.emergency_stop_en = False
+        
 
     # Callbacks
     '''
@@ -81,33 +91,52 @@ class Toggler(Node):
 
         axes_values = AxesValues(*message.axes)
         btn_values = ButtonValues(*message.buttons)
-        
-        mn_btn = btn_values.mn_mode_switch #button for ik (btn 8 on controller)
-        ik_btn = btn_values.ik_mode_switch #button for manual (btn 9 on controller)
 
         #prints axes values of arm
         printAxes = f"\naxes_values: {axes_values}\n"
-
-        toPrint = f'ik: {ik_btn} manual: {mn_btn}'
+        toPrint = ""
 
         newMessage = self.createMessage(axes_values, btn_values)
 
         if (self.isChanged(newMessage, btn_values)):
-            if mn_btn and (not ik_btn):
-                self.toggle_mode = Toggler.MANUAL_MODE
-                toPrint += "\nSwitching to Manual"
-                mode = String()
-                mode.data = "M;!"
-                self.mode_publisher.publish(mode)
-                #switched = True
 
-            elif (not mn_btn) and (ik_btn):
-                self.toggle_mode = Toggler.IK_MODE
-                toPrint += "\nSwitching to IK"
-                mode = String()
-                mode.data = "I;!"
-                self.mode_publisher.publish(mode)
-                #switched = True
+            enable_msg = String()
+
+            # Handling stepper toggling
+            if btn_values.stepper1_btn:#stepper1 en
+                self.stepper1_en = not self.stepper1_en
+                self.get_logger().info('TW toggled: '+str(self.stepper1_en))
+                enable_msg.data = "stepper1;!"
+                self.enable_pub.publish(enable_msg)
+            if btn_values.stepper2_btn:#stepper2
+                self.stepper2_en = not self.stepper2_en
+                self.get_logger().info('WP toggled: '+str(self.stepper2_en))
+                enable_msg.data = "stepper2;!"
+                self.enable_pub.publish(enable_msg)
+            if btn_values.stepper3_btn:#stepper3 
+                self.stepper3_en = not self.stepper3_en
+                self.get_logger().info('WR toggled: '+str(self.stepper3_en))
+                enable_msg.data = "stepper3;!"
+                self.enable_pub.publish(enable_msg)
+            if btn_values.stepper4_btn:#stepper4
+                self.stepper4_en = not self.stepper4_en
+                self.get_logger().info('EE toggled: '+str(self.stepper4_en))
+                enable_msg.data = "stepper4;!"
+                self.enable_pub.publish(enable_msg)
+
+            #Handling laser
+            if btn_values.laser_btn:#laserr
+                self.laser_en = not self.laser_en
+                self.get_logger().info('Laser toggled: '+str(self.laser_en))
+                enable_msg.data = "laser;!"
+                self.enable_pub.publish(enable_msg)
+
+            #Handling emergency stop button
+            if btn_values.stop_btn:
+                self.emergency_stop_en = not self.emergency_stop_en
+                self.get_logger().info('Stop toggled: '+str(self.emergency_stop_en))
+                enable_msg.data = "stop;!"
+                self.enable_pub.publish(enable_msg)
 
             if (self.canPublish(btn_values)):
                 toPrint += f"\nMessage: {newMessage.tw, newMessage.la1, newMessage.la2, newMessage.wr_pitch, newMessage.wr_roll, newMessage.ee, newMessage.speed}"
@@ -120,7 +149,6 @@ class Toggler(Node):
                     toPrint += "\nPublishing to IK"
                     self.ik_publisher.publish(newMessage)
             
-            self.get_logger().info(toPrint)
             #self.get_logger().info(printAxes)
 
         self.prevMessageSent = newMessage
@@ -132,7 +160,7 @@ class Toggler(Node):
     This method checks if either message or button values have changed to determine if Toggler Node can switch to another mode/publish
     """
     def isChanged(self, newMessage, btn_values):
-        buttonsToIgnore = [2,3,4,5,6,9,11]
+        buttonsToIgnore = [3,4,5]
         
         # check if all buttons are the same as before except for the ones to ignore
         for i in range(0, len(btn_values)):
@@ -158,10 +186,6 @@ class Toggler(Node):
     This method determines if Toggler node can publish to IK or Manual Nodes
     """
     def canPublish(self, btn_values):
-        switched = Toggler.isSwitched(self.prevBtnValues.mn_mode_switch, self.prevBtnValues.ik_mode_switch, btn_values.mn_mode_switch, btn_values.ik_mode_switch)
-        
-        if switched:
-            return False  
         
         return True 
     

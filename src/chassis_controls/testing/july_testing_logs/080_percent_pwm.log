@@ -1,0 +1,1697 @@
+[WARN] [1721606889.339625344] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[INFO] [1721606889.340083424] [resource_manager]: Loading hardware 'DriveSystem' 
+[INFO] [1721606889.346075232] [resource_manager]: Initialize hardware 'DriveSystem' 
+[INFO] [1721606889.346157184] [test logger]: !!! Testing at: 80.000000% PWM. !!!
+[INFO] [1721606889.348119520] [resource_manager]: Successful initialization of hardware 'DriveSystem'
+[INFO] [1721606889.348433376] [resource_manager]: 'configure' hardware 'DriveSystem' 
+[INFO] [1721606889.348457280] [resource_manager]: Successful 'configure' of hardware 'DriveSystem'
+[INFO] [1721606889.348468896] [resource_manager]: 'activate' hardware 'DriveSystem' 
+[INFO] [1721606889.348540384] [resource_manager]: Successful 'activate' of hardware 'DriveSystem'
+[INFO] [1721606889.359353376] [controller_manager]: update rate is 50 Hz
+[INFO] [1721606889.359721248] [controller_manager]: RT kernel is recommended for better performance
+[INFO] [1721606889.360005408] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.360022880] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.360056832] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.360074784] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.360080608] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.360088096] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.360108416] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.360113792] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.360123520] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.360132224] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.360137344] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.360144576] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.379890304] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.379915040] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.379928096] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.379936608] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.379941952] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.379948864] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.379955904] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.379960512] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.379966560] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.379973824] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.379978560] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.379985120] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.399927232] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.399974720] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.399993888] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.400004000] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.400009632] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.400016384] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.400027072] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.400032256] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.400038528] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.400046112] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.400050816] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.400057696] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.419931296] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.419973728] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.420070272] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.420086912] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.420092832] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.420099520] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606889.420107968] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.420112576] [test logger]: !!! Wheel velocity: 0.000000 !!!
+[INFO] [1721606889.420118688] [test logger]: !!! Wheel current consumption: 0.000000 !!!
+[INFO] [1721606889.420125248] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.420130176] [test logger]: !!! Wheel velocity: 0.015332 !!!
+[INFO] [1721606889.420138208] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606889.439905408] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.439944576] [test logger]: !!! Wheel velocity: 0.030664 !!!
+[INFO] [1721606889.439962432] [test logger]: !!! Wheel current consumption: 9.500000 !!!
+[INFO] [1721606889.439974720] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.439980800] [test logger]: !!! Wheel velocity: 0.030664 !!!
+[INFO] [1721606889.439988128] [test logger]: !!! Wheel current consumption: 14.250000 !!!
+[INFO] [1721606889.439997824] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.440002656] [test logger]: !!! Wheel velocity: 0.337305 !!!
+[INFO] [1721606889.440009216] [test logger]: !!! Wheel current consumption: 11.875000 !!!
+[INFO] [1721606889.440016448] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.440021056] [test logger]: !!! Wheel velocity: 1.103906 !!!
+[INFO] [1721606889.440027232] [test logger]: !!! Wheel current consumption: 16.125000 !!!
+[INFO] [1721606889.459954432] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.460000288] [test logger]: !!! Wheel velocity: 2.161816 !!!
+[INFO] [1721606889.460020224] [test logger]: !!! Wheel current consumption: 14.375000 !!!
+[INFO] [1721606889.460033568] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.460040128] [test logger]: !!! Wheel velocity: 2.161816 !!!
+[INFO] [1721606889.460047456] [test logger]: !!! Wheel current consumption: 21.375000 !!!
+[INFO] [1721606889.460055328] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.460060192] [test logger]: !!! Wheel velocity: 2.085156 !!!
+[INFO] [1721606889.460066464] [test logger]: !!! Wheel current consumption: 18.750000 !!!
+[INFO] [1721606889.460073632] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.460078272] [test logger]: !!! Wheel velocity: 2.974414 !!!
+[INFO] [1721606889.460084704] [test logger]: !!! Wheel current consumption: 20.375000 !!!
+[INFO] [1721606889.479919072] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.479963744] [test logger]: !!! Wheel velocity: 3.173730 !!!
+[INFO] [1721606889.479981408] [test logger]: !!! Wheel current consumption: 17.500000 !!!
+[INFO] [1721606889.479993600] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.479999200] [test logger]: !!! Wheel velocity: 3.173730 !!!
+[INFO] [1721606889.480006016] [test logger]: !!! Wheel current consumption: 29.750000 !!!
+[INFO] [1721606889.480014016] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.480019104] [test logger]: !!! Wheel velocity: 2.575781 !!!
+[INFO] [1721606889.480025696] [test logger]: !!! Wheel current consumption: 32.000000 !!!
+[INFO] [1721606889.480033280] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.480038112] [test logger]: !!! Wheel velocity: 3.664355 !!!
+[INFO] [1721606889.480044480] [test logger]: !!! Wheel current consumption: 27.375000 !!!
+[INFO] [1721606889.499904704] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.499941792] [test logger]: !!! Wheel velocity: 3.725684 !!!
+[INFO] [1721606889.499957952] [test logger]: !!! Wheel current consumption: 23.000000 !!!
+[INFO] [1721606889.499972256] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.499977792] [test logger]: !!! Wheel velocity: 3.725684 !!!
+[INFO] [1721606889.499984288] [test logger]: !!! Wheel current consumption: 28.375000 !!!
+[INFO] [1721606889.500056640] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.500066272] [test logger]: !!! Wheel velocity: 2.943750 !!!
+[INFO] [1721606889.500073856] [test logger]: !!! Wheel current consumption: 38.875000 !!!
+[INFO] [1721606889.500081408] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.500086208] [test logger]: !!! Wheel velocity: 4.032324 !!!
+[INFO] [1721606889.500092416] [test logger]: !!! Wheel current consumption: 29.750000 !!!
+[INFO] [1721606889.519921888] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.519971424] [test logger]: !!! Wheel velocity: 4.967578 !!!
+[INFO] [1721606889.519990016] [test logger]: !!! Wheel current consumption: 27.625000 !!!
+[INFO] [1721606889.520031264] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.520038720] [test logger]: !!! Wheel velocity: 4.967578 !!!
+[INFO] [1721606889.520045568] [test logger]: !!! Wheel current consumption: 28.125000 !!!
+[INFO] [1721606889.520053568] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.520058368] [test logger]: !!! Wheel velocity: 3.587695 !!!
+[INFO] [1721606889.520064736] [test logger]: !!! Wheel current consumption: 44.375000 !!!
+[INFO] [1721606889.520072320] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.520077280] [test logger]: !!! Wheel velocity: 4.614941 !!!
+[INFO] [1721606889.520083584] [test logger]: !!! Wheel current consumption: 31.875000 !!!
+[INFO] [1721606889.539912800] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.539955744] [test logger]: !!! Wheel velocity: 6.822754 !!!
+[INFO] [1721606889.539971648] [test logger]: !!! Wheel current consumption: 34.500000 !!!
+[INFO] [1721606889.539982912] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.539988064] [test logger]: !!! Wheel velocity: 6.822754 !!!
+[INFO] [1721606889.539994688] [test logger]: !!! Wheel current consumption: 21.500000 !!!
+[INFO] [1721606889.540002400] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.540007136] [test logger]: !!! Wheel velocity: 3.741016 !!!
+[INFO] [1721606889.540013472] [test logger]: !!! Wheel current consumption: 45.625000 !!!
+[INFO] [1721606889.540020800] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.540025536] [test logger]: !!! Wheel velocity: 3.925000 !!!
+[INFO] [1721606889.540032128] [test logger]: !!! Wheel current consumption: 30.375000 !!!
+[INFO] [1721606889.559920288] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.559999424] [test logger]: !!! Wheel velocity: 6.638770 !!!
+[INFO] [1721606889.560023456] [test logger]: !!! Wheel current consumption: 37.000000 !!!
+[INFO] [1721606889.560036352] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.560042048] [test logger]: !!! Wheel velocity: 6.638770 !!!
+[INFO] [1721606889.560049152] [test logger]: !!! Wheel current consumption: 18.000000 !!!
+[INFO] [1721606889.560057120] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.560062464] [test logger]: !!! Wheel velocity: 2.560449 !!!
+[INFO] [1721606889.560068928] [test logger]: !!! Wheel current consumption: 44.000000 !!!
+[INFO] [1721606889.560076448] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.560081248] [test logger]: !!! Wheel velocity: 2.683105 !!!
+[INFO] [1721606889.560087904] [test logger]: !!! Wheel current consumption: 23.750000 !!!
+[INFO] [1721606889.579920832] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.579974208] [test logger]: !!! Wheel velocity: 8.049316 !!!
+[INFO] [1721606889.579996576] [test logger]: !!! Wheel current consumption: 36.750000 !!!
+[INFO] [1721606889.580008704] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.580014976] [test logger]: !!! Wheel velocity: 8.049316 !!!
+[INFO] [1721606889.580021568] [test logger]: !!! Wheel current consumption: 15.125000 !!!
+[INFO] [1721606889.580028992] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.580033728] [test logger]: !!! Wheel velocity: 2.713770 !!!
+[INFO] [1721606889.580040288] [test logger]: !!! Wheel current consumption: 44.750000 !!!
+[INFO] [1721606889.580113056] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.580122848] [test logger]: !!! Wheel velocity: 2.683105 !!!
+[INFO] [1721606889.580129728] [test logger]: !!! Wheel current consumption: 21.000000 !!!
+[INFO] [1721606889.599915040] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.599962976] [test logger]: !!! Wheel velocity: 10.057813 !!!
+[INFO] [1721606889.599985760] [test logger]: !!! Wheel current consumption: 37.250000 !!!
+[INFO] [1721606889.599997120] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.600002752] [test logger]: !!! Wheel velocity: 10.057813 !!!
+[INFO] [1721606889.600009728] [test logger]: !!! Wheel current consumption: 12.625000 !!!
+[INFO] [1721606889.600017152] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.600022048] [test logger]: !!! Wheel velocity: 3.127734 !!!
+[INFO] [1721606889.600028192] [test logger]: !!! Wheel current consumption: 44.000000 !!!
+[INFO] [1721606889.600035200] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.600041024] [test logger]: !!! Wheel velocity: 3.066406 !!!
+[INFO] [1721606889.600047136] [test logger]: !!! Wheel current consumption: 18.000000 !!!
+[INFO] [1721606889.619913024] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.619956512] [test logger]: !!! Wheel velocity: 11.514355 !!!
+[INFO] [1721606889.619976768] [test logger]: !!! Wheel current consumption: 36.500000 !!!
+[INFO] [1721606889.620017312] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.620026816] [test logger]: !!! Wheel velocity: 11.514355 !!!
+[INFO] [1721606889.620035424] [test logger]: !!! Wheel current consumption: 11.125000 !!!
+[INFO] [1721606889.620042752] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.620047616] [test logger]: !!! Wheel velocity: 3.327051 !!!
+[INFO] [1721606889.620054208] [test logger]: !!! Wheel current consumption: 43.250000 !!!
+[INFO] [1721606889.620062176] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.620067072] [test logger]: !!! Wheel velocity: 3.327051 !!!
+[INFO] [1721606889.620073792] [test logger]: !!! Wheel current consumption: 16.125000 !!!
+[INFO] [1721606889.639902656] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.639938336] [test logger]: !!! Wheel velocity: 12.434277 !!!
+[INFO] [1721606889.639960224] [test logger]: !!! Wheel current consumption: 35.250000 !!!
+[INFO] [1721606889.639971104] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.639976480] [test logger]: !!! Wheel velocity: 12.434277 !!!
+[INFO] [1721606889.639984576] [test logger]: !!! Wheel current consumption: 10.000000 !!!
+[INFO] [1721606889.639992224] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.639997088] [test logger]: !!! Wheel velocity: 3.710352 !!!
+[INFO] [1721606889.640003616] [test logger]: !!! Wheel current consumption: 42.125000 !!!
+[INFO] [1721606889.640010784] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.640015456] [test logger]: !!! Wheel velocity: 3.817676 !!!
+[INFO] [1721606889.640055008] [test logger]: !!! Wheel current consumption: 15.000000 !!!
+[INFO] [1721606889.659899712] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.659936128] [test logger]: !!! Wheel velocity: 13.354199 !!!
+[INFO] [1721606889.659954720] [test logger]: !!! Wheel current consumption: 34.250000 !!!
+[INFO] [1721606889.659968832] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.659974848] [test logger]: !!! Wheel velocity: 13.354199 !!!
+[INFO] [1721606889.659982432] [test logger]: !!! Wheel current consumption: 9.375000 !!!
+[INFO] [1721606889.659990368] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.659995296] [test logger]: !!! Wheel velocity: 4.093652 !!!
+[INFO] [1721606889.660001696] [test logger]: !!! Wheel current consumption: 41.250000 !!!
+[INFO] [1721606889.660009344] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.660014016] [test logger]: !!! Wheel velocity: 4.093652 !!!
+[INFO] [1721606889.660020032] [test logger]: !!! Wheel current consumption: 14.125000 !!!
+[INFO] [1721606889.679900064] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.679933344] [test logger]: !!! Wheel velocity: 13.890820 !!!
+[INFO] [1721606889.679952736] [test logger]: !!! Wheel current consumption: 33.625000 !!!
+[INFO] [1721606889.679962752] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.679968640] [test logger]: !!! Wheel velocity: 13.890820 !!!
+[INFO] [1721606889.679975328] [test logger]: !!! Wheel current consumption: 9.125000 !!!
+[INFO] [1721606889.679982208] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.679987488] [test logger]: !!! Wheel velocity: 4.538281 !!!
+[INFO] [1721606889.679993792] [test logger]: !!! Wheel current consumption: 40.125000 !!!
+[INFO] [1721606889.680001056] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.680005792] [test logger]: !!! Wheel velocity: 4.384961 !!!
+[INFO] [1721606889.680011840] [test logger]: !!! Wheel current consumption: 13.375000 !!!
+[INFO] [1721606889.699894688] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.699924800] [test logger]: !!! Wheel velocity: 14.304785 !!!
+[INFO] [1721606889.699940672] [test logger]: !!! Wheel current consumption: 33.250000 !!!
+[INFO] [1721606889.699949216] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.699954464] [test logger]: !!! Wheel velocity: 14.304785 !!!
+[INFO] [1721606889.699961600] [test logger]: !!! Wheel current consumption: 8.875000 !!!
+[INFO] [1721606889.699967968] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.699973088] [test logger]: !!! Wheel velocity: 4.921582 !!!
+[INFO] [1721606889.699980000] [test logger]: !!! Wheel current consumption: 38.875000 !!!
+[INFO] [1721606889.699986720] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.699991328] [test logger]: !!! Wheel velocity: 4.722266 !!!
+[INFO] [1721606889.699997312] [test logger]: !!! Wheel current consumption: 12.625000 !!!
+[INFO] [1721606889.719919584] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.719970272] [test logger]: !!! Wheel velocity: 14.688086 !!!
+[INFO] [1721606889.719989632] [test logger]: !!! Wheel current consumption: 32.625000 !!!
+[INFO] [1721606889.719999520] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.720004320] [test logger]: !!! Wheel velocity: 14.688086 !!!
+[INFO] [1721606889.720014336] [test logger]: !!! Wheel current consumption: 8.625000 !!!
+[INFO] [1721606889.720021376] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.720026112] [test logger]: !!! Wheel velocity: 5.274219 !!!
+[INFO] [1721606889.720032576] [test logger]: !!! Wheel current consumption: 37.875000 !!!
+[INFO] [1721606889.720039552] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.720045024] [test logger]: !!! Wheel velocity: 5.105566 !!!
+[INFO] [1721606889.720051168] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.739900608] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.739940128] [test logger]: !!! Wheel velocity: 14.979395 !!!
+[INFO] [1721606889.739957984] [test logger]: !!! Wheel current consumption: 31.500000 !!!
+[INFO] [1721606889.739967552] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.739973792] [test logger]: !!! Wheel velocity: 14.979395 !!!
+[INFO] [1721606889.739981216] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606889.739988320] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.739993152] [test logger]: !!! Wheel velocity: 5.734180 !!!
+[INFO] [1721606889.739999328] [test logger]: !!! Wheel current consumption: 37.000000 !!!
+[INFO] [1721606889.740007104] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.740012096] [test logger]: !!! Wheel velocity: 5.504199 !!!
+[INFO] [1721606889.740018176] [test logger]: !!! Wheel current consumption: 12.000000 !!!
+[INFO] [1721606889.759907648] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.759953600] [test logger]: !!! Wheel velocity: 15.194043 !!!
+[INFO] [1721606889.759974752] [test logger]: !!! Wheel current consumption: 30.250000 !!!
+[INFO] [1721606889.759984864] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.760050432] [test logger]: !!! Wheel velocity: 15.194043 !!!
+[INFO] [1721606889.760065792] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606889.760073888] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.760078688] [test logger]: !!! Wheel velocity: 6.224805 !!!
+[INFO] [1721606889.760084704] [test logger]: !!! Wheel current consumption: 35.875000 !!!
+[INFO] [1721606889.760091744] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.760096352] [test logger]: !!! Wheel velocity: 6.025488 !!!
+[INFO] [1721606889.760102272] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.779910560] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.779955584] [test logger]: !!! Wheel velocity: 15.301367 !!!
+[INFO] [1721606889.779974272] [test logger]: !!! Wheel current consumption: 29.125000 !!!
+[INFO] [1721606889.779984192] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.779989376] [test logger]: !!! Wheel velocity: 15.301367 !!!
+[INFO] [1721606889.779997344] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606889.780004608] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.780009664] [test logger]: !!! Wheel velocity: 6.669434 !!!
+[INFO] [1721606889.780016448] [test logger]: !!! Wheel current consumption: 34.500000 !!!
+[INFO] [1721606889.780023456] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.780028416] [test logger]: !!! Wheel velocity: 6.531445 !!!
+[INFO] [1721606889.780034784] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606889.799898144] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.799928384] [test logger]: !!! Wheel velocity: 15.408691 !!!
+[INFO] [1721606889.799944960] [test logger]: !!! Wheel current consumption: 28.125000 !!!
+[INFO] [1721606889.799955840] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.799963776] [test logger]: !!! Wheel velocity: 15.408691 !!!
+[INFO] [1721606889.799971968] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606889.799979200] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.799984064] [test logger]: !!! Wheel velocity: 7.160059 !!!
+[INFO] [1721606889.799990720] [test logger]: !!! Wheel current consumption: 33.125000 !!!
+[INFO] [1721606889.799997696] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.800002400] [test logger]: !!! Wheel velocity: 6.991406 !!!
+[INFO] [1721606889.800008576] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606889.819915360] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.819959520] [test logger]: !!! Wheel velocity: 15.454688 !!!
+[INFO] [1721606889.819978272] [test logger]: !!! Wheel current consumption: 27.250000 !!!
+[INFO] [1721606889.819987680] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.819992448] [test logger]: !!! Wheel velocity: 15.454688 !!!
+[INFO] [1721606889.820002080] [test logger]: !!! Wheel current consumption: 9.000000 !!!
+[INFO] [1721606889.820008896] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.820013728] [test logger]: !!! Wheel velocity: 7.650684 !!!
+[INFO] [1721606889.820020256] [test logger]: !!! Wheel current consumption: 32.125000 !!!
+[INFO] [1721606889.820026976] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.820032032] [test logger]: !!! Wheel velocity: 7.405371 !!!
+[INFO] [1721606889.820038336] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.839904160] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.839938560] [test logger]: !!! Wheel velocity: 15.485352 !!!
+[INFO] [1721606889.839955040] [test logger]: !!! Wheel current consumption: 26.125000 !!!
+[INFO] [1721606889.839963616] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.839970592] [test logger]: !!! Wheel velocity: 15.485352 !!!
+[INFO] [1721606889.839977376] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606889.839983776] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.840048224] [test logger]: !!! Wheel velocity: 8.125977 !!!
+[INFO] [1721606889.840061280] [test logger]: !!! Wheel current consumption: 31.250000 !!!
+[INFO] [1721606889.840069056] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.840073920] [test logger]: !!! Wheel velocity: 7.850000 !!!
+[INFO] [1721606889.840080096] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.859901248] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.859941696] [test logger]: !!! Wheel velocity: 15.500684 !!!
+[INFO] [1721606889.859960224] [test logger]: !!! Wheel current consumption: 25.250000 !!!
+[INFO] [1721606889.859968832] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.859974400] [test logger]: !!! Wheel velocity: 15.500684 !!!
+[INFO] [1721606889.859981696] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606889.859988512] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.859993248] [test logger]: !!! Wheel velocity: 8.509277 !!!
+[INFO] [1721606889.859999648] [test logger]: !!! Wheel current consumption: 30.375000 !!!
+[INFO] [1721606889.860006784] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.860012096] [test logger]: !!! Wheel velocity: 8.279297 !!!
+[INFO] [1721606889.860018144] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606889.880270080] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.880330144] [test logger]: !!! Wheel velocity: 15.516016 !!!
+[INFO] [1721606889.880355104] [test logger]: !!! Wheel current consumption: 24.125000 !!!
+[INFO] [1721606889.880365952] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.880371232] [test logger]: !!! Wheel velocity: 15.516016 !!!
+[INFO] [1721606889.880377952] [test logger]: !!! Wheel current consumption: 9.500000 !!!
+[INFO] [1721606889.880385664] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.880390432] [test logger]: !!! Wheel velocity: 8.938574 !!!
+[INFO] [1721606889.880396832] [test logger]: !!! Wheel current consumption: 29.375000 !!!
+[INFO] [1721606889.880404128] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.880412448] [test logger]: !!! Wheel velocity: 8.708594 !!!
+[INFO] [1721606889.880419392] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606889.899909184] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.899951392] [test logger]: !!! Wheel velocity: 15.546680 !!!
+[INFO] [1721606889.899970592] [test logger]: !!! Wheel current consumption: 23.250000 !!!
+[INFO] [1721606889.899980160] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.899985536] [test logger]: !!! Wheel velocity: 15.546680 !!!
+[INFO] [1721606889.899992384] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606889.899999808] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.900004512] [test logger]: !!! Wheel velocity: 9.306543 !!!
+[INFO] [1721606889.900010912] [test logger]: !!! Wheel current consumption: 28.500000 !!!
+[INFO] [1721606889.900018208] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.900022912] [test logger]: !!! Wheel velocity: 9.153223 !!!
+[INFO] [1721606889.900029216] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606889.919916160] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.919965664] [test logger]: !!! Wheel velocity: 15.577344 !!!
+[INFO] [1721606889.919989792] [test logger]: !!! Wheel current consumption: 22.375000 !!!
+[INFO] [1721606889.920001824] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.920007488] [test logger]: !!! Wheel velocity: 15.577344 !!!
+[INFO] [1721606889.920014368] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606889.920021760] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.920027136] [test logger]: !!! Wheel velocity: 9.751172 !!!
+[INFO] [1721606889.920033568] [test logger]: !!! Wheel current consumption: 27.500000 !!!
+[INFO] [1721606889.920040384] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.920108992] [test logger]: !!! Wheel velocity: 9.521191 !!!
+[INFO] [1721606889.920123040] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.940016256] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.940069504] [test logger]: !!! Wheel velocity: 15.623340 !!!
+[INFO] [1721606889.940093792] [test logger]: !!! Wheel current consumption: 21.750000 !!!
+[INFO] [1721606889.940104736] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.940112416] [test logger]: !!! Wheel velocity: 15.623340 !!!
+[INFO] [1721606889.940119840] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606889.940127552] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.940132224] [test logger]: !!! Wheel velocity: 10.119141 !!!
+[INFO] [1721606889.940139168] [test logger]: !!! Wheel current consumption: 26.625000 !!!
+[INFO] [1721606889.940146464] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.940151136] [test logger]: !!! Wheel velocity: 9.843164 !!!
+[INFO] [1721606889.940157568] [test logger]: !!! Wheel current consumption: 11.875000 !!!
+[INFO] [1721606889.959935296] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.959991328] [test logger]: !!! Wheel velocity: 15.700000 !!!
+[INFO] [1721606889.960015200] [test logger]: !!! Wheel current consumption: 21.125000 !!!
+[INFO] [1721606889.960025952] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.960031136] [test logger]: !!! Wheel velocity: 15.700000 !!!
+[INFO] [1721606889.960038528] [test logger]: !!! Wheel current consumption: 9.375000 !!!
+[INFO] [1721606889.960047040] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.960052128] [test logger]: !!! Wheel velocity: 10.456445 !!!
+[INFO] [1721606889.960059136] [test logger]: !!! Wheel current consumption: 26.000000 !!!
+[INFO] [1721606889.960066976] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.960071968] [test logger]: !!! Wheel velocity: 10.088477 !!!
+[INFO] [1721606889.960078816] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606889.967937024] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[INFO] [1721606889.979927072] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.979984352] [test logger]: !!! Wheel velocity: 15.684668 !!!
+[INFO] [1721606889.980011008] [test logger]: !!! Wheel current consumption: 20.625000 !!!
+[INFO] [1721606889.980023712] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.980029568] [test logger]: !!! Wheel velocity: 15.684668 !!!
+[INFO] [1721606889.980037152] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606889.980045120] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.980049824] [test logger]: !!! Wheel velocity: 10.732422 !!!
+[INFO] [1721606889.980059680] [test logger]: !!! Wheel current consumption: 25.250000 !!!
+[INFO] [1721606889.980067936] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606889.980072512] [test logger]: !!! Wheel velocity: 10.364453 !!!
+[INFO] [1721606889.980079296] [test logger]: !!! Wheel current consumption: 13.000000 !!!
+[INFO] [1721606889.999899680] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606889.999933664] [test logger]: !!! Wheel velocity: 15.500684 !!!
+[INFO] [1721606889.999951648] [test logger]: !!! Wheel current consumption: 19.875000 !!!
+[INFO] [1721606889.999961856] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606889.999967136] [test logger]: !!! Wheel velocity: 15.500684 !!!
+[INFO] [1721606889.999974080] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606889.999981696] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606889.999986496] [test logger]: !!! Wheel velocity: 11.023730 !!!
+[INFO] [1721606889.999993248] [test logger]: !!! Wheel current consumption: 24.625000 !!!
+[INFO] [1721606890.000000288] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.000024704] [test logger]: !!! Wheel velocity: 10.717090 !!!
+[INFO] [1721606890.000033664] [test logger]: !!! Wheel current consumption: 14.000000 !!!
+[INFO] [1721606890.015290368] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[INFO] [1721606890.015483744] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[INFO] [1721606890.019918880] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.019965248] [test logger]: !!! Wheel velocity: 15.286035 !!!
+[INFO] [1721606890.019995456] [test logger]: !!! Wheel current consumption: 18.875000 !!!
+[INFO] [1721606890.020008096] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.020013504] [test logger]: !!! Wheel velocity: 15.286035 !!!
+[INFO] [1721606890.020020928] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606890.020029184] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.020034208] [test logger]: !!! Wheel velocity: 11.315039 !!!
+[INFO] [1721606890.020042112] [test logger]: !!! Wheel current consumption: 23.750000 !!!
+[INFO] [1721606890.020050112] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.020054848] [test logger]: !!! Wheel velocity: 11.115723 !!!
+[INFO] [1721606890.020061792] [test logger]: !!! Wheel current consumption: 14.625000 !!!
+[INFO] [1721606890.039907616] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.039962464] [test logger]: !!! Wheel velocity: 15.086719 !!!
+[INFO] [1721606890.039986528] [test logger]: !!! Wheel current consumption: 17.875000 !!!
+[INFO] [1721606890.039998208] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.040004384] [test logger]: !!! Wheel velocity: 15.086719 !!!
+[INFO] [1721606890.040013184] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606890.040022592] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.040028608] [test logger]: !!! Wheel velocity: 11.637012 !!!
+[INFO] [1721606890.040037184] [test logger]: !!! Wheel current consumption: 22.625000 !!!
+[INFO] [1721606890.040047968] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.040054080] [test logger]: !!! Wheel velocity: 11.499023 !!!
+[INFO] [1721606890.040062624] [test logger]: !!! Wheel current consumption: 14.375000 !!!
+[INFO] [1721606890.059891840] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.059930144] [test logger]: !!! Wheel velocity: 14.979395 !!!
+[INFO] [1721606890.059948800] [test logger]: !!! Wheel current consumption: 17.250000 !!!
+[INFO] [1721606890.059967264] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.059973664] [test logger]: !!! Wheel velocity: 14.979395 !!!
+[INFO] [1721606890.059982336] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606890.059990912] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.059996416] [test logger]: !!! Wheel velocity: 11.974316 !!!
+[INFO] [1721606890.060003744] [test logger]: !!! Wheel current consumption: 21.875000 !!!
+[INFO] [1721606890.060011616] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.060016704] [test logger]: !!! Wheel velocity: 11.882324 !!!
+[INFO] [1721606890.060024064] [test logger]: !!! Wheel current consumption: 14.125000 !!!
+[INFO] [1721606890.079900160] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.079952960] [test logger]: !!! Wheel velocity: 14.887402 !!!
+[INFO] [1721606890.079985760] [test logger]: !!! Wheel current consumption: 16.625000 !!!
+[INFO] [1721606890.080005088] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.080013696] [test logger]: !!! Wheel velocity: 14.887402 !!!
+[INFO] [1721606890.080024736] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606890.080037184] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.080044352] [test logger]: !!! Wheel velocity: 12.296289 !!!
+[INFO] [1721606890.080054464] [test logger]: !!! Wheel current consumption: 21.250000 !!!
+[INFO] [1721606890.080066432] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.080073120] [test logger]: !!! Wheel velocity: 12.265625 !!!
+[INFO] [1721606890.080082880] [test logger]: !!! Wheel current consumption: 14.375000 !!!
+[INFO] [1721606890.099990304] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.100107072] [test logger]: !!! Wheel velocity: 14.810742 !!!
+[INFO] [1721606890.100150144] [test logger]: !!! Wheel current consumption: 16.125000 !!!
+[INFO] [1721606890.100165504] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.100172128] [test logger]: !!! Wheel velocity: 14.810742 !!!
+[INFO] [1721606890.100180960] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.100191744] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.100198144] [test logger]: !!! Wheel velocity: 12.664258 !!!
+[INFO] [1721606890.100207040] [test logger]: !!! Wheel current consumption: 20.625000 !!!
+[INFO] [1721606890.100218400] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.100227104] [test logger]: !!! Wheel velocity: 12.618262 !!!
+[INFO] [1721606890.100235776] [test logger]: !!! Wheel current consumption: 15.250000 !!!
+[INFO] [1721606890.119981760] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.120086272] [test logger]: !!! Wheel velocity: 14.611426 !!!
+[INFO] [1721606890.120124128] [test logger]: !!! Wheel current consumption: 15.375000 !!!
+[INFO] [1721606890.120139584] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.120146240] [test logger]: !!! Wheel velocity: 14.611426 !!!
+[INFO] [1721606890.120155744] [test logger]: !!! Wheel current consumption: 11.125000 !!!
+[INFO] [1721606890.120166848] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.120173088] [test logger]: !!! Wheel velocity: 13.047559 !!!
+[INFO] [1721606890.120182048] [test logger]: !!! Wheel current consumption: 19.500000 !!!
+[INFO] [1721606890.120193472] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.120199616] [test logger]: !!! Wheel velocity: 12.970898 !!!
+[INFO] [1721606890.120208704] [test logger]: !!! Wheel current consumption: 16.125000 !!!
+[INFO] [1721606890.139996640] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.140104000] [test logger]: !!! Wheel velocity: 14.412109 !!!
+[INFO] [1721606890.140140800] [test logger]: !!! Wheel current consumption: 14.625000 !!!
+[INFO] [1721606890.140154784] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.140161344] [test logger]: !!! Wheel velocity: 14.412109 !!!
+[INFO] [1721606890.140170624] [test logger]: !!! Wheel current consumption: 11.625000 !!!
+[INFO] [1721606890.140181184] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.140186976] [test logger]: !!! Wheel velocity: 13.476855 !!!
+[INFO] [1721606890.140195392] [test logger]: !!! Wheel current consumption: 18.375000 !!!
+[INFO] [1721606890.140205600] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.140211136] [test logger]: !!! Wheel velocity: 13.323535 !!!
+[INFO] [1721606890.140219680] [test logger]: !!! Wheel current consumption: 16.500000 !!!
+[INFO] [1721606890.159944960] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.160020736] [test logger]: !!! Wheel velocity: 14.166797 !!!
+[INFO] [1721606890.160050112] [test logger]: !!! Wheel current consumption: 14.000000 !!!
+[INFO] [1721606890.160061504] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.160066464] [test logger]: !!! Wheel velocity: 14.166797 !!!
+[INFO] [1721606890.160073536] [test logger]: !!! Wheel current consumption: 11.625000 !!!
+[INFO] [1721606890.160082464] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.160087488] [test logger]: !!! Wheel velocity: 13.906152 !!!
+[INFO] [1721606890.160094656] [test logger]: !!! Wheel current consumption: 17.250000 !!!
+[INFO] [1721606890.160103616] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.160108320] [test logger]: !!! Wheel velocity: 13.676172 !!!
+[INFO] [1721606890.160114912] [test logger]: !!! Wheel current consumption: 16.500000 !!!
+[INFO] [1721606890.179910720] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.179955744] [test logger]: !!! Wheel velocity: 14.074805 !!!
+[INFO] [1721606890.179975968] [test logger]: !!! Wheel current consumption: 13.500000 !!!
+[INFO] [1721606890.179985536] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.180051424] [test logger]: !!! Wheel velocity: 14.074805 !!!
+[INFO] [1721606890.180062848] [test logger]: !!! Wheel current consumption: 11.750000 !!!
+[INFO] [1721606890.180071424] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.180076096] [test logger]: !!! Wheel velocity: 14.320117 !!!
+[INFO] [1721606890.180082912] [test logger]: !!! Wheel current consumption: 16.625000 !!!
+[INFO] [1721606890.180090272] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.180095104] [test logger]: !!! Wheel velocity: 14.013477 !!!
+[INFO] [1721606890.180101920] [test logger]: !!! Wheel current consumption: 16.125000 !!!
+[INFO] [1721606890.199916256] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.199960928] [test logger]: !!! Wheel velocity: 14.151465 !!!
+[INFO] [1721606890.199981216] [test logger]: !!! Wheel current consumption: 13.000000 !!!
+[INFO] [1721606890.199991744] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.199996832] [test logger]: !!! Wheel velocity: 14.151465 !!!
+[INFO] [1721606890.200003808] [test logger]: !!! Wheel current consumption: 11.875000 !!!
+[INFO] [1721606890.200011552] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.200016160] [test logger]: !!! Wheel velocity: 14.642090 !!!
+[INFO] [1721606890.200022880] [test logger]: !!! Wheel current consumption: 16.250000 !!!
+[INFO] [1721606890.200030304] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.200034944] [test logger]: !!! Wheel velocity: 14.289453 !!!
+[INFO] [1721606890.200041600] [test logger]: !!! Wheel current consumption: 15.625000 !!!
+[INFO] [1721606890.219922560] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.219994560] [test logger]: !!! Wheel velocity: 14.473438 !!!
+[INFO] [1721606890.220023520] [test logger]: !!! Wheel current consumption: 12.375000 !!!
+[INFO] [1721606890.220036544] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.220042912] [test logger]: !!! Wheel velocity: 14.473438 !!!
+[INFO] [1721606890.220051776] [test logger]: !!! Wheel current consumption: 11.875000 !!!
+[INFO] [1721606890.220061920] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.220067968] [test logger]: !!! Wheel velocity: 14.856738 !!!
+[INFO] [1721606890.220077312] [test logger]: !!! Wheel current consumption: 15.875000 !!!
+[INFO] [1721606890.220086784] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.220092640] [test logger]: !!! Wheel velocity: 14.550098 !!!
+[INFO] [1721606890.220100832] [test logger]: !!! Wheel current consumption: 14.750000 !!!
+[INFO] [1721606890.239927936] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.239998976] [test logger]: !!! Wheel velocity: 14.856738 !!!
+[INFO] [1721606890.240030592] [test logger]: !!! Wheel current consumption: 11.750000 !!!
+[INFO] [1721606890.240050656] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.240059936] [test logger]: !!! Wheel velocity: 14.856738 !!!
+[INFO] [1721606890.240072800] [test logger]: !!! Wheel current consumption: 11.625000 !!!
+[INFO] [1721606890.240085408] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.240094304] [test logger]: !!! Wheel velocity: 15.040723 !!!
+[INFO] [1721606890.240106432] [test logger]: !!! Wheel current consumption: 15.375000 !!!
+[INFO] [1721606890.240120672] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.240129312] [test logger]: !!! Wheel velocity: 14.810742 !!!
+[INFO] [1721606890.240141344] [test logger]: !!! Wheel current consumption: 14.000000 !!!
+[INFO] [1721606890.259935552] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.259979168] [test logger]: !!! Wheel velocity: 15.148047 !!!
+[INFO] [1721606890.260011008] [test logger]: !!! Wheel current consumption: 11.375000 !!!
+[INFO] [1721606890.260035936] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.260047136] [test logger]: !!! Wheel velocity: 15.148047 !!!
+[INFO] [1721606890.260061408] [test logger]: !!! Wheel current consumption: 11.375000 !!!
+[INFO] [1721606890.260075456] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.260235392] [test logger]: !!! Wheel velocity: 15.286035 !!!
+[INFO] [1721606890.260261696] [test logger]: !!! Wheel current consumption: 14.750000 !!!
+[INFO] [1721606890.260276672] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.260286496] [test logger]: !!! Wheel velocity: 15.056055 !!!
+[INFO] [1721606890.260299808] [test logger]: !!! Wheel current consumption: 13.625000 !!!
+[INFO] [1721606890.279917248] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.279979264] [test logger]: !!! Wheel velocity: 15.362695 !!!
+[INFO] [1721606890.280016384] [test logger]: !!! Wheel current consumption: 11.000000 !!!
+[INFO] [1721606890.280036864] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.280047776] [test logger]: !!! Wheel velocity: 15.362695 !!!
+[INFO] [1721606890.280061888] [test logger]: !!! Wheel current consumption: 11.000000 !!!
+[INFO] [1721606890.280076960] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.280087072] [test logger]: !!! Wheel velocity: 15.531348 !!!
+[INFO] [1721606890.280101120] [test logger]: !!! Wheel current consumption: 14.125000 !!!
+[INFO] [1721606890.280115616] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.280125120] [test logger]: !!! Wheel velocity: 15.224707 !!!
+[INFO] [1721606890.280138816] [test logger]: !!! Wheel current consumption: 13.625000 !!!
+[INFO] [1721606890.299910304] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.299972512] [test logger]: !!! Wheel velocity: 15.562012 !!!
+[INFO] [1721606890.300017440] [test logger]: !!! Wheel current consumption: 11.000000 !!!
+[INFO] [1721606890.300040704] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.300052032] [test logger]: !!! Wheel velocity: 15.562012 !!!
+[INFO] [1721606890.300066272] [test logger]: !!! Wheel current consumption: 10.625000 !!!
+[INFO] [1721606890.300080800] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.300090688] [test logger]: !!! Wheel velocity: 15.761328 !!!
+[INFO] [1721606890.300104416] [test logger]: !!! Wheel current consumption: 13.875000 !!!
+[INFO] [1721606890.300118208] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.300127776] [test logger]: !!! Wheel velocity: 15.408691 !!!
+[INFO] [1721606890.300141472] [test logger]: !!! Wheel current consumption: 13.625000 !!!
+[INFO] [1721606890.319936032] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.319995200] [test logger]: !!! Wheel velocity: 15.684668 !!!
+[INFO] [1721606890.320022336] [test logger]: !!! Wheel current consumption: 11.000000 !!!
+[INFO] [1721606890.320037856] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.320045760] [test logger]: !!! Wheel velocity: 15.684668 !!!
+[INFO] [1721606890.320056192] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.320067200] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.320074208] [test logger]: !!! Wheel velocity: 15.929980 !!!
+[INFO] [1721606890.320083872] [test logger]: !!! Wheel current consumption: 13.875000 !!!
+[INFO] [1721606890.320106208] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.320114016] [test logger]: !!! Wheel velocity: 15.546680 !!!
+[INFO] [1721606890.320123968] [test logger]: !!! Wheel current consumption: 13.125000 !!!
+[INFO] [1721606890.340139072] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.340392032] [test logger]: !!! Wheel velocity: 15.776660 !!!
+[INFO] [1721606890.340474656] [test logger]: !!! Wheel current consumption: 10.875000 !!!
+[INFO] [1721606890.340498304] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.340507296] [test logger]: !!! Wheel velocity: 15.776660 !!!
+[INFO] [1721606890.340519872] [test logger]: !!! Wheel current consumption: 10.625000 !!!
+[INFO] [1721606890.340535712] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.340542912] [test logger]: !!! Wheel velocity: 16.083301 !!!
+[INFO] [1721606890.340552704] [test logger]: !!! Wheel current consumption: 14.000000 !!!
+[INFO] [1721606890.340566816] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.340835968] [test logger]: !!! Wheel velocity: 15.776660 !!!
+[INFO] [1721606890.340861792] [test logger]: !!! Wheel current consumption: 12.625000 !!!
+[INFO] [1721606890.359956128] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.360041792] [test logger]: !!! Wheel velocity: 15.991309 !!!
+[INFO] [1721606890.360073824] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.360092960] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.360100832] [test logger]: !!! Wheel velocity: 15.991309 !!!
+[INFO] [1721606890.360110464] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.360120192] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.360126080] [test logger]: !!! Wheel velocity: 16.282617 !!!
+[INFO] [1721606890.360134272] [test logger]: !!! Wheel current consumption: 13.750000 !!!
+[INFO] [1721606890.360143936] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.360149728] [test logger]: !!! Wheel velocity: 16.037305 !!!
+[INFO] [1721606890.360157984] [test logger]: !!! Wheel current consumption: 12.125000 !!!
+[INFO] [1721606890.379940992] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.380024832] [test logger]: !!! Wheel velocity: 16.251953 !!!
+[INFO] [1721606890.380059520] [test logger]: !!! Wheel current consumption: 10.000000 !!!
+[INFO] [1721606890.380071872] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.380077568] [test logger]: !!! Wheel velocity: 16.251953 !!!
+[INFO] [1721606890.380085216] [test logger]: !!! Wheel current consumption: 10.250000 !!!
+[INFO] [1721606890.380094080] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.380098912] [test logger]: !!! Wheel velocity: 16.512598 !!!
+[INFO] [1721606890.380106304] [test logger]: !!! Wheel current consumption: 13.125000 !!!
+[INFO] [1721606890.380115808] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.380120512] [test logger]: !!! Wheel velocity: 16.282617 !!!
+[INFO] [1721606890.380127264] [test logger]: !!! Wheel current consumption: 11.750000 !!!
+[INFO] [1721606890.399907136] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.399949888] [test logger]: !!! Wheel velocity: 16.527930 !!!
+[INFO] [1721606890.399972512] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606890.399982048] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.399987296] [test logger]: !!! Wheel velocity: 16.527930 !!!
+[INFO] [1721606890.399994336] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606890.400001728] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.400006464] [test logger]: !!! Wheel velocity: 16.727246 !!!
+[INFO] [1721606890.400014528] [test logger]: !!! Wheel current consumption: 12.250000 !!!
+[INFO] [1721606890.400022240] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.400027232] [test logger]: !!! Wheel velocity: 16.435937 !!!
+[INFO] [1721606890.400033824] [test logger]: !!! Wheel current consumption: 11.375000 !!!
+[INFO] [1721606890.419895328] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.419936640] [test logger]: !!! Wheel velocity: 16.788574 !!!
+[INFO] [1721606890.419958816] [test logger]: !!! Wheel current consumption: 9.500000 !!!
+[INFO] [1721606890.419969344] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.419974880] [test logger]: !!! Wheel velocity: 16.788574 !!!
+[INFO] [1721606890.419982208] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606890.419989888] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.419994656] [test logger]: !!! Wheel velocity: 17.033887 !!!
+[INFO] [1721606890.420001312] [test logger]: !!! Wheel current consumption: 11.625000 !!!
+[INFO] [1721606890.420008800] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.420013472] [test logger]: !!! Wheel velocity: 16.604590 !!!
+[INFO] [1721606890.420020224] [test logger]: !!! Wheel current consumption: 11.250000 !!!
+[INFO] [1721606890.439858560] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.439963136] [test logger]: !!! Wheel velocity: 16.941895 !!!
+[INFO] [1721606890.439988352] [test logger]: !!! Wheel current consumption: 9.375000 !!!
+[INFO] [1721606890.439998496] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.440004160] [test logger]: !!! Wheel velocity: 16.941895 !!!
+[INFO] [1721606890.440011360] [test logger]: !!! Wheel current consumption: 9.750000 !!!
+[INFO] [1721606890.440018560] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.440023264] [test logger]: !!! Wheel velocity: 17.233203 !!!
+[INFO] [1721606890.440030336] [test logger]: !!! Wheel current consumption: 11.250000 !!!
+[INFO] [1721606890.440037376] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.440041984] [test logger]: !!! Wheel velocity: 16.727246 !!!
+[INFO] [1721606890.440048800] [test logger]: !!! Wheel current consumption: 11.250000 !!!
+[INFO] [1721606890.459901888] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.459938368] [test logger]: !!! Wheel velocity: 16.941895 !!!
+[INFO] [1721606890.459958368] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606890.459967008] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.459972384] [test logger]: !!! Wheel velocity: 16.941895 !!!
+[INFO] [1721606890.459979264] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606890.459986624] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.459991424] [test logger]: !!! Wheel velocity: 17.325195 !!!
+[INFO] [1721606890.460000960] [test logger]: !!! Wheel current consumption: 11.125000 !!!
+[INFO] [1721606890.460008576] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.460013376] [test logger]: !!! Wheel velocity: 16.819238 !!!
+[INFO] [1721606890.460020000] [test logger]: !!! Wheel current consumption: 11.250000 !!!
+[INFO] [1721606890.479914336] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.479955104] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.479975328] [test logger]: !!! Wheel current consumption: 9.125000 !!!
+[INFO] [1721606890.479985536] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.479990656] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.479997632] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606890.480005248] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.480010016] [test logger]: !!! Wheel velocity: 17.386523 !!!
+[INFO] [1721606890.480016672] [test logger]: !!! Wheel current consumption: 11.125000 !!!
+[INFO] [1721606890.480024512] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.480029248] [test logger]: !!! Wheel velocity: 16.972559 !!!
+[INFO] [1721606890.480036288] [test logger]: !!! Wheel current consumption: 11.250000 !!!
+[INFO] [1721606890.499891520] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.499931648] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.499952384] [test logger]: !!! Wheel current consumption: 8.875000 !!!
+[INFO] [1721606890.499962112] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.499967488] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.499974400] [test logger]: !!! Wheel current consumption: 9.375000 !!!
+[INFO] [1721606890.499981280] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.499985920] [test logger]: !!! Wheel velocity: 17.493848 !!!
+[INFO] [1721606890.499992640] [test logger]: !!! Wheel current consumption: 10.875000 !!!
+[INFO] [1721606890.500000320] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.500005216] [test logger]: !!! Wheel velocity: 17.217871 !!!
+[INFO] [1721606890.500012064] [test logger]: !!! Wheel current consumption: 11.000000 !!!
+[INFO] [1721606890.519899264] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.519939360] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.519957888] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.519967552] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.519972864] [test logger]: !!! Wheel velocity: 16.957227 !!!
+[INFO] [1721606890.520032032] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.520043680] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.520048896] [test logger]: !!! Wheel velocity: 17.631836 !!!
+[INFO] [1721606890.520056032] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.520063872] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.520068608] [test logger]: !!! Wheel velocity: 17.432520 !!!
+[INFO] [1721606890.520075584] [test logger]: !!! Wheel current consumption: 10.750000 !!!
+[INFO] [1721606890.539894336] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.539928704] [test logger]: !!! Wheel velocity: 17.049219 !!!
+[INFO] [1721606890.539947648] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.539957184] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.539962880] [test logger]: !!! Wheel velocity: 17.049219 !!!
+[INFO] [1721606890.539969920] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.539976800] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.539981664] [test logger]: !!! Wheel velocity: 17.861816 !!!
+[INFO] [1721606890.539988288] [test logger]: !!! Wheel current consumption: 10.125000 !!!
+[INFO] [1721606890.539995328] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.539999936] [test logger]: !!! Wheel velocity: 17.555176 !!!
+[INFO] [1721606890.540006656] [test logger]: !!! Wheel current consumption: 10.500000 !!!
+[INFO] [1721606890.559901216] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.559946240] [test logger]: !!! Wheel velocity: 17.309863 !!!
+[INFO] [1721606890.559966720] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.559976224] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.559981792] [test logger]: !!! Wheel velocity: 17.309863 !!!
+[INFO] [1721606890.559988640] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.559995616] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.560000384] [test logger]: !!! Wheel velocity: 18.091797 !!!
+[INFO] [1721606890.560006848] [test logger]: !!! Wheel current consumption: 9.875000 !!!
+[INFO] [1721606890.560013504] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.560018112] [test logger]: !!! Wheel velocity: 17.677832 !!!
+[INFO] [1721606890.560024640] [test logger]: !!! Wheel current consumption: 10.125000 !!!
+[INFO] [1721606890.579897600] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.579939104] [test logger]: !!! Wheel velocity: 17.539844 !!!
+[INFO] [1721606890.579958976] [test logger]: !!! Wheel current consumption: 8.625000 !!!
+[INFO] [1721606890.579968576] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.579974176] [test logger]: !!! Wheel velocity: 17.539844 !!!
+[INFO] [1721606890.579980992] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.579987776] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.579992608] [test logger]: !!! Wheel velocity: 18.214453 !!!
+[INFO] [1721606890.579999360] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606890.580006112] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.580010688] [test logger]: !!! Wheel velocity: 17.800488 !!!
+[INFO] [1721606890.580017216] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606890.599866752] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.599908032] [test logger]: !!! Wheel velocity: 17.785156 !!!
+[INFO] [1721606890.599928224] [test logger]: !!! Wheel current consumption: 8.625000 !!!
+[INFO] [1721606890.599937696] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.599943072] [test logger]: !!! Wheel velocity: 17.785156 !!!
+[INFO] [1721606890.599949792] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.599957120] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.599962048] [test logger]: !!! Wheel velocity: 18.275781 !!!
+[INFO] [1721606890.600029024] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606890.600040928] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.600045824] [test logger]: !!! Wheel velocity: 17.785156 !!!
+[INFO] [1721606890.600052512] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606890.619901056] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.619938816] [test logger]: !!! Wheel velocity: 18.045801 !!!
+[INFO] [1721606890.619956288] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.619965088] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.619972128] [test logger]: !!! Wheel velocity: 18.045801 !!!
+[INFO] [1721606890.619978816] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.619985920] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.619990656] [test logger]: !!! Wheel velocity: 18.275781 !!!
+[INFO] [1721606890.619997440] [test logger]: !!! Wheel current consumption: 9.625000 !!!
+[INFO] [1721606890.620004576] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.620009120] [test logger]: !!! Wheel velocity: 17.769824 !!!
+[INFO] [1721606890.620015648] [test logger]: !!! Wheel current consumption: 9.125000 !!!
+[INFO] [1721606890.639897152] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.639936352] [test logger]: !!! Wheel velocity: 18.199121 !!!
+[INFO] [1721606890.639953504] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.639962720] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.639967744] [test logger]: !!! Wheel velocity: 18.199121 !!!
+[INFO] [1721606890.639974560] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.639981376] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.639985920] [test logger]: !!! Wheel velocity: 18.321777 !!!
+[INFO] [1721606890.639993088] [test logger]: !!! Wheel current consumption: 9.500000 !!!
+[INFO] [1721606890.640000352] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.640004960] [test logger]: !!! Wheel velocity: 17.877148 !!!
+[INFO] [1721606890.640011520] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606890.659892512] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.659929568] [test logger]: !!! Wheel velocity: 18.214453 !!!
+[INFO] [1721606890.659946112] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.659955584] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.659961184] [test logger]: !!! Wheel velocity: 18.214453 !!!
+[INFO] [1721606890.659968256] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.659975296] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.659980096] [test logger]: !!! Wheel velocity: 18.383105 !!!
+[INFO] [1721606890.659987168] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606890.659994368] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.659998976] [test logger]: !!! Wheel velocity: 17.877148 !!!
+[INFO] [1721606890.660006400] [test logger]: !!! Wheel current consumption: 9.500000 !!!
+[INFO] [1721606890.679889248] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.679917728] [test logger]: !!! Wheel velocity: 18.260449 !!!
+[INFO] [1721606890.679933376] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.679942336] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.679947616] [test logger]: !!! Wheel velocity: 18.260449 !!!
+[INFO] [1721606890.679954656] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.679961856] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.679966624] [test logger]: !!! Wheel velocity: 18.567090 !!!
+[INFO] [1721606890.679973184] [test logger]: !!! Wheel current consumption: 9.125000 !!!
+[INFO] [1721606890.679980128] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.679984832] [test logger]: !!! Wheel velocity: 18.122461 !!!
+[INFO] [1721606890.679991648] [test logger]: !!! Wheel current consumption: 9.375000 !!!
+[INFO] [1721606890.699887200] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.699917440] [test logger]: !!! Wheel velocity: 18.321777 !!!
+[INFO] [1721606890.699934848] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.699944192] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.699949888] [test logger]: !!! Wheel velocity: 18.321777 !!!
+[INFO] [1721606890.699956896] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.699964000] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.699968768] [test logger]: !!! Wheel velocity: 18.827734 !!!
+[INFO] [1721606890.699975168] [test logger]: !!! Wheel current consumption: 8.875000 !!!
+[INFO] [1721606890.699981696] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.699986336] [test logger]: !!! Wheel velocity: 18.352441 !!!
+[INFO] [1721606890.699992992] [test logger]: !!! Wheel current consumption: 9.250000 !!!
+[INFO] [1721606890.719909184] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.719960928] [test logger]: !!! Wheel velocity: 18.367773 !!!
+[INFO] [1721606890.719979584] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.719989152] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.719994496] [test logger]: !!! Wheel velocity: 18.367773 !!!
+[INFO] [1721606890.720001696] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.720008608] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.720013344] [test logger]: !!! Wheel velocity: 19.042383 !!!
+[INFO] [1721606890.720020064] [test logger]: !!! Wheel current consumption: 8.875000 !!!
+[INFO] [1721606890.720027264] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.720032000] [test logger]: !!! Wheel velocity: 18.567090 !!!
+[INFO] [1721606890.720039008] [test logger]: !!! Wheel current consumption: 9.000000 !!!
+[INFO] [1721606890.739898144] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.739941312] [test logger]: !!! Wheel velocity: 18.521094 !!!
+[INFO] [1721606890.739959968] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.739969696] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.739974944] [test logger]: !!! Wheel velocity: 18.521094 !!!
+[INFO] [1721606890.739982048] [test logger]: !!! Wheel current consumption: 8.000000 !!!
+[INFO] [1721606890.739988896] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.739994656] [test logger]: !!! Wheel velocity: 19.119043 !!!
+[INFO] [1721606890.740001632] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.740008896] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.740013504] [test logger]: !!! Wheel velocity: 18.659082 !!!
+[INFO] [1721606890.740020288] [test logger]: !!! Wheel current consumption: 8.750000 !!!
+[INFO] [1721606890.759900800] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.759944352] [test logger]: !!! Wheel velocity: 18.766406 !!!
+[INFO] [1721606890.759962592] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.759972192] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.759977472] [test logger]: !!! Wheel velocity: 18.766406 !!!
+[INFO] [1721606890.760141664] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.760154912] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.760160512] [test logger]: !!! Wheel velocity: 19.257031 !!!
+[INFO] [1721606890.760168128] [test logger]: !!! Wheel current consumption: 8.625000 !!!
+[INFO] [1721606890.760174912] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.760179680] [test logger]: !!! Wheel velocity: 18.735742 !!!
+[INFO] [1721606890.760185984] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.779890976] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.779928032] [test logger]: !!! Wheel velocity: 18.965723 !!!
+[INFO] [1721606890.779944992] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.780010080] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.780019232] [test logger]: !!! Wheel velocity: 18.965723 !!!
+[INFO] [1721606890.780027488] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.780034656] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.780039296] [test logger]: !!! Wheel velocity: 19.395020 !!!
+[INFO] [1721606890.780046208] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.780052704] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.780057312] [test logger]: !!! Wheel velocity: 18.827734 !!!
+[INFO] [1721606890.780063776] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.799897312] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.799932576] [test logger]: !!! Wheel velocity: 19.057715 !!!
+[INFO] [1721606890.799949632] [test logger]: !!! Wheel current consumption: 8.125000 !!!
+[INFO] [1721606890.799961472] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.799967936] [test logger]: !!! Wheel velocity: 19.057715 !!!
+[INFO] [1721606890.799976384] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.799983872] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.799988608] [test logger]: !!! Wheel velocity: 19.441016 !!!
+[INFO] [1721606890.799995200] [test logger]: !!! Wheel current consumption: 8.000000 !!!
+[INFO] [1721606890.800001760] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.800006368] [test logger]: !!! Wheel velocity: 18.858398 !!!
+[INFO] [1721606890.800012832] [test logger]: !!! Wheel current consumption: 8.250000 !!!
+[INFO] [1721606890.819904320] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.819948576] [test logger]: !!! Wheel velocity: 19.134375 !!!
+[INFO] [1721606890.819965888] [test logger]: !!! Wheel current consumption: 8.000000 !!!
+[INFO] [1721606890.819975168] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.819980000] [test logger]: !!! Wheel velocity: 19.134375 !!!
+[INFO] [1721606890.819986880] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606890.819994400] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.819999104] [test logger]: !!! Wheel velocity: 19.563672 !!!
+[INFO] [1721606890.820005824] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.820012224] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.820017056] [test logger]: !!! Wheel velocity: 18.919727 !!!
+[INFO] [1721606890.820023840] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.839898496] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.839937952] [test logger]: !!! Wheel velocity: 19.134375 !!!
+[INFO] [1721606890.839956288] [test logger]: !!! Wheel current consumption: 8.000000 !!!
+[INFO] [1721606890.839965120] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.839970432] [test logger]: !!! Wheel velocity: 19.134375 !!!
+[INFO] [1721606890.839977440] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606890.839985120] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.839990176] [test logger]: !!! Wheel velocity: 19.747656 !!!
+[INFO] [1721606890.839996896] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.840003456] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.840008384] [test logger]: !!! Wheel velocity: 19.103711 !!!
+[INFO] [1721606890.840015808] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.859894912] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.859934304] [test logger]: !!! Wheel velocity: 19.057715 !!!
+[INFO] [1721606890.859953120] [test logger]: !!! Wheel current consumption: 8.000000 !!!
+[INFO] [1721606890.859962592] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.859968256] [test logger]: !!! Wheel velocity: 19.057715 !!!
+[INFO] [1721606890.859975328] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.860029824] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.860037696] [test logger]: !!! Wheel velocity: 19.900977 !!!
+[INFO] [1721606890.860045856] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.860052832] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.860057568] [test logger]: !!! Wheel velocity: 19.287695 !!!
+[INFO] [1721606890.860064128] [test logger]: !!! Wheel current consumption: 8.500000 !!!
+[INFO] [1721606890.879936224] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.879995456] [test logger]: !!! Wheel velocity: 19.027051 !!!
+[INFO] [1721606890.880021568] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.880034336] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.880039712] [test logger]: !!! Wheel velocity: 19.027051 !!!
+[INFO] [1721606890.880047232] [test logger]: !!! Wheel current consumption: 7.375000 !!!
+[INFO] [1721606890.880055200] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.880059840] [test logger]: !!! Wheel velocity: 20.008301 !!!
+[INFO] [1721606890.880066944] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606890.880077440] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.880082240] [test logger]: !!! Wheel velocity: 19.379687 !!!
+[INFO] [1721606890.880089216] [test logger]: !!! Wheel current consumption: 8.375000 !!!
+[INFO] [1721606890.899917120] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.899968608] [test logger]: !!! Wheel velocity: 19.149707 !!!
+[INFO] [1721606890.899990944] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.900000832] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.900005728] [test logger]: !!! Wheel velocity: 19.149707 !!!
+[INFO] [1721606890.900012960] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.900020608] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.900025248] [test logger]: !!! Wheel velocity: 20.100293 !!!
+[INFO] [1721606890.900032256] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.900039616] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.900044160] [test logger]: !!! Wheel velocity: 19.471680 !!!
+[INFO] [1721606890.900051008] [test logger]: !!! Wheel current consumption: 8.125000 !!!
+[INFO] [1721606890.919912384] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.919967392] [test logger]: !!! Wheel velocity: 19.257031 !!!
+[INFO] [1721606890.919992736] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.920006976] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.920012576] [test logger]: !!! Wheel velocity: 19.257031 !!!
+[INFO] [1721606890.920020416] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.920028192] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.920033088] [test logger]: !!! Wheel velocity: 20.115625 !!!
+[INFO] [1721606890.920040096] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.920046944] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.920051584] [test logger]: !!! Wheel velocity: 19.487012 !!!
+[INFO] [1721606890.920058432] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.939937056] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.939994848] [test logger]: !!! Wheel velocity: 19.425684 !!!
+[INFO] [1721606890.940020128] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.940031296] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.940036832] [test logger]: !!! Wheel velocity: 19.425684 !!!
+[INFO] [1721606890.940044288] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.940052224] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.940056864] [test logger]: !!! Wheel velocity: 20.023633 !!!
+[INFO] [1721606890.940064160] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606890.940071840] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.940160160] [test logger]: !!! Wheel velocity: 19.364355 !!!
+[INFO] [1721606890.940173312] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.948306784] [controller_manager]: Loading controller 'diff_cont'
+[INFO] [1721606890.959920800] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.959979232] [test logger]: !!! Wheel velocity: 19.625000 !!!
+[INFO] [1721606890.960003232] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.960014496] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.960020032] [test logger]: !!! Wheel velocity: 19.625000 !!!
+[INFO] [1721606890.960027264] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.960035072] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.960039680] [test logger]: !!! Wheel velocity: 19.931641 !!!
+[INFO] [1721606890.960046944] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606890.960054464] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.960059008] [test logger]: !!! Wheel velocity: 19.195703 !!!
+[INFO] [1721606890.960066016] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.979923136] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.979982432] [test logger]: !!! Wheel velocity: 19.747656 !!!
+[INFO] [1721606890.980006784] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.980019744] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.980026112] [test logger]: !!! Wheel velocity: 19.747656 !!!
+[INFO] [1721606890.980034272] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.980042912] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.980048544] [test logger]: !!! Wheel velocity: 19.839648 !!!
+[INFO] [1721606890.980057408] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.980066592] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606890.980072128] [test logger]: !!! Wheel velocity: 19.180371 !!!
+[INFO] [1721606890.980080384] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606890.999897920] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606890.999932960] [test logger]: !!! Wheel velocity: 19.701660 !!!
+[INFO] [1721606890.999951232] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606890.999962176] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606890.999967680] [test logger]: !!! Wheel velocity: 19.701660 !!!
+[INFO] [1721606890.999974784] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606890.999981696] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606890.999986688] [test logger]: !!! Wheel velocity: 19.854980 !!!
+[INFO] [1721606890.999993664] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606891.000000640] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.000010336] [test logger]: !!! Wheel velocity: 19.165039 !!!
+[INFO] [1721606891.000017856] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606891.011255008] [controller_manager]: Configuring controller 'diff_cont'
+[INFO] [1721606891.019914368] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.019980832] [test logger]: !!! Wheel velocity: 19.732324 !!!
+[INFO] [1721606891.020003456] [test logger]: !!! Wheel current consumption: 7.875000 !!!
+[INFO] [1721606891.020015712] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.020021088] [test logger]: !!! Wheel velocity: 19.732324 !!!
+[INFO] [1721606891.020028224] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606891.020035648] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.020040512] [test logger]: !!! Wheel velocity: 19.962305 !!!
+[INFO] [1721606891.020047488] [test logger]: !!! Wheel current consumption: 7.625000 !!!
+[INFO] [1721606891.020056320] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.020061184] [test logger]: !!! Wheel velocity: 19.333691 !!!
+[INFO] [1721606891.020627008] [test logger]: !!! Wheel current consumption: 7.500000 !!!
+[INFO] [1721606891.039908992] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.039975968] [test logger]: !!! Wheel velocity: 19.808984 !!!
+[INFO] [1721606891.040001248] [test logger]: !!! Wheel current consumption: 7.750000 !!!
+[INFO] [1721606891.040016512] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.040024992] [test logger]: !!! Wheel velocity: 19.808984 !!!
+[INFO] [1721606891.040035520] [test logger]: !!! Wheel current consumption: 7.125000 !!!
+[INFO] [1721606891.040046400] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.040053664] [test logger]: !!! Wheel velocity: 20.176953 !!!
+[INFO] [1721606891.040063392] [test logger]: !!! Wheel current consumption: 7.375000 !!!
+[INFO] [1721606891.040073408] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.040080608] [test logger]: !!! Wheel velocity: 19.625000 !!!
+[INFO] [1721606891.040090304] [test logger]: !!! Wheel current consumption: 6.625000 !!!
+[INFO] [1721606891.059928960] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.060000768] [test logger]: !!! Wheel velocity: 19.900977 !!!
+[INFO] [1721606891.060031840] [test logger]: !!! Wheel current consumption: 6.750000 !!!
+[INFO] [1721606891.060050208] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.060059776] [test logger]: !!! Wheel velocity: 19.900977 !!!
+[INFO] [1721606891.060072768] [test logger]: !!! Wheel current consumption: 7.000000 !!!
+[INFO] [1721606891.060086208] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.060094976] [test logger]: !!! Wheel velocity: 20.314941 !!!
+[INFO] [1721606891.060107296] [test logger]: !!! Wheel current consumption: 7.250000 !!!
+[INFO] [1721606891.060118880] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.060127328] [test logger]: !!! Wheel velocity: 19.900977 !!!
+[INFO] [1721606891.060148512] [test logger]: !!! Wheel current consumption: 6.125000 !!!
+[INFO] [1721606891.079959168] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.080057472] [test logger]: !!! Wheel velocity: 19.977637 !!!
+[INFO] [1721606891.080093056] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.080106400] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.080113248] [test logger]: !!! Wheel velocity: 19.977637 !!!
+[INFO] [1721606891.080126112] [test logger]: !!! Wheel current consumption: 6.625000 !!!
+[INFO] [1721606891.080135904] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.080142176] [test logger]: !!! Wheel velocity: 20.452930 !!!
+[INFO] [1721606891.080150656] [test logger]: !!! Wheel current consumption: 7.000000 !!!
+[INFO] [1721606891.080159680] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.080165184] [test logger]: !!! Wheel velocity: 19.977637 !!!
+[INFO] [1721606891.080173536] [test logger]: !!! Wheel current consumption: 6.125000 !!!
+[INFO] [1721606891.099944576] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.100033440] [test logger]: !!! Wheel velocity: 20.146289 !!!
+[INFO] [1721606891.100066144] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.100081312] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.100087456] [test logger]: !!! Wheel velocity: 20.146289 !!!
+[INFO] [1721606891.100096064] [test logger]: !!! Wheel current consumption: 6.250000 !!!
+[INFO] [1721606891.100105216] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.100111008] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.100118880] [test logger]: !!! Wheel current consumption: 7.000000 !!!
+[INFO] [1721606891.100128032] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.100133536] [test logger]: !!! Wheel velocity: 20.008301 !!!
+[INFO] [1721606891.100141632] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.119951424] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.120054304] [test logger]: !!! Wheel velocity: 20.268945 !!!
+[INFO] [1721606891.120197664] [test logger]: !!! Wheel current consumption: 6.125000 !!!
+[INFO] [1721606891.120215616] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.120221760] [test logger]: !!! Wheel velocity: 20.268945 !!!
+[INFO] [1721606891.120230048] [test logger]: !!! Wheel current consumption: 6.250000 !!!
+[INFO] [1721606891.120239520] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.120244928] [test logger]: !!! Wheel velocity: 20.606250 !!!
+[INFO] [1721606891.120253120] [test logger]: !!! Wheel current consumption: 6.875000 !!!
+[INFO] [1721606891.120261984] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.120267424] [test logger]: !!! Wheel velocity: 20.054297 !!!
+[INFO] [1721606891.120275776] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.139940384] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.140021632] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.140050592] [test logger]: !!! Wheel current consumption: 6.500000 !!!
+[INFO] [1721606891.140065152] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.140070464] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.140079008] [test logger]: !!! Wheel current consumption: 6.625000 !!!
+[INFO] [1721606891.140087648] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.140092544] [test logger]: !!! Wheel velocity: 20.652246 !!!
+[INFO] [1721606891.140099552] [test logger]: !!! Wheel current consumption: 6.750000 !!!
+[INFO] [1721606891.140107648] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.140112544] [test logger]: !!! Wheel velocity: 20.023633 !!!
+[INFO] [1721606891.140119520] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.159905312] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.159954464] [test logger]: !!! Wheel velocity: 20.207617 !!!
+[INFO] [1721606891.159984832] [test logger]: !!! Wheel current consumption: 6.125000 !!!
+[INFO] [1721606891.159997024] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.160002752] [test logger]: !!! Wheel velocity: 20.207617 !!!
+[INFO] [1721606891.160010432] [test logger]: !!! Wheel current consumption: 6.000000 !!!
+[INFO] [1721606891.160017760] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.160022592] [test logger]: !!! Wheel velocity: 20.790234 !!!
+[INFO] [1721606891.160029696] [test logger]: !!! Wheel current consumption: 6.500000 !!!
+[INFO] [1721606891.160036640] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.160041280] [test logger]: !!! Wheel velocity: 19.992969 !!!
+[INFO] [1721606891.160047808] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.179910144] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.179958688] [test logger]: !!! Wheel velocity: 20.238281 !!!
+[INFO] [1721606891.179978912] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.179994656] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.179999968] [test logger]: !!! Wheel velocity: 20.238281 !!!
+[INFO] [1721606891.180006816] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.180014080] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.180018912] [test logger]: !!! Wheel velocity: 20.943555 !!!
+[INFO] [1721606891.180025792] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.180032960] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.180037568] [test logger]: !!! Wheel velocity: 20.115625 !!!
+[INFO] [1721606891.180044608] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.199910816] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.199959520] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.199981696] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.199992256] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.199998016] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.200005024] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.200068672] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.200076864] [test logger]: !!! Wheel velocity: 21.127539 !!!
+[INFO] [1721606891.200085120] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.200092384] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.200097152] [test logger]: !!! Wheel velocity: 20.268945 !!!
+[INFO] [1721606891.200104000] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.219910368] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.219961248] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.219985696] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.219996992] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.220002528] [test logger]: !!! Wheel velocity: 20.253613 !!!
+[INFO] [1721606891.220009888] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.220017504] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.220022592] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606891.220029856] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.220037024] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.220041920] [test logger]: !!! Wheel velocity: 20.330273 !!!
+[INFO] [1721606891.220048800] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.239908320] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.239955200] [test logger]: !!! Wheel velocity: 20.360937 !!!
+[INFO] [1721606891.239976512] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.239989024] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.239995872] [test logger]: !!! Wheel velocity: 20.360937 !!!
+[INFO] [1721606891.240005248] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.240021120] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.240029440] [test logger]: !!! Wheel velocity: 21.096875 !!!
+[INFO] [1721606891.240038784] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.240047776] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.240053984] [test logger]: !!! Wheel velocity: 20.345605 !!!
+[INFO] [1721606891.240062848] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.259912224] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.259968992] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.260000160] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.260020352] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.260030432] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.260042976] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.260054944] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.260063456] [test logger]: !!! Wheel velocity: 21.004883 !!!
+[INFO] [1721606891.260075584] [test logger]: !!! Wheel current consumption: 6.250000 !!!
+[INFO] [1721606891.260088768] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.260097440] [test logger]: !!! Wheel velocity: 20.330273 !!!
+[INFO] [1721606891.260109536] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.279907488] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.279972160] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.280014144] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.280037696] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.280049088] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.280065920] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.280079200] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.280088864] [test logger]: !!! Wheel velocity: 20.897559 !!!
+[INFO] [1721606891.280102624] [test logger]: !!! Wheel current consumption: 6.750000 !!!
+[INFO] [1721606891.280263328] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.280280224] [test logger]: !!! Wheel velocity: 20.238281 !!!
+[INFO] [1721606891.280295680] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.299913888] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.299978688] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.300018048] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.300038816] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.300050016] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.300064768] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.300079424] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.300089248] [test logger]: !!! Wheel velocity: 20.774902 !!!
+[INFO] [1721606891.300102688] [test logger]: !!! Wheel current consumption: 6.750000 !!!
+[INFO] [1721606891.300115424] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.300125056] [test logger]: !!! Wheel velocity: 20.192285 !!!
+[INFO] [1721606891.300138688] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.319902720] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.319943040] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.319961472] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.319971840] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.319977600] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.319985088] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.319992672] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.319998048] [test logger]: !!! Wheel velocity: 20.836230 !!!
+[INFO] [1721606891.320005280] [test logger]: !!! Wheel current consumption: 6.500000 !!!
+[INFO] [1721606891.320012256] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.320017280] [test logger]: !!! Wheel velocity: 20.161621 !!!
+[INFO] [1721606891.320024544] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.339929632] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.340001024] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.340032160] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.340050976] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.340061568] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.340075744] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.340089888] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.340099520] [test logger]: !!! Wheel velocity: 20.928223 !!!
+[INFO] [1721606891.340112896] [test logger]: !!! Wheel current consumption: 6.250000 !!!
+[INFO] [1721606891.340125728] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.340135200] [test logger]: !!! Wheel velocity: 20.207617 !!!
+[INFO] [1721606891.340148512] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.359926272] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.360016512] [test logger]: !!! Wheel velocity: 20.575586 !!!
+[INFO] [1721606891.360057024] [test logger]: !!! Wheel current consumption: 5.500000 !!!
+[INFO] [1721606891.360082112] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.360094880] [test logger]: !!! Wheel velocity: 20.575586 !!!
+[INFO] [1721606891.360110304] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.360126240] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.360138144] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.360154240] [test logger]: !!! Wheel current consumption: 5.875000 !!!
+[INFO] [1721606891.360168640] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.360188800] [test logger]: !!! Wheel velocity: 20.268945 !!!
+[INFO] [1721606891.360205984] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.379917184] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.380070496] [test logger]: !!! Wheel velocity: 20.667578 !!!
+[INFO] [1721606891.380109152] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.380128768] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.380139744] [test logger]: !!! Wheel velocity: 20.667578 !!!
+[INFO] [1721606891.380154496] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.380178912] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.380190336] [test logger]: !!! Wheel velocity: 20.989551 !!!
+[INFO] [1721606891.380204832] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.380219872] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.380229504] [test logger]: !!! Wheel velocity: 20.391602 !!!
+[INFO] [1721606891.380243168] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.399911520] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.399966464] [test logger]: !!! Wheel velocity: 20.698242 !!!
+[INFO] [1721606891.399998272] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.400018016] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.400028864] [test logger]: !!! Wheel velocity: 20.698242 !!!
+[INFO] [1721606891.400043168] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.400056896] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.400066816] [test logger]: !!! Wheel velocity: 21.020215 !!!
+[INFO] [1721606891.400080640] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.400093664] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.400103296] [test logger]: !!! Wheel velocity: 20.483594 !!!
+[INFO] [1721606891.400116704] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.419903456] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.419951264] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606891.419985888] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.420008256] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.420021472] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606891.420036896] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.420051072] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.420061056] [test logger]: !!! Wheel velocity: 20.989551 !!!
+[INFO] [1721606891.420075072] [test logger]: !!! Wheel current consumption: 5.125000 !!!
+[INFO] [1721606891.420088192] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.420097984] [test logger]: !!! Wheel velocity: 20.514258 !!!
+[INFO] [1721606891.420111648] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.439899104] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.439940032] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606891.439965440] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.439984224] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.439995488] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606891.440009920] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.440029792] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.440040928] [test logger]: !!! Wheel velocity: 21.035547 !!!
+[INFO] [1721606891.440054592] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.440067392] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.440077024] [test logger]: !!! Wheel velocity: 20.483594 !!!
+[INFO] [1721606891.440090336] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.459906944] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.459961344] [test logger]: !!! Wheel velocity: 20.621582 !!!
+[INFO] [1721606891.459998432] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.460018816] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.460093312] [test logger]: !!! Wheel velocity: 20.621582 !!!
+[INFO] [1721606891.460115648] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.460129760] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.460139552] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.460153472] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.460166240] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.460175904] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.460189472] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.479910144] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.479966432] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.480001184] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.480018976] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.480029632] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.480043840] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.480057088] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.480066944] [test logger]: !!! Wheel velocity: 21.265527 !!!
+[INFO] [1721606891.480080576] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.480093504] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.480111232] [test logger]: !!! Wheel velocity: 20.606250 !!!
+[INFO] [1721606891.480124736] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.499893536] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.499946784] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.499975488] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.499992480] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.500002880] [test logger]: !!! Wheel velocity: 20.560254 !!!
+[INFO] [1721606891.500016928] [test logger]: !!! Wheel current consumption: 5.000000 !!!
+[INFO] [1721606891.500030048] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.500039584] [test logger]: !!! Wheel velocity: 21.326855 !!!
+[INFO] [1721606891.500052960] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.500066080] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.500075648] [test logger]: !!! Wheel velocity: 20.636914 !!!
+[INFO] [1721606891.500089152] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.519908672] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.519961344] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.519997696] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.520016352] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.520027040] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.520040800] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.520053984] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.520063648] [test logger]: !!! Wheel velocity: 21.311523 !!!
+[INFO] [1721606891.520077152] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.520091968] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.520101568] [test logger]: !!! Wheel velocity: 20.621582 !!!
+[INFO] [1721606891.520115200] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.539910432] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.539958912] [test logger]: !!! Wheel velocity: 20.652246 !!!
+[INFO] [1721606891.539988640] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.540008192] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.540019104] [test logger]: !!! Wheel velocity: 20.652246 !!!
+[INFO] [1721606891.540033792] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.540047360] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.540056768] [test logger]: !!! Wheel velocity: 21.250195 !!!
+[INFO] [1721606891.540153344] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.540172768] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.540182464] [test logger]: !!! Wheel velocity: 20.667578 !!!
+[INFO] [1721606891.540196160] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.559912992] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.559961760] [test logger]: !!! Wheel velocity: 20.805566 !!!
+[INFO] [1721606891.559991648] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.560011072] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.560021920] [test logger]: !!! Wheel velocity: 20.805566 !!!
+[INFO] [1721606891.560035616] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.560048928] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.560058976] [test logger]: !!! Wheel velocity: 21.234863 !!!
+[INFO] [1721606891.560072224] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.560084800] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.560094496] [test logger]: !!! Wheel velocity: 20.636914 !!!
+[INFO] [1721606891.560107744] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.579907808] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.579961472] [test logger]: !!! Wheel velocity: 20.897559 !!!
+[INFO] [1721606891.580003520] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.580023040] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.580034592] [test logger]: !!! Wheel velocity: 20.897559 !!!
+[INFO] [1721606891.580049664] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.580063488] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.580073504] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606891.580086816] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.580099648] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.580109184] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.580122592] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.599908064] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.599959360] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.599992736] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.600011392] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.600022272] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.600036608] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.600050272] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.600059968] [test logger]: !!! Wheel velocity: 21.204199 !!!
+[INFO] [1721606891.600073216] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.600086048] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.600096064] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.600109280] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.619908768] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.619965664] [test logger]: !!! Wheel velocity: 20.989551 !!!
+[INFO] [1721606891.620005632] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.620029376] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.620042720] [test logger]: !!! Wheel velocity: 20.989551 !!!
+[INFO] [1721606891.620058560] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.620072512] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.620082336] [test logger]: !!! Wheel velocity: 21.357520 !!!
+[INFO] [1721606891.620095936] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.620108928] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.620118400] [test logger]: !!! Wheel velocity: 20.544922 !!!
+[INFO] [1721606891.620197664] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.639905952] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.639961056] [test logger]: !!! Wheel velocity: 21.004883 !!!
+[INFO] [1721606891.640000640] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.640026656] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.640041472] [test logger]: !!! Wheel velocity: 21.004883 !!!
+[INFO] [1721606891.640059264] [test logger]: !!! Wheel current consumption: 3.750000 !!!
+[INFO] [1721606891.640073920] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.640084160] [test logger]: !!! Wheel velocity: 21.495508 !!!
+[INFO] [1721606891.640097856] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.640111040] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.640120736] [test logger]: !!! Wheel velocity: 20.590918 !!!
+[INFO] [1721606891.640134080] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.659909888] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.659968320] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.660008192] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.660028480] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.660040768] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.660056000] [test logger]: !!! Wheel current consumption: 3.750000 !!!
+[INFO] [1721606891.660070144] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.660080000] [test logger]: !!! Wheel velocity: 21.510840 !!!
+[INFO] [1721606891.660093376] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.660106240] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.660115840] [test logger]: !!! Wheel velocity: 20.667578 !!!
+[INFO] [1721606891.660129184] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.679911680] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.679978240] [test logger]: !!! Wheel velocity: 21.020215 !!!
+[INFO] [1721606891.680011296] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.680030784] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.680041888] [test logger]: !!! Wheel velocity: 21.020215 !!!
+[INFO] [1721606891.680055712] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.680068960] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.680079392] [test logger]: !!! Wheel velocity: 21.464844 !!!
+[INFO] [1721606891.680092704] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.680105600] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.680115200] [test logger]: !!! Wheel velocity: 20.759570 !!!
+[INFO] [1721606891.680128832] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.699912320] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.699962880] [test logger]: !!! Wheel velocity: 21.081543 !!!
+[INFO] [1721606891.699992224] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.700011072] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.700021504] [test logger]: !!! Wheel velocity: 21.081543 !!!
+[INFO] [1721606891.700035712] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.700048992] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.700059200] [test logger]: !!! Wheel velocity: 21.464844 !!!
+[INFO] [1721606891.700072768] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.700086144] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.700095616] [test logger]: !!! Wheel velocity: 20.790234 !!!
+[INFO] [1721606891.700108928] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.719909888] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.719967232] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606891.720087712] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.720112800] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.720123840] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606891.720138080] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.720161664] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.720172800] [test logger]: !!! Wheel velocity: 21.418848 !!!
+[INFO] [1721606891.720186272] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.720200512] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.720209952] [test logger]: !!! Wheel velocity: 20.851562 !!!
+[INFO] [1721606891.720224224] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.739911680] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.739966368] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.740008992] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.740036736] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.740050240] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.740065920] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.740079456] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.740089248] [test logger]: !!! Wheel velocity: 21.403516 !!!
+[INFO] [1721606891.740102976] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606891.740115808] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.740125280] [test logger]: !!! Wheel velocity: 20.790234 !!!
+[INFO] [1721606891.740138752] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.759914112] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.759963040] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.759995904] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.760018400] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.760031232] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606891.760046816] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.760060640] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.760070464] [test logger]: !!! Wheel velocity: 21.449512 !!!
+[INFO] [1721606891.760083872] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606891.760096992] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.760106432] [test logger]: !!! Wheel velocity: 20.682910 !!!
+[INFO] [1721606891.760119872] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.779913248] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.779969312] [test logger]: !!! Wheel velocity: 20.836230 !!!
+[INFO] [1721606891.780006528] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.780025920] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.780037792] [test logger]: !!! Wheel velocity: 20.836230 !!!
+[INFO] [1721606891.780052640] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.780066368] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.780076416] [test logger]: !!! Wheel velocity: 21.541504 !!!
+[INFO] [1721606891.780090144] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606891.780103008] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.780112576] [test logger]: !!! Wheel velocity: 20.682910 !!!
+[INFO] [1721606891.780125984] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606891.799917280] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.799966752] [test logger]: !!! Wheel velocity: 20.698242 !!!
+[INFO] [1721606891.799997536] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.800016640] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.800028320] [test logger]: !!! Wheel velocity: 20.698242 !!!
+[INFO] [1721606891.800042656] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.800134496] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.800150144] [test logger]: !!! Wheel velocity: 21.541504 !!!
+[INFO] [1721606891.800164448] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606891.800179360] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.800188992] [test logger]: !!! Wheel velocity: 20.682910 !!!
+[INFO] [1721606891.800201760] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.819908128] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.819955776] [test logger]: !!! Wheel velocity: 20.636914 !!!
+[INFO] [1721606891.819989088] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.820007264] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.820018048] [test logger]: !!! Wheel velocity: 20.636914 !!!
+[INFO] [1721606891.820032064] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.820046528] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.820056032] [test logger]: !!! Wheel velocity: 21.434180 !!!
+[INFO] [1721606891.820069472] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606891.820081952] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.820091552] [test logger]: !!! Wheel velocity: 20.698242 !!!
+[INFO] [1721606891.820104576] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.839883296] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.839933760] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606891.839970496] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.839999040] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.840010880] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606891.840025856] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.840040352] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.840050272] [test logger]: !!! Wheel velocity: 21.280859 !!!
+[INFO] [1721606891.840063360] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.840076192] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.840085856] [test logger]: !!! Wheel velocity: 20.759570 !!!
+[INFO] [1721606891.840099328] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.859901920] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.859954496] [test logger]: !!! Wheel velocity: 20.820898 !!!
+[INFO] [1721606891.859984864] [test logger]: !!! Wheel current consumption: 3.250000 !!!
+[INFO] [1721606891.860004736] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.860015360] [test logger]: !!! Wheel velocity: 20.820898 !!!
+[INFO] [1721606891.860029664] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.860042784] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.860052416] [test logger]: !!! Wheel velocity: 21.188867 !!!
+[INFO] [1721606891.860066176] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606891.860079328] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.860089024] [test logger]: !!! Wheel velocity: 20.774902 !!!
+[INFO] [1721606891.860102176] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.879915296] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.879972896] [test logger]: !!! Wheel velocity: 20.882227 !!!
+[INFO] [1721606891.880007104] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.880025888] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.880036416] [test logger]: !!! Wheel velocity: 20.882227 !!!
+[INFO] [1721606891.880050560] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606891.880063872] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.880073504] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.880087840] [test logger]: !!! Wheel current consumption: 5.375000 !!!
+[INFO] [1721606891.880170752] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.880186528] [test logger]: !!! Wheel velocity: 20.636914 !!!
+[INFO] [1721606891.880201344] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.899910528] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.899968672] [test logger]: !!! Wheel velocity: 20.958887 !!!
+[INFO] [1721606891.900006368] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606891.900025376] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.900036160] [test logger]: !!! Wheel velocity: 20.958887 !!!
+[INFO] [1721606891.900050368] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.900066336] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.900076160] [test logger]: !!! Wheel velocity: 21.081543 !!!
+[INFO] [1721606891.900090848] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.900104224] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.900113920] [test logger]: !!! Wheel velocity: 20.529590 !!!
+[INFO] [1721606891.900127264] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606891.919908736] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.919960416] [test logger]: !!! Wheel velocity: 20.958887 !!!
+[INFO] [1721606891.919996864] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.920023808] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.920035904] [test logger]: !!! Wheel velocity: 20.958887 !!!
+[INFO] [1721606891.920051968] [test logger]: !!! Wheel current consumption: 4.750000 !!!
+[INFO] [1721606891.920066272] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.920076800] [test logger]: !!! Wheel velocity: 21.204199 !!!
+[INFO] [1721606891.920090432] [test logger]: !!! Wheel current consumption: 5.625000 !!!
+[INFO] [1721606891.920103360] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.920113056] [test logger]: !!! Wheel velocity: 20.498926 !!!
+[INFO] [1721606891.920126176] [test logger]: !!! Wheel current consumption: 3.375000 !!!
+[INFO] [1721606891.939926816] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.939981632] [test logger]: !!! Wheel velocity: 20.943555 !!!
+[INFO] [1721606891.940015648] [test logger]: !!! Wheel current consumption: 4.500000 !!!
+[INFO] [1721606891.940034976] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.940045888] [test logger]: !!! Wheel velocity: 20.943555 !!!
+[INFO] [1721606891.940060384] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606891.940073504] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.940083168] [test logger]: !!! Wheel velocity: 21.342187 !!!
+[INFO] [1721606891.940096448] [test logger]: !!! Wheel current consumption: 5.125000 !!!
+[INFO] [1721606891.940109600] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.940119296] [test logger]: !!! Wheel velocity: 20.498926 !!!
+[INFO] [1721606891.940132480] [test logger]: !!! Wheel current consumption: 3.125000 !!!
+[INFO] [1721606891.959935808] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.960012384] [test logger]: !!! Wheel velocity: 21.020215 !!!
+[INFO] [1721606891.960047360] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.960068960] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.960079840] [test logger]: !!! Wheel velocity: 21.020215 !!!
+[INFO] [1721606891.960094400] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.960108480] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.960118304] [test logger]: !!! Wheel velocity: 21.434180 !!!
+[INFO] [1721606891.960134048] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.960156864] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.960167840] [test logger]: !!! Wheel velocity: 20.621582 !!!
+[INFO] [1721606891.960182560] [test logger]: !!! Wheel current consumption: 3.125000 !!!
+[INFO] [1721606891.979927040] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.980088768] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.980128832] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606891.980150816] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606891.980161216] [test logger]: !!! Wheel velocity: 21.112207 !!!
+[INFO] [1721606891.980176384] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.980189792] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606891.980199424] [test logger]: !!! Wheel velocity: 21.556836 !!!
+[INFO] [1721606891.980213152] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606891.980226368] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606891.980235776] [test logger]: !!! Wheel velocity: 20.805566 !!!
+[INFO] [1721606891.980250624] [test logger]: !!! Wheel current consumption: 3.125000 !!!
+[INFO] [1721606891.999924320] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606891.999979776] [test logger]: !!! Wheel velocity: 21.158203 !!!
+[INFO] [1721606892.000032736] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.000060768] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.000072416] [test logger]: !!! Wheel velocity: 21.158203 !!!
+[INFO] [1721606892.000087232] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.000102624] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.000112576] [test logger]: !!! Wheel velocity: 21.587500 !!!
+[INFO] [1721606892.000126464] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.000139776] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.000149472] [test logger]: !!! Wheel velocity: 20.928223 !!!
+[INFO] [1721606892.000163296] [test logger]: !!! Wheel current consumption: 3.125000 !!!
+[INFO] [1721606892.019916704] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.019971008] [test logger]: !!! Wheel velocity: 21.219531 !!!
+[INFO] [1721606892.020012224] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.020035168] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.020046880] [test logger]: !!! Wheel velocity: 21.219531 !!!
+[INFO] [1721606892.020061984] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.020075680] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.020085728] [test logger]: !!! Wheel velocity: 21.556836 !!!
+[INFO] [1721606892.020099392] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.020112832] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.020122720] [test logger]: !!! Wheel velocity: 20.912891 !!!
+[INFO] [1721606892.020136480] [test logger]: !!! Wheel current consumption: 3.125000 !!!
+[INFO] [1721606892.039908960] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.039959488] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606892.039999200] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.040018816] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.040029600] [test logger]: !!! Wheel velocity: 21.173535 !!!
+[INFO] [1721606892.040044512] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606892.040058144] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.040067840] [test logger]: !!! Wheel velocity: 21.556836 !!!
+[INFO] [1721606892.040081632] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606892.040094656] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.040104160] [test logger]: !!! Wheel velocity: 20.882227 !!!
+[INFO] [1721606892.040117984] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.059906432] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.059958560] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606892.059992768] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.060012096] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.060098080] [test logger]: !!! Wheel velocity: 20.974219 !!!
+[INFO] [1721606892.060121920] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606892.060136640] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.060146720] [test logger]: !!! Wheel velocity: 21.556836 !!!
+[INFO] [1721606892.060160640] [test logger]: !!! Wheel current consumption: 4.250000 !!!
+[INFO] [1721606892.060173504] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.060183360] [test logger]: !!! Wheel velocity: 20.790234 !!!
+[INFO] [1721606892.060196960] [test logger]: !!! Wheel current consumption: 4.625000 !!!
+[INFO] [1721606892.079907520] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.079964736] [test logger]: !!! Wheel velocity: 20.820898 !!!
+[INFO] [1721606892.079999040] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.080022080] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.080033984] [test logger]: !!! Wheel velocity: 20.820898 !!!
+[INFO] [1721606892.080048608] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.080062272] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.080072128] [test logger]: !!! Wheel velocity: 21.633496 !!!
+[INFO] [1721606892.080085920] [test logger]: !!! Wheel current consumption: 4.000000 !!!
+[INFO] [1721606892.080098688] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.080108352] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606892.080122240] [test logger]: !!! Wheel current consumption: 4.875000 !!!
+[INFO] [1721606892.099922464] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.099979104] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606892.100009920] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.100030464] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.100041056] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606892.100056000] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.100069600] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.100079296] [test logger]: !!! Wheel velocity: 21.740820 !!!
+[INFO] [1721606892.100092992] [test logger]: !!! Wheel current consumption: 3.500000 !!!
+[INFO] [1721606892.100105696] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.100115168] [test logger]: !!! Wheel velocity: 20.728906 !!!
+[INFO] [1721606892.100128448] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.119909280] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.119963200] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606892.120020288] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.120047008] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.120058688] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606892.120074304] [test logger]: !!! Wheel current consumption: 4.375000 !!!
+[INFO] [1721606892.120088128] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.120097664] [test logger]: !!! Wheel velocity: 21.694824 !!!
+[INFO] [1721606892.120111104] [test logger]: !!! Wheel current consumption: 3.250000 !!!
+[INFO] [1721606892.120123872] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.120133440] [test logger]: !!! Wheel velocity: 20.713574 !!!
+[INFO] [1721606892.120146720] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606892.139907424] [test logger]: !!! Wheel feedback: 0 !!!
+[INFO] [1721606892.139960736] [test logger]: !!! Wheel velocity: 20.759570 !!!
+[INFO] [1721606892.140000512] [test logger]: !!! Wheel current consumption: 3.875000 !!!
+[INFO] [1721606892.140021632] [test logger]: !!! Wheel feedback: 1 !!!
+[INFO] [1721606892.140033184] [test logger]: !!! Wheel velocity: 20.759570 !!!
+[INFO] [1721606892.140047744] [test logger]: !!! Wheel current consumption: 4.125000 !!!
+[INFO] [1721606892.140061312] [test logger]: !!! Wheel feedback: 2 !!!
+[INFO] [1721606892.140149632] [test logger]: !!! Wheel velocity: 21.572168 !!!
+[INFO] [1721606892.140175232] [test logger]: !!! Wheel current consumption: 3.750000 !!!
+[INFO] [1721606892.140189504] [test logger]: !!! Wheel feedback: 3 !!!
+[INFO] [1721606892.140200000] [test logger]: !!! Wheel velocity: 20.790234 !!!
+[INFO] [1721606892.140213408] [test logger]: !!! Wheel current consumption: 3.625000 !!!
+[INFO] [1721606892.153447072] [rclcpp]: signal_handler(signum=2)

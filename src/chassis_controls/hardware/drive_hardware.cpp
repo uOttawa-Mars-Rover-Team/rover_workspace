@@ -26,6 +26,9 @@ namespace chassis_controls {
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
 
+  tested_pwm_ = 5.0;
+  RCLCPP_INFO(logger_, "!!! Testing at: %f.3%% PWM. !!!", tested_pwm_);
+
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
@@ -174,7 +177,9 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
         talons_[wheel]->GetSelectedSensorVelocity() /
         (cfg_.controller_period * cfg_.enc_counts_per_rev);
 
-    RCLCPP_INFO(logger_, "!!! Wheel %zu feedback: {Velocity: %f [rad/s], Current: %f [A]} !!!", wheel, wheel_velocities_[wheel], talons_[wheel]->GetStatorCurrent());
+    RCLCPP_INFO(logger_, "!!! Wheel feedback: %zu !!!", wheel);
+    RCLCPP_INFO(logger_, "!!! Wheel velocity: %f !!!", wheel_velocities_[wheel]);
+    RCLCPP_INFO(logger_, "!!! Wheel current consumption: %f !!!", talons_[wheel]->GetOutputCurrent());
   };
   return hardware_interface::return_type::OK;
 }
@@ -198,6 +203,10 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
     double command = pids_[wheel]->computeCommand(error, period);
     double pwm = (command - cfg_.wheel_b[wheel]) / cfg_.wheel_m[wheel];
+
+    // FOR TESTING, UNCOMMENT
+    // pwm = tested_pwm_/100;
+    // COMMENT AGAIN AFTER TESTING
 
     if (wheel != FR) {
       talons_[wheel]->Set(

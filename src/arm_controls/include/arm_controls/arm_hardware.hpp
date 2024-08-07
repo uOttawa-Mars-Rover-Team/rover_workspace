@@ -53,6 +53,9 @@ namespace arm_controls {
            
             SerialCommunication serialObject;
 
+            // Will store the pid objects for each of the four joints, TW, L1, L2 & WP
+            std::vector<std::shared_ptr<control_toolbox::Pid>> pids_;
+
             // Declare PID objects here
             // Need 1 per joint that is providing feedback
     };

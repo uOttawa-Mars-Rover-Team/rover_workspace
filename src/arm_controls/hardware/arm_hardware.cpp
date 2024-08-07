@@ -1,5 +1,6 @@
 #include "arm_controls/arm_hardware.hpp"
 #include "pluginlib/class_list_macros.hpp"
+#include <control_toolbox/pid.hpp>
 
 namespace arm_controls
 {
@@ -28,7 +29,12 @@ namespace arm_controls
         prev_position_command_ = "";
         
 
-       //TODO: Initialize PID Objects here (call initPID)
+        //Initialize PID objects
+        pids_.reserve(4);
+        pids_[RL]->initPid(0.002342, 3.4953e-6, 0.42913, 0.5, -0.5, true);
+        pids_[FL]->initPid(0.0078556, 2.349e-5, 0.65679, 0.5, -0.5, true);
+        pids_[FR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
+        pids_[RR]->initPid(0.00096076, 7.7315e-7, 0.29847, 0.5, -0.5, true);
 
         serialObject.connect_serial(0); 
         serialObject.publishToArduino(IK_START_COMMAND); //this will set the arduino in IK mode
@@ -124,58 +130,69 @@ namespace arm_controls
     }
 
     hardware_interface::return_type ArmSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period) {
-        // By default, the controllers should be sending positions for revolute joints in radians
-        // PERIPHERAL COMMAND HANDLING
-        // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
-
-        static rclcpp::Time last_time = time;
-        if (time - last_time > peripheral_msg_period_) {
-            last_time = time;
-            if (peripheral_command_[0] != peripheral_state_[0]){
-                serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
-            } if (peripheral_command_[1] != peripheral_state_[1]){
-                serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
-            } if (peripheral_command_[2] != peripheral_state_[2]){
-                serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
-            } if (peripheral_command_[3] != peripheral_state_[3]){
-                serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
-            } if (peripheral_command_[4] != peripheral_state_[4]){
-                serialObject.publishToArduino("laser;!"); //toggle laser
-            } if (peripheral_command_[5] != peripheral_state_[5]){
-                serialObject.publishToArduino("stop;!"); //toggle stop
-            }
-
-        }
-
 
         // POSITION COMMAND HANDLING 
+        // By default, the controllers should be sending positions for revolute joints in radians
         // Example of typical position command to send: "S;40;20;-20;0;0;200;!
         std::ostringstream command_stream;
         command_stream << "S;";
 
+        /*
         for (size_t i = 0; i < num_joints; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
             positionInDegrees = std::round(positionInDegrees * 100.0) / 100.0; //bruh
             if (positionInDegrees == -0.00) {
                 positionInDegrees = 0.00;
             }
-            command_stream << std::fixed << std:: setprecision(2) << positionInDegrees;
-            // TODO: Use PID here to adjust the position that we are sending
-            if (i < num_joints - 1) {
-                command_stream << ";";
-            }
+            command_stream << std::fixed << std::setprecision(2) << positionInDegrees << ";";
         }
-        command_stream << ";!";
+        command_stream << "!";
+        */
+
+        // PID since reference is POSITION, and the command interface is POSITION
+        for (size_t motor = TOWER; motor < LAST; motor++) {
+            double error = joint_position_command_[motor] - joint_position_state_[motor];
+            double command = pids_[motor]->computeCommand(error, period) * 180 / PI;
+            if (positionInDegrees == -0.00) {
+                positionInDegrees = 0.00;
+            }
+            command_stream << std::fixed << std::setprecision(2) << positionInDegrees << ";";
+        }
+        command_stream << "!";
 
         std::string command = command_stream.str();
         //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
 
-
         if (command != prev_position_command_) {
-            RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
-            RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", prev_position_command_.c_str());
+            //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+            //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", prev_position_command_.c_str());
             serialObject.publishToArduino(command);
             prev_position_command_ = command;
+        }
+                
+        // PERIPHERAL COMMAND HANDLING
+        // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once
+        static rclcpp::Time last_time = time;
+        if (time - last_time > peripheral_msg_period_) {
+            last_time = time;
+            if (peripheral_command_[0] != peripheral_state_[0]){
+                serialObject.publishToArduino("stepper1;!"); //toggle stepper 1
+            }
+            if (peripheral_command_[1] != peripheral_state_[1]){
+                serialObject.publishToArduino("stepper2;!"); //toggle stepper 2
+            }
+            if (peripheral_command_[2] != peripheral_state_[2]){
+                serialObject.publishToArduino("stepper3;!"); //toggle stepper 3
+            }
+            if (peripheral_command_[3] != peripheral_state_[3]){
+                serialObject.publishToArduino("stepper4;!"); //toggle stepper 4
+            }
+            if (peripheral_command_[4] != peripheral_state_[4]){
+                serialObject.publishToArduino("laser;!"); //toggle laser
+            }
+            if (peripheral_command_[5] != peripheral_state_[5]){
+                serialObject.publishToArduino("stop;!"); //toggle stop
+            }
         }
 
         return hardware_interface::return_type::OK;

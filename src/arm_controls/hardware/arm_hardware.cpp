@@ -27,14 +27,6 @@ namespace arm_controls
         peripheral_state_ =  vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
 
         prev_position_command_ = "";
-        
-
-        //Initialize PID objects
-        pids_.assign(4, 0);
-        pids_[TOWER].setGains   (1, 0.0, 0.5, 0.5, -0.5, true);
-        pids_[SHOULDER].setGains(0.0, 0.0, 0.005, 0.5, -0.5, true);
-        pids_[ELBOW].setGains   (0.0, 0.0, 0.005, 0.5, -0.5, true);
-        pids_[WRIST].setGains   (0.0, 0.0, 0.005, 0.5, -0.5, true);
 
         serialObject.connect_serial(0); 
         serialObject.publishToArduino(IK_START_COMMAND); //this will set the arduino in IK mode
@@ -137,7 +129,6 @@ namespace arm_controls
         std::ostringstream command_stream;
         command_stream << "S;";
 
-        /*
         for (size_t i = 0; i < num_joints; ++i) {
             double positionInDegrees = joint_position_command_[i] * 180 / PI;
             positionInDegrees = std::round(positionInDegrees * 100.0) / 100.0; //bruh
@@ -147,29 +138,20 @@ namespace arm_controls
             command_stream << std::fixed << std::setprecision(2) << positionInDegrees << ";";
         }
         command_stream << "!";
-        */
-
-        // PID since reference is POSITION, and the command interface is POSITION
-        u_int64_t period_ns = period.nanoseconds();
-        for (size_t motor = TOWER; motor < LAST; motor++) {
-            double error = joint_position_command_[motor] - joint_position_state_[motor];
-            double positionInDegrees = pids_[motor].computeCommand(error, period_ns) * 180 / PI;
-            if (positionInDegrees == -0.00) {
-                positionInDegrees = 0.00;
-            }
-            command_stream << std::fixed << std::setprecision(2) << positionInDegrees << ";";
-        }
-        command_stream << "!";
-
+        
         std::string command = command_stream.str();
-        RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+
+        // print out cmd; beware though since these are not filtered, might be equal to prev cmd
+        //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
 
         if (command != prev_position_command_) {
-            //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+            RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
             //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", prev_position_command_.c_str());
             serialObject.publishToArduino(command);
             prev_position_command_ = command;
         }
+
+
                 
         // PERIPHERAL COMMAND HANDLING
         // We don't use else if here because we want to be able to send consecutive commands if multiple buttons are changed at once

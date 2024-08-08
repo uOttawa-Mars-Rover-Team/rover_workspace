@@ -52,12 +52,6 @@ namespace arm_controls {
             std::string prev_position_command_; // string to save the previous position command sent ot the arduino
            
             SerialCommunication serialObject;
-
-            // Will store the pid objects for each of the four joints, TW, L1, L2 & WP
-            std::vector<control_toolbox::Pid> pids_;
-
-            // Declare PID objects here
-            // Need 1 per joint that is providing feedback
     };
 } // namespace arm_controls
 

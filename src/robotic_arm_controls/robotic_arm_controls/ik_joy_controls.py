@@ -124,9 +124,9 @@ class Joy_IK_Controller(Node):
                 self.twist_stamped_msg.twist.angular.z = self.curr[5] #twist main joy
 
                 # Print array
-                self.get_logger().info("\n")
-                for v in self.Velocity:
-                    self.get_logger().info(str(v) + ": " + str(self.curr[v.value]))
+                #self.get_logger().info("\n")
+                #for v in self.Velocity:
+                #    self.get_logger().info(str(v) + ": " + str(self.curr[v.value]))
 
     """
     Makes sure messages are always being published and at a specific rate

@@ -30,11 +30,11 @@ namespace arm_controls
         
 
         //Initialize PID objects
-        pids_.reserve(4);
-        pids_[RL]->initPid(0.002342, 3.4953e-6, 0.42913, 0.5, -0.5, true);
-        pids_[FL]->initPid(0.0078556, 2.349e-5, 0.65679, 0.5, -0.5, true);
-        pids_[FR]->initPid(1.0, 0.0, 0.0, 0.5, -0.5, true);
-        pids_[RR]->initPid(0.00096076, 7.7315e-7, 0.29847, 0.5, -0.5, true);
+        pids_.assign(4, 0);
+        pids_[TOWER].setGains   (1, 0.0, 0.5, 0.5, -0.5, true);
+        pids_[SHOULDER].setGains(0.0, 0.0, 0.005, 0.5, -0.5, true);
+        pids_[ELBOW].setGains   (0.0, 0.0, 0.005, 0.5, -0.5, true);
+        pids_[WRIST].setGains   (0.0, 0.0, 0.005, 0.5, -0.5, true);
 
         serialObject.connect_serial(0); 
         serialObject.publishToArduino(IK_START_COMMAND); //this will set the arduino in IK mode
@@ -150,9 +150,10 @@ namespace arm_controls
         */
 
         // PID since reference is POSITION, and the command interface is POSITION
+        u_int64_t period_ns = period.nanoseconds();
         for (size_t motor = TOWER; motor < LAST; motor++) {
             double error = joint_position_command_[motor] - joint_position_state_[motor];
-            double command = pids_[motor]->computeCommand(error, period) * 180 / PI;
+            double positionInDegrees = pids_[motor].computeCommand(error, period_ns) * 180 / PI;
             if (positionInDegrees == -0.00) {
                 positionInDegrees = 0.00;
             }
@@ -161,7 +162,7 @@ namespace arm_controls
         command_stream << "!";
 
         std::string command = command_stream.str();
-        //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());
 
         if (command != prev_position_command_) {
             //RCLCPP_INFO(rclcpp::get_logger("ArmSystem"), "Serial Write: %s", command.c_str());

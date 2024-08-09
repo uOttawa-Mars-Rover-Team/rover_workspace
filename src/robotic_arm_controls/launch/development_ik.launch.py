@@ -18,7 +18,7 @@ def generate_launch_description():
     # Spacemouse joy
     spacemouse_joy = launch_ros.actions.Node(
             package="joy",
-            executable="joy_node",
+            executable="joy_node",String
             parameters=[
                 {'dev': '/dev/input/arm_spacemouse'}
             ],

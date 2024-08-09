@@ -15,6 +15,8 @@ from std_msgs.msg import String
 from pynput import keyboard
 import numpy as np
 from std_msgs.msg import Float32
+from general_interfaces.msg import GripperControl
+from general_interfaces.msg import ToggleMessage
 
 """
 Ignore this; this is for parameter helper function when we launch the
@@ -40,100 +42,190 @@ class Joy_IK_Controller(Node):
         super().__init__(node_name)
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
-        # Pubs and subs
-        self.joy_sub = self.create_subscription(Joy, "/joy/arm_cmd", self.joy_cb, 20)
-        self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
-        self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
-
-        # Create an instance of TwistStamped
-        self.twist_stamped_msg = TwistStamped()
-        self.twist_stamped_msg.header.frame_id = 'base_footprint'
-
-        self.STOP = [0.0,0.0,0.0,0.0,0.0,0.0] # default of what stop is
-        self.prev = [0.0,0.0,0.0,0.0,0.0,-2.0] # previous array of joy values (float array)
-        self.curr = [0.0,0.0,0.0,0.0,0.0,0.0] # current  array of joy values
-
         # Parameters obtained from launch file, otherwise default
         self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) # pub rate in Hz
         self.deadband = self.get_param("deadband", rclpy.Parameter.Type.DOUBLE, 0.40) # spacemouse deadband
-
-        # Local parameters
-        self.max_vel = 1.0 #controls vels for all joints, can in/decrease with keyboard
+        self.mode = self.get_param("mode", rclpy.Parameter.Type.STRING, "I") # ik or manual mode, default I for ik
 
         # All about the publishing loop
         self.run = True  # threads will stop running if false
         self.tp_executor = ThreadPoolExecutor(max_workers=1)
-        self.pub_loop = self.tp_executor.submit(self.publishLoop)
+        self.pub_loop = self.tp_executor.submit(self.publish_loop)
 
-        # Permutations for the mapping for the spacemouse (sm) and logitech (lt) controllers
+        # Pubs, subs and their variables
+        self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
+        self.max_vel = 1.0 # subscribing to the keyboard, changes according to a dial
+
+        self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
+        self.twist_stamped_msg = TwistStamped()
+        self.twist_stamped_msg.header.frame_id = 'base_footprint'
+
+        self.vel_control_pub = self.create_publisher(GripperControl, '/gripper_control/gripper_velocities', 20)
+        self.vel_control_msg = GripperControl()
+
+        self.cmd_pub = self.create_publisher(String, '/arm_cmd', 20)
+
+        self.command = String()
+        self.curr_cmd = ""
+        self.prev_cmd = "!"
+
+        self.joy_sub = self.create_subscription(Joy, "/joy/arm_cmd", self.joy_cb, 20)
+
+        # Joystick/Spacemouse-related below
+        self.STOP_AXES = [0.0,0.0,0.0,0.0,0.0,0.0] # default of what stop is for axes
+        self.prev_axes = [0.0,0.0,0.0,0.0,0.0,-2.0] # previous array of joy axes values (float array)
+        self.curr_axes = [0.0,0.0,0.0,0.0,0.0,0.0] # current  array of joy axes values
+
+        self.STOP_BTNS    = [0,0,0,0,0,0] # default of what stop is for buttons
+        self.prev_btns_lt = [0,0,0,0,0,0] # previous array of joy btn values for logitech controller (int array)
+        self.curr_btns_lt = [0,0,0,0,0,0] # current  array of joy btn values
+        self.prev_btns_sm = [0,0,0,0,0,0] # previous array of joy btn values; spacemouse(int array)
+        self.curr_btns_sm = [0,0,0,0,0,0] # current  array of joy btn values
+        
+        # Permutations for the mapping for the spacemouse (sm)
         self.sm_btns = [0, 1]
         self.sm_axes = [1, 0, 3, 4, 5, 2]
-        self.lt_btns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12] # TODO: map btns correctly
-        self.lt_axes = [1, 0, 3, 4, 5, 2]
 
-    axes_0: float 
-    actuator: float 
-    tower: float 
-    speed_axis: float 
-    wrist_roll: float
-    wrist_pitch: float
+        self.lt_btns = [0,1,2,3,4,5,6,7,8,9,10,11]
+        self.lt_axes = [1, 0, 3, 4, 5, 2]
+        # logitech btns not needed since it's not used at all 
 
     # Callback this time around just changes self.twist_stamped_msg
     # so that self.pub_loop can publish at a constant self.pub_rate
     def joy_cb(self, message: Joy) -> None:
 
+        btn_sum = 0
+        btns_zero = True
+
         # Determines if we have the spacemouse or logitech connected
         if (len(message.buttons) == 2): # spacemouse
             for i in range(6):
-                self.curr[i] = message.axes[self.sm_axes[i]]
+                self.curr_axes[i] = message.axes[self.sm_axes[i]]
+            for i in range(2):
+                btn_sum += message.buttons[i]
+                self.curr_btns_sm[i] = message.buttons[self.sm_btns[i]]
+            if btn_sum != 0:
+                btns_zero = False
+
         elif (len(message.buttons) == 12): # more than 2 btns -> must be logitech controller
             for i in range(6):
-                self.curr[i] = message.axes[self.lt_axes[i]]
+                self.curr_axes[i] = message.axes[self.lt_axes[i]]
+            for i in range(12):
+                btn_sum += message.buttons[i]
+                self.curr_btns_lt[i] = message.buttons[self.lt_btns[i]]
+            if btn_sum != 0:
+                btns_zero = False
         else:
             self.get_logger().info("Wrong controller brotha")
 
         # Compares to prev array of cmds, runs only if it's different
-        if not self.floatArrayEqual(self.curr, self.prev):
-            self.prev = self.curr
+        if not self.floatArrayEqual(self.curr_axes, self.prev_axes) or not btns_zero:
+            self.prev_axes = self.curr_axes
 
-            # Add current time to timestamp
-            self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
+            # Stop the whole arm if all axes & btn values are zero
+            if not self.floatArrayEqual(self.curr_axes, self.STOP_AXES) or not btns_zero:
 
-            # Rounds floats in self.curr to either 0 or sign*max_vel (set by keyboard)
-            self.arrayRoundToMaxVelocity()
+                # Rounds floats in self.curr_axes to either 0 or sign*max_vel (set by keyboard)
+                self.arrayRoundToMaxVelocity()
 
-            # Stop the whole arm
-            if self.floatArrayEqual(self.curr, self.STOP):
-                
-                #ros2 control handles 1st 4 joints#
+                if self.mode == "I":
 
-                # TODO: handle roll and ee
-                self.get_logger().info("handle roll ee")
+                    # Add current time to timestamp
+                    self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
 
-            else: # send cmds
+                    # Map linear and angular vels with controller
+                    # Linear velocity in x-direction
+                    self.twist_stamped_msg.twist.linear.x = self.curr_axes[0]  #left right main joy
+                    self.twist_stamped_msg.twist.linear.y = self.curr_axes[1]  #forward backward main joy
+                    self.twist_stamped_msg.twist.linear.z = self.curr_axes[2]  #speed axis
 
-                # Map linear and angular vels with controller
-                # Linear velocity in x-direction
-                self.twist_stamped_msg.twist.linear.x = self.curr[0]  #left right main joy
-                self.twist_stamped_msg.twist.linear.y = self.curr[1]  #forward backward main joy
-                self.twist_stamped_msg.twist.linear.z = self.curr[2]  #speed axis
+                    # Angular velocity around x-axis
+                    #self.twist_stamped_msg.twist.angular.x = self.curr_axes[3] #left right small joy
+                    self.vel_control_msg.roll_velocity = self.curr_axes[3]
+                    self.twist_stamped_msg.twist.angular.y = self.curr_axes[4] #forward backward small joy
+                    self.twist_stamped_msg.twist.angular.z = self.curr_axes[5] #twist main joy
 
-                # Angular velocity around x-axis
-                self.twist_stamped_msg.twist.angular.x = self.curr[3] #left right small joy
-                self.twist_stamped_msg.twist.angular.y = self.curr[4] #forward backward small joy
-                self.twist_stamped_msg.twist.angular.z = self.curr[5] #twist main joy
+                    # Prepare vel cmd for ee stepper
+                    if len(message.buttons) == 2: # spacemouse
+                        if self.curr_btns_sm[0]:
+                            elf.vel_control_msg.ee_velocity = self.curr_btns_sm[0] * self.max_vel
+                        elif self.curr_btns_sm[1]:
+                            elf.vel_control_msg.ee_velocity = self.curr_btns_sm[1] * self.max_vel
 
-                # Print array
-                #self.get_logger().info("\n")
-                #for v in self.Velocity:
-                #    self.get_logger().info(str(v) + ": " + str(self.curr[v.value]))
+                    elif len(message.buttons == 12): # logitech
+                        if self.curr_btns_lt[0]:
+                            elf.vel_control_msg.ee_velocity = self.curr_btns_lt[0] * self.max_vel
+                        elif self.curr_btns_lt[1]:
+                            elf.vel_control_msg.ee_velocity = self.curr_btns_lt[1] * self.max_vel
+
+                    # Print array
+                    #self.get_logger().info("\n")
+                    #for v in self.Velocity:
+                    #    self.get_logger().info(str(v) + ": " + str(self.curr_axes[v.value]))
+                    #    self.get_logger().info("Roll: " + str(self.vel_control_msg.roll))
+                    #    self.get_logger().info("EE: " + str(self.vel_control_msg.ee))
+
+                else: # make sure it's the spacemouse, no checking done below
+                    
+                    self.curr_cmd = "S;"
+                    if self.curr_axes[0]:
+                        self.curr_cmd += str(self.max_vel)
+                    else:
+                        self.curr_cmd += "0"
+                    self.curr_cmd += ";"
+
+                    if self.curr_axes[1]:
+                        self.curr_cmd += str(self.max_vel)
+                    else:
+                        self.curr_cmd += "0"
+                    self.curr_cmd += ";"
+                    if self.curr_axes[2]:
+                        self.curr_cmd += str(self.max_vel)
+                    else:
+                        self.curr_cmd += "0"
+                    self.curr_cmd += ";"
+
+                    if self.curr_axes[3]:
+                        self.curr_cmd += str(self.max_vel)
+                    else:
+                        self.curr_cmd += "0"
+                    self.curr_cmd += ";"
+
+                    if self.curr_axes[4]:
+                        self.curr_cmd += str(self.max_vel)
+                    else:
+                        self.curr_cmd += "0"
+                    self.curr_cmd += ";"
+
+                    if len(message.buttons) == 2: # spacemouse
+                        
+                        if self.curr_btns_sm[0]:
+                            self.curr_cmd += str(self.curr_btns_sm[0] * self.max_vel)
+                        elif self.curr_btns_sm[1]:
+                            self.curr_cmd += str(self.curr_btns_sm[1] * self.max_vel)
+                        else:
+                            self.curr_cmd += "0"
+                    elif len(message.buttons == 12): # logitech
+                        if self.curr_btns_lt[0]:
+                            self.curr_cmd += str(self.curr_btns_lt[0] * self.max_vel)
+                        elif self.curr_btns_lt[1]:
+                            self.curr_cmd += str(self.curr_btns_lt[1] * self.max_vel)
+                        else:
+                            self.curr_cmd += "0"
+                    self.curr_cmd += ";!"
+
+                    if self.curr_cmd != self.prev_cmd:
+                        self.prev_cmd = self.curr_cmd
+                        self.command.data = self.curr_cmd
+                        self.cmd_pub.publish(self.command)
 
     """
     Makes sure messages are always being published and at a specific rate
     """
-    def publishLoop(self):
+    def publish_loop(self):
         while self.run:
             self.servo_pub.publish(self.twist_stamped_msg)
+            self.vel_control_pub.publish(self.vel_control_msg)
             sleep(1.0/self.pub_rate)
 
     """
@@ -143,13 +235,13 @@ class Joy_IK_Controller(Node):
     """
     def arrayRoundToMaxVelocity(self):
 
-        for i in range(len(self.curr)):
-            if (self.curr[i] > self.deadband):
-                self.curr[i] = self.max_vel
-            elif (self.curr[i] < -self.deadband):
-                self.curr[i] = -self.max_vel
+        for i in range(len(self.curr_axes)):
+            if (self.curr_axes[i] > self.deadband):
+                self.curr_axes[i] = self.max_vel
+            elif (self.curr_axes[i] < -self.deadband):
+                self.curr_axes[i] = -self.max_vel
             else:
-                self.curr[i] = 0.0
+                self.curr_axes[i] = 0.0
 
     """
     Gets a velocity from the publisher on the keyboard node

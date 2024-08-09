@@ -36,7 +36,7 @@ class Router(Node):
         self.m_subscriber = self.create_subscription(ToggleMessage, "/manual_states", self.mn_callback_function, qos_profile = 20, callback_group = sub_callback_group)
         self.ik_subscriber = self.create_subscription(ArmPose, "/goal_states", self.ik_callback_function, qos_profile = 20, callback_group = sub_callback_group)
         self.mode_subscriber = self.create_subscription(String, "/mode", self.mode_callback_function, qos_profile = 20, callback_group = sub_callback_group)
-        self.enables_subscriber = self.create_subscription(String, "/enable_cmd", self.enable_callback_function, qos_profile = 20, callback_group = sub_callback_group)
+        self.cmd_subscriber = self.create_subscription(String, "/arm_cmd", self.cmd_callback_function, qos_profile = 20, callback_group = sub_callback_group)
 
         #Publishers
         self.state_publisher = self.create_publisher(ArmPose, '/arm_feedback', 20)
@@ -209,12 +209,11 @@ class Router(Node):
     """
     Sends serial messages to the arduino based on messages recieved from the Manual node
     """
-    def enable_callback_function(self, message: String) -> None:
-        string_message = message.data
-
+    def cmd_callback_function(self, message: String) -> None:
         
-        self.get_logger().info(string_message)
-        self.publishToArduino(string_message)
+        self.movement = message.data
+        self.write_serial()
+
 
     """
     Helper method to publish messages to the arduino over serial

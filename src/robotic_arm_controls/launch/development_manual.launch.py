@@ -24,10 +24,25 @@ def generate_launch_description():
             output="screen",
             )
             
-    # Toggler node
-    m_toggler = launch_ros.actions.Node(
+    # Keyboard
+    ik_keyboard_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
-            executable="m_toggler",
+            executable="ik_keyboard_controls",
+            parameters=[
+                {'mode': "M"}
+            ],
+            output="screen",
+            )
+
+    # Joy IK Controller
+    ik_joy_controls = launch_ros.actions.Node(
+            package="robotic_arm_controls",
+            executable="ik_joy_controls",
+            parameters=[
+                {'deadzone': 0.4},
+                {'pub_rate': 20.0},
+                {'mode': "M"}
+            ],
             output="screen",
             )
 
@@ -53,7 +68,9 @@ def generate_launch_description():
     return launch.LaunchDescription(
             [
                 logitech_joy,
-                m_toggler,
+                #m_toggler,
+                ik_keyboard_controls,
+                ik_joy_controls,
                 m_router,
                 m_arm_controls
                 ]

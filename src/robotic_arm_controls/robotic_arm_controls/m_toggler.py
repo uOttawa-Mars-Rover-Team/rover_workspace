@@ -62,7 +62,6 @@ class Toggler(Node):
         self.ik_publisher = self.create_publisher(ToggleMessage, '/ik_joy', 20)
         self.m_publisher = self.create_publisher(ToggleMessage, '/m_joy', 20)
         self.mode_publisher = self.create_publisher(String, '/mode', 20)
-        self.mode_publisher = self.create_publisher(String, '/mode', 20)
         self.enable_pub = self.create_publisher(String, '/enable_cmd', 20)
 
         # The node's logger, may just use print() instead

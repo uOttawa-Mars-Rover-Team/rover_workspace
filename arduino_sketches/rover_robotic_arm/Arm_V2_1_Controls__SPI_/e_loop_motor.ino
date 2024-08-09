@@ -231,7 +231,7 @@ int calculateNextSpeed(int i) {
   //For use with IK when not PID'ing (constant speed)
   int nextSpeed = 0;
   if (equalsStr(mode,"M")) {
-    nextSpeed = abs((int)motor[i].desiredPos);
+    nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
   } else {
     switch (i) {
       case TW:
@@ -247,10 +247,10 @@ int calculateNextSpeed(int i) {
         nextSpeed = 300;
         break;
       case WR:
-        nextSpeed = 300;
+        nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
         break;
       case EE:
-        nextSpeed = 300;
+        nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
         break;
       default:
         nextSpeed = 0;

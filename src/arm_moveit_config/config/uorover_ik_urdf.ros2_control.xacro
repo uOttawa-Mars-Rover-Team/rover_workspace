@@ -8,11 +8,14 @@
                 <!--<plugin>mock_components/GenericSystem</plugin>-->
                 <plugin>arm_controls/ArmSystem</plugin>
             </hardware>
+
+            <!--Order of declarations for joints and interfaces has an impact on the hardware interface code so be careful!-->
             <joint name="q1">
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['q1']}</param>
                 </state_interface>
+                <!--We currently don't publish any velocity feedback so all of the velocity interfaces are 0 by default-->
                 <state_interface name="velocity"/>
             </joint>
             <joint name="q2">
@@ -36,8 +39,10 @@
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
-            <joint name="q5">
+            <joint name="q5"> 
                 <command_interface name="position"/>
+                <!--Temporarily adding velocity control because we do not have positional feedback on this joint-->
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['q5']}</param>
                 </state_interface>
@@ -45,6 +50,8 @@
             </joint>
             <joint name="q6">
                 <command_interface name="position"/>
+                <!--Temporarily adding velocity control because we do not have positional feedback on this joint-->
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['q6']}</param>
                 </state_interface>

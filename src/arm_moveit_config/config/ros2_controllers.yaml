@@ -8,8 +8,7 @@ controller_manager:
 
 
     uorover_ee_controller:
-      type: position_controllers/GripperActionController
-
+      type: arm_controls/GripperController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -20,22 +19,24 @@ controller_manager:
 uorover_arm_controller:
   ros__parameters:
     joints:
-      - q1
-      - q2
-      - q3
-      - q4
-      - q5
+      - q1 # Tower Joint
+      - q2 # Shoulder Joint
+      - q3 # Elbow Joint
+      - q4 # Pitch Joint
+      #- q5
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
 
-uorover_ee_controller:
+uorover_ee_controller: # Thsi is a custom controller that sends velocities from the spacemouse to the hardware interface
   ros__parameters:
-    joint: q6
+    joints:  
+      - q5 # Roll Joint
+      - q6 # EE Joint
 
-peripheral_controller:
+peripheral_controller: # Custom controller that enables and disables peripherals on the arduino, as well as stops it
   ros__parameters:
     peripherals:
       - stepper_1

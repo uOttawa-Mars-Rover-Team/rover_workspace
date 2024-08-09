@@ -31,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmState.msg"
   "msg/ArmError.msg"
   "msg/ArmGpio.msg"
+  "msg/GripperControl.msg"
   "action/ZeroArm.action"
 )
 

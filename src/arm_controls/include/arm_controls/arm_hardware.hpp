@@ -42,6 +42,7 @@ namespace arm_controls {
             //Vectors for joint interfaces
             //NOTE: These vectors must contain doubles beacause of the way the CommandInterface and StateInterface constructors are defined in ros2 control
             std::vector<double> joint_position_command_;
+            std::vector<double> joint_velocity_command_;
             std::vector<double> joint_position_state_;
             std::vector<double> joint_velocity_state_;
             //Vectors for gpio interfaces 

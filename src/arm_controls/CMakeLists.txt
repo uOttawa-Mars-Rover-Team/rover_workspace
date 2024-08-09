@@ -36,6 +36,12 @@ add_library(
 	controllers/peripheral_controller.cpp
 	)
 
+add_library(
+	gripper_controller
+	SHARED
+	controllers/gripper_controller.cpp
+	)
+
 add_subdirectory(serial_communication_library)
 target_link_libraries(arm_hardware PRIVATE serial_comms)
 #target_link_directories(arm_hardware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/serial_communication_library/include")
@@ -49,6 +55,11 @@ target_include_directories(arm_hardware PUBLIC
     )
 
 target_include_directories(peripheral_controller PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+
+target_include_directories(gripper_controller PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
@@ -78,6 +89,15 @@ ament_target_dependencies(
     
 ament_target_dependencies(
     peripheral_controller PUBLIC
+    "pluginlib"
+    "rclcpp_lifecycle"
+    "controller_interface"
+    "general_interfaces"
+    "rclcpp"
+    )
+
+ament_target_dependencies(
+    gripper_controller PUBLIC
     "pluginlib"
     "rclcpp_lifecycle"
     "controller_interface"
@@ -116,6 +136,12 @@ install(TARGETS peripheral_controller
     RUNTIME DESTINATION lib
 )
 
+install(TARGETS gripper_controller
+    EXPORT gripper_controller
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+)
 #install(EXPORT serial_comms DESTINATION lib/${PROJECT_NAME})
 #install(EXPORT serial DESTINATION lib/${PROJECT_NAME})
 
@@ -137,4 +163,5 @@ endif()
 
 ament_export_targets(arm_hardware HAS_LIBRARY_TARGET)
 ament_export_targets(peripheral_controller HAS_LIBRARY_TARGET)
+ament_export_targets(gripper_controller HAS_LIBRARY_TARGET)
 ament_package()

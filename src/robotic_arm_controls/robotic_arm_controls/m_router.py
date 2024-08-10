@@ -45,7 +45,7 @@ class Router(Node):
         #Parameters
         self.RETRY_DELAY = self.get_param("timeout_delay", rclpy.Parameter.Type.DOUBLE, 0.1)  # time (s) to attempt serial connection
         self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING)
-        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 115200)
+        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 500000)
 
         #Threading
         #self.pool_executor = Pool()
@@ -211,8 +211,8 @@ class Router(Node):
     """
     def cmd_callback_function(self, message: String) -> None:
         
-        self.movement = message.data
-        self.write_serial()
+        string_message = message.data
+        self.publishToArduino(string_message)
 
 
     """

@@ -84,7 +84,18 @@ class Joy_IK_Controller(Node):
         
         # Permutations for the mapping for the spacemouse (sm)
         self.sm_btns = [0, 1]
-        self.sm_axes = [1, 0, 3, 4, 5, 2]
+        self.sm_axes = []
+        if self.mode == "I":
+            # mappings
+            # 0 - fwd/bwd
+            # 1 - sideways
+            # 2 - twist around x
+            # 3 - twist around y
+            # 4 - twist around z
+            # 5 - up down z
+            self.sm_axes = [1, 0, 2, 5, 3, 4]
+        else:
+            self.sm_axes = [5, 1, 2, 3, 4, 0]
 
         self.lt_btns = [0,1,2,3,4,5,6,7,8,9,10,11]
         self.lt_axes = [1, 0, 3, 4, 5, 2]
@@ -148,15 +159,15 @@ class Joy_IK_Controller(Node):
                     # Prepare vel cmd for ee stepper
                     if len(message.buttons) == 2: # spacemouse
                         if self.curr_btns_sm[0]:
-                            elf.vel_control_msg.ee_velocity = self.curr_btns_sm[0] * self.max_vel
+                            self.vel_control_msg.ee_velocity = self.curr_btns_sm[0] * self.max_vel
                         elif self.curr_btns_sm[1]:
-                            elf.vel_control_msg.ee_velocity = self.curr_btns_sm[1] * self.max_vel
+                            self.vel_control_msg.ee_velocity = self.curr_btns_sm[1] * self.max_vel
 
                     elif len(message.buttons == 12): # logitech
                         if self.curr_btns_lt[0]:
-                            elf.vel_control_msg.ee_velocity = self.curr_btns_lt[0] * self.max_vel
+                            self.vel_control_msg.ee_velocity = self.curr_btns_lt[0] * self.max_vel
                         elif self.curr_btns_lt[1]:
-                            elf.vel_control_msg.ee_velocity = self.curr_btns_lt[1] * self.max_vel
+                            self.vel_control_msg.ee_velocity = self.curr_btns_lt[1] * self.max_vel
 
                     # Print array
                     #self.get_logger().info("\n")
@@ -165,53 +176,53 @@ class Joy_IK_Controller(Node):
                     #    self.get_logger().info("Roll: " + str(self.vel_control_msg.roll))
                     #    self.get_logger().info("EE: " + str(self.vel_control_msg.ee))
 
-                else: # make sure it's the spacemouse, no checking done below
+                else:
                     
                     self.curr_cmd = "S;"
                     if self.curr_axes[0]:
-                        self.curr_cmd += str(self.max_vel)
+                        self.curr_cmd += str(self.curr_axes[0]*self.max_vel)
                     else:
-                        self.curr_cmd += "0"
+                        self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
 
-                    if self.curr_axes[1]:
-                        self.curr_cmd += str(self.max_vel)
+                    if self.curr_axes[0]:
+                        self.curr_cmd += str(self.curr_axes[0]*self.max_vel)
                     else:
-                        self.curr_cmd += "0"
+                        self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
-                    if self.curr_axes[2]:
-                        self.curr_cmd += str(self.max_vel)
+                    if self.curr_axes[1]:
+                        self.curr_cmd += str(self.curr_axes[1]*self.max_vel)
                     else:
-                        self.curr_cmd += "0"
+                        self.curr_cmd += "0.0"
+                    self.curr_cmd += ";"
+
+                    if self.curr_axes[2]:
+                        self.curr_cmd += str(self.curr_axes[2]*self.max_vel)
+                    else:
+                        self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
 
                     if self.curr_axes[3]:
-                        self.curr_cmd += str(self.max_vel)
+                        self.curr_cmd += str(self.curr_axes[3]*self.max_vel)
                     else:
-                        self.curr_cmd += "0"
-                    self.curr_cmd += ";"
-
-                    if self.curr_axes[4]:
-                        self.curr_cmd += str(self.max_vel)
-                    else:
-                        self.curr_cmd += "0"
+                        self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
 
                     if len(message.buttons) == 2: # spacemouse
                         
                         if self.curr_btns_sm[0]:
-                            self.curr_cmd += str(self.curr_btns_sm[0] * self.max_vel)
+                            self.curr_cmd += str(self.max_vel)
                         elif self.curr_btns_sm[1]:
-                            self.curr_cmd += str(self.curr_btns_sm[1] * self.max_vel)
+                            self.curr_cmd += str(-self.max_vel)
                         else:
-                            self.curr_cmd += "0"
+                            self.curr_cmd += "0.0"
                     elif len(message.buttons == 12): # logitech
                         if self.curr_btns_lt[0]:
-                            self.curr_cmd += str(self.curr_btns_lt[0] * self.max_vel)
+                            self.curr_cmd += str(self.max_vel)
                         elif self.curr_btns_lt[1]:
-                            self.curr_cmd += str(self.curr_btns_lt[1] * self.max_vel)
+                            self.curr_cmd += str(-self.max_vel)
                         else:
-                            self.curr_cmd += "0"
+                            self.curr_cmd += "0.0"
                     self.curr_cmd += ";!"
 
                     if self.curr_cmd != self.prev_cmd:

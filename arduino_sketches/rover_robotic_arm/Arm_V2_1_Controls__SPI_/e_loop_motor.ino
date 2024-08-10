@@ -27,7 +27,7 @@
           motor[i].direction = 1;
           moveMotors(i, 1);
         }
-        else if (floatsEqual(motor[i].desiredPos, 0.0, 2) and motor[i].direction) {
+        else if (floatsEqual(motor[i].desiredPos, 0.0, 0.02) and motor[i].direction) {
           motor[i].direction = 0;
           moveMotors(i, 0);
         }
@@ -154,6 +154,9 @@ void moveMotors(int i, int dir) {
   motor[i].speed = calculateNextSpeed(i);
   motor[i].direction = dir;
 
+  //Serial.println(motor[i].speed);
+  //Serial.println();
+
   //Tower motor
   if (i == TW) {
     //Moves to whichever direction towards a step goal
@@ -231,7 +234,7 @@ int calculateNextSpeed(int i) {
   //For use with IK when not PID'ing (constant speed)
   int nextSpeed = 0;
   if (equalsStr(mode,"M")) {
-    nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
+    nextSpeed = abs(int(motor[i].desiredPos * motor[i].MAX_SPEED));
   } else {
     switch (i) {
       case TW:

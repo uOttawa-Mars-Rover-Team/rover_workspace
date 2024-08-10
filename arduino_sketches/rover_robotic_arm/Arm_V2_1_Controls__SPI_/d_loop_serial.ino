@@ -177,7 +177,7 @@
 
     Serial.println();
     Serial.print("f;");
-    Serial.print(motor[TW].currentPos);
+    Serial.print(motor[TW].desiredPos);
     Serial.print(";");
     for (int i = L1 ; i < LAST ; i++) {
       Serial.print(motor[i].desiredPos);
@@ -221,8 +221,13 @@
     */
 
     //Publishing gpio feedback
-    Serial.println();
-    Serial.print("g;");
+      Serial.print("\nSpeeds: ");
+    for (int m = TW ; m < LAST ; m++) {
+      Serial.print(motor[m].speed);
+      Serial.print(", ");
+    }
+
+    Serial.print("\ng;");
     Serial.print(digitalRead(motor[TW].BOOT_PIN));
     Serial.print(";");
     Serial.print(digitalRead(motor[WP].BOOT_PIN));

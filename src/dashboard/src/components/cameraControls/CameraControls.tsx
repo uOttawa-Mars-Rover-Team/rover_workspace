@@ -9,7 +9,7 @@ import {
   Switch,
   notification,
 } from "antd";
-import CameraControlsWrapper from "./CameraControlsWrapper";
+import CollapsibleWrapper from "../collapsibleWrapper/CollapsibleWrapper";
 import { useContext, useEffect, useState } from "react";
 import { RosContext } from "../../contexts";
 import ROSLIB from "roslib";
@@ -108,7 +108,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
   return (
     <Row gutter={[12, 12]} justify="center">
       {/* Picture Node Controls */}
-      <CameraControlsWrapper header="Picture Node">
+      <CollapsibleWrapper header="Picture Node">
         <Descriptions bordered size="small" layout="vertical">
           <Descriptions.Item label={<b>ROS Topic Name</b>} span={24}>
             <Select
@@ -169,10 +169,10 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
             </Space>
           </Col>
         </Row>
-      </CameraControlsWrapper>
+      </CollapsibleWrapper>
 
       {/* Panorama Node Controls */}
-      <CameraControlsWrapper header="Panorama Node">
+      <CollapsibleWrapper header="Panorama Node">
         <Descriptions bordered size="small" layout="vertical">
           <Descriptions.Item label={<b>Panorama Location</b>} span={24}>
             <Input
@@ -203,10 +203,10 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
             Stitch
           </Button>
         </Row>
-      </CameraControlsWrapper>
+      </CollapsibleWrapper>
 
       {/* Video Node Controls */}
-      <CameraControlsWrapper header="Video Node">
+      <CollapsibleWrapper header="Video Node">
         <Descriptions bordered size="small" layout="vertical">
           <Descriptions.Item label={<b>ROS Topic Name</b>} span={24}>
             <Select
@@ -297,7 +297,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
             </Button>
           </Space>
         </Row>
-      </CameraControlsWrapper>
+      </CollapsibleWrapper>
     </Row>
   );
 };

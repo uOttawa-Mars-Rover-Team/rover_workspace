@@ -13,6 +13,8 @@ interface LayoutProps {
   title: React.ReactNode;
   menuKey:
     | "overview"
+    | "camera"
+    | "telemetry"
     | "scienceMission"
     | "deliveryMission"
     | "equipmentServicingMission"

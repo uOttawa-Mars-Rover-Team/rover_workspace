@@ -9,7 +9,6 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include "general_interfaces/msg/motor_data.hpp" // IWYU pragma: keep
 
-
 using namespace std::chrono_literals;
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;

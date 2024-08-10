@@ -1,0 +1,31 @@
+.Box {
+    background-color: #202020;
+    margin: 10px;
+    height: 200px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    border-radius: 25px;
+    border: 2px solid #424242;
+    
+}
+
+.name {
+    font-weight: bold;
+    color: #e1e1e1;
+
+}
+
+.data {
+    font-weight: bold;
+    font-size: 17px;
+    color: #e1e1e1;
+
+}
+
+.icon {
+    height: 75px;
+    width: auto;
+}

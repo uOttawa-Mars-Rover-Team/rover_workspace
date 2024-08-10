@@ -12,4 +12,6 @@ log/
 **.pyc
 **.pyi
 
+.cache/
+
 .DS_Store

@@ -1,12 +1,8 @@
-import { Image, Row, Button, Col } from "antd";
+import { Image, Row, Button} from "antd";
 import {
   CameraOutlined,
   VideoCameraAddOutlined,
-  CompassOutlined,
-  InfoCircleOutlined,
-  WifiOutlined,
   FileAddOutlined,
-  SlidersOutlined,
 } from "@ant-design/icons";
 import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
@@ -14,32 +10,22 @@ import { Helmet } from "react-helmet";
 import {
   Layout,
   CameraFeed,
-  Navigation,
   Header,
-  TopicsPanel,
-  ServicesPanel,
-  ParamsPanel,
-  NodesPanel,
   AddCameraFeedModal,
-  TemperatureChart,
   CameraControls,
-  Telemetry,
 } from "../../components";
 import { DashboardContext } from "../../contexts";
 
-const Overview: React.FC = () => {
+const Camera: React.FC = () => {
   const [addCameraModalVisible, setAddCameraModalVisible] = useState(false);
   const { cameraFeeds } = useContext(DashboardContext);
 
   return (
     <>
       <Helmet>
-        <title>rDash - Overview</title>
+        <title>rDash - Camera</title>
       </Helmet>
-      <Layout title="Overview" menuKey="overview">
-        <Header title="Telemetry" icon={<SlidersOutlined />} />
-        <Telemetry />
-
+      <Layout title="Camera" menuKey="camera">
         <Header
           title={`Cameras (${cameraFeeds.length})`}
           icon={<CameraOutlined />}
@@ -65,32 +51,16 @@ const Overview: React.FC = () => {
           </Image.PreviewGroup>
         </Row>
 
+        
         <Header title="Camera Controls" icon={<FileAddOutlined />} />
+        <div style={{marginBottom:"30px"}}>
         <CameraControls
           cameraTopics={cameraFeeds.map(({ topicName }) => topicName)}
         />
 
-        <Header title="Navigation" icon={<CompassOutlined />} />
-        <Navigation />
-
-        <Header title="Sensors" icon={<WifiOutlined />} />
-        <TemperatureChart />
-
-        <Header title="ROS Debug Information" icon={<InfoCircleOutlined />} />
-        <Row gutter={[12, 12]}>
-          <Col md={24} lg={12}>
-            <TopicsPanel />
-          </Col>
-          <Col md={24} lg={12}>
-            <ParamsPanel />
-          </Col>
-          <Col span={24}>
-            <NodesPanel />
-          </Col>
-          <Col span={24}>
-            <ServicesPanel />
-          </Col>
-        </Row>
+        </div>
+        
+        
       </Layout>
 
       <AddCameraFeedModal
@@ -101,4 +71,4 @@ const Overview: React.FC = () => {
   );
 };
 
-export default Overview;
+export default Camera;

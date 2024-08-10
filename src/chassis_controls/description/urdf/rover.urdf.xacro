@@ -3,16 +3,16 @@
 
     <xacro:arg name="use_gazebo" default="false"/>
 
-    <xacro:property name="kp_fl" value="0.7322"/>
+    <xacro:property name="kp_fl" value="1.7322"/>
     <xacro:property name="ki_fl" value="1.1277"/>
     <xacro:property name="kd_fl" value="0.0"/>
-    <xacro:property name="kp_fr" value="0.9078"/>
+    <xacro:property name="kp_fr" value="1.9078"/>
     <xacro:property name="ki_fr" value="1.495"/>
     <xacro:property name="kd_fr" value="0"/>
-    <xacro:property name="kp_rl" value="0.7232"/>
+    <xacro:property name="kp_rl" value="1.7232"/>
     <xacro:property name="ki_rl" value="1.13"/>
     <xacro:property name="kd_rl" value="0"/>
-    <xacro:property name="kp_rr" value="1.041"/>
+    <xacro:property name="kp_rr" value="1.941"/>
     <xacro:property name="ki_rr" value="1.114"/>
     <xacro:property name="kd_rr" value="0"/>
     <xacro:property name="testing" value="0"/>

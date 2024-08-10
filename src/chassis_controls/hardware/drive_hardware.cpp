@@ -130,10 +130,10 @@ DriveSystem::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) {
     }
   }
 
-  pids_[RL]->initPid(Kp_RL, Ki_RL, Kd_RL, 10, -10, true);
-  pids_[RR]->initPid(Kp_RR, Ki_RR, Kd_RR, 10, -10, true);
-  pids_[FL]->initPid(Kp_FL, Ki_FL, Kd_FL, 10, -10, true);
-  pids_[FR]->initPid(Kp_FR, Ki_FR, Kd_FR, 10, -10, true);
+  pids_[RL]->initPid(Kp_RL, Ki_RL, Kd_RL, 5, -5, true);
+  pids_[RR]->initPid(Kp_RR, Ki_RR, Kd_RR, 5, -5, true);
+  pids_[FL]->initPid(Kp_FL, Ki_FL, Kd_FL, 5, -5, true);
+  pids_[FR]->initPid(Kp_FR, Ki_FR, Kd_FR, 5, -5, true);
 
   talons_[FR]->SetSensorPhase(true);
   talons_[FL]->SetSensorPhase(true);
@@ -239,7 +239,7 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     RCLCPP_INFO(logger_, "!!! Wheel velocity command (corrected): %f !!!", velocity_command);
     double pwm_magnitude = abs(pwm_command);
     double clamped_pwm_magnitude =
-        std::clamp(pwm_magnitude, get_x_intercept(wheel), 80.0);
+        std::clamp(pwm_magnitude, 1.0, 100.0);
 
     RCLCPP_INFO(logger_, "!!! Wheel clamed magnitude: %f !!!", clamped_pwm_magnitude);
     double pwm_output = 0;

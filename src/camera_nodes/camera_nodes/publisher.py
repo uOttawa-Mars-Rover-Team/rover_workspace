@@ -31,7 +31,7 @@ class CameraPublisherNode(CameraNode):
             CompressedImage, f"{self.camera_name}/image_raw/compressed", self.framerate
         )
 
-        # Initialize OpenCV capture (camera index 0 typically means the default camera)
+        # Initialize OpenCV capture
         self.cap = cv2.VideoCapture(self.video_device)
         if not self.cap.isOpened():
             self.get_logger().error("Failed to open camera!")
@@ -49,8 +49,7 @@ class CameraPublisherNode(CameraNode):
 
         # Convert the frame to a ROS CompressedImage message
         # Encode the image to JPEG format
-        quality = 20
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self.compression_quality]
         ret, encoded_image = cv2.imencode(".jpg", frame, encode_param)
         if not ret:
             self.get_logger().error("Failed to encode and compress image!")

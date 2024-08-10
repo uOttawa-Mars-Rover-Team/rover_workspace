@@ -23,6 +23,7 @@ namespace arm_controls {
 
     const double PI = 3.14159265358979;
     const string IK_START_COMMAND = "!I;!";
+    const string MANUAL_START_COMMAND = "!M;!";
     double DEFLT_PERIPHERAL_STATE[] = {true, true, true, true, false, false};
     rclcpp::Duration peripheral_msg_period_(0, 200000000);
 
@@ -37,22 +38,25 @@ namespace arm_controls {
             hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
             hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration &period) override;
                     
-            enum Joint { TOWER = 0, SHOULDER, ELBOW, WRIST, LAST };
+            enum Joint { TOWER = 0, SHOULDER, ELBOW, PITCH, LAST }; //enum for the joints that are controlled with IK and PID
 
-            //Vectors for joint interfaces
+            //Joint declarations
             //NOTE: These vectors must contain doubles beacause of the way the CommandInterface and StateInterface constructors are defined in ros2 control
             std::vector<double> joint_position_command_;
             std::vector<double> joint_velocity_command_;
             std::vector<double> joint_position_state_;
             std::vector<double> joint_velocity_state_;
-            //Vectors for gpio interfaces 
+
+            //Peripherals Declarations
             std::vector<double> peripheral_command_;
             std::vector<double> peripheral_state_;
 
+            //PID Declarations
+            std::vector<std::shared_ptr<control_toolbox::Pid>> pids_;
 
-            std::string prev_position_command_; // string to save the previous position command sent ot the arduino
-           
+            //Serial Declarations
             SerialCommunication serialObject;
+            std::string prev_position_command_; // string to save the previous position command sent ot the arduino
     };
 } // namespace arm_controls
 

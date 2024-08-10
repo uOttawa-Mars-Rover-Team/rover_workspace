@@ -28,6 +28,7 @@ class KeyboardListener(Node):
         self.vel.data = 1.0
 
         self.gpio_cmd = ArmGpio()
+        self.arm_cmd = String()
 
         # Service client setup
         self.client = self.create_client(Trigger, 'servo_node/start_servo')
@@ -71,28 +72,32 @@ class KeyboardListener(Node):
             self.gpio_cmd.stepper1_en = not self.gpio_cmd.stepper1_en
             self.get_logger().info('TW toggled: '+str(self.gpio_cmd.stepper1_en))
             if self.mode == 'M':
-                self.cmd_pub.publish("stepper1;!")
+                self.arm_cmd.data = "stepper1;!"
+                self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
         if key_str == 'x':#stepper2
             self.gpio_cmd.stepper2_en = not self.gpio_cmd.stepper2_en
             self.get_logger().info('WP toggled: '+str(self.gpio_cmd.stepper2_en))
             if self.mode == 'M':
-                self.cmd_pub.publish("stepper2;!")
+                self.arm_cmd.data = "stepper2;!"
+                self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
         if key_str == 'c':#stepper3 
             self.gpio_cmd.stepper3_en = not self.gpio_cmd.stepper3_en
             self.get_logger().info('WR toggled: '+str(self.gpio_cmd.stepper3_en))
             if self.mode == 'M':
-                self.cmd_pub.publish("stepper3;!")
+                self.arm_cmd.data = "stepper3;!"
+                self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
         if key_str == 'v':#stepper4
             self.gpio_cmd.stepper4_en = not self.gpio_cmd.stepper4_en
             self.get_logger().info('EE toggled: '+str(self.gpio_cmd.stepper4_en))
             if self.mode == 'M':
-                self.cmd_pub.publish("stepper4;!")
+                self.arm_cmd.data = "stepper4;!"
+                self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
 

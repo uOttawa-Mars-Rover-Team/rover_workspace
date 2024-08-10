@@ -49,12 +49,11 @@ class Joy_IK_Controller(Node):
 
         # All about the publishing loop
         self.run = True  # threads will stop running if false
-        self.tp_executor = ThreadPoolExecutor(max_workers=1)
-        self.pub_loop = self.tp_executor.submit(self.publish_loop)
+        self.tp_executor = ThreadPoolExecutor(max_workers=3)
 
         # Pubs, subs and their variables
         self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
-        self.max_vel = 1.0 # subscribing to the keyboard, changes according to a dial
+        self.max_vel = 0.5 # subscribing to the keyboard, changes according to a dial
 
         self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
         self.twist_stamped_msg = TwistStamped()
@@ -176,34 +175,38 @@ class Joy_IK_Controller(Node):
                     #    self.get_logger().info("Roll: " + str(self.vel_control_msg.roll))
                     #    self.get_logger().info("EE: " + str(self.vel_control_msg.ee))
 
+
+                    self.tp_executor.submit(self.servo_pub_cmd, self.twist_stamped_msg)
+                    self.tp_executor.submit(self.vel_control_cmd, self.vel_control_msg)
+
                 else:
-                    
                     self.curr_cmd = "S;"
-                    if self.curr_axes[0]:
-                        self.curr_cmd += str(self.curr_axes[0]*self.max_vel)
-                    else:
-                        self.curr_cmd += "0.0"
-                    self.curr_cmd += ";"
 
                     if self.curr_axes[0]:
-                        self.curr_cmd += str(self.curr_axes[0]*self.max_vel)
+                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
                     if self.curr_axes[1]:
-                        self.curr_cmd += str(self.curr_axes[1]*self.max_vel)
+                        self.curr_cmd += str(round(self.curr_axes[1]*self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
 
                     if self.curr_axes[2]:
-                        self.curr_cmd += str(self.curr_axes[2]*self.max_vel)
+                        self.curr_cmd += str(round(self.curr_axes[2]*self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
 
                     if self.curr_axes[3]:
-                        self.curr_cmd += str(self.curr_axes[3]*self.max_vel)
+                        self.curr_cmd += str(round(self.curr_axes[3]*self.max_vel, 2))
+                    else:
+                        self.curr_cmd += "0.0"
+                    self.curr_cmd += ";"
+
+                    if self.curr_axes[4]:
+                        self.curr_cmd += str(round(self.curr_axes[4]*self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
@@ -228,19 +231,29 @@ class Joy_IK_Controller(Node):
                     if self.curr_cmd != self.prev_cmd:
                         self.prev_cmd = self.curr_cmd
                         self.command.data = self.curr_cmd
-                        self.cmd_pub.publish(self.command)
+                        self.tp_executor.submit(self.cmd_pub_cmd, self.command)
 
     """
     Makes sure messages are always being published and at a specific rate
     """
-    def publish_loop(self):
-        while self.run:
-            self.servo_pub.publish(self.twist_stamped_msg)
-            self.vel_control_pub.publish(self.vel_control_msg)
-            sleep(1.0/self.pub_rate)
+    def servo_pub_cmd(self, servo_msg):
+        self.servo_pub.publish(servo_msg)
 
     """
-    Snaps values into the nearest min/max value depending on the deadband
+    Makes sure messages are always being published and at a specific rate
+    """
+    def vel_control_cmd(self, vel_msg):
+        self.vel_control_pub.publish(vel_msg)
+
+    """
+    Makes sure messages are always being published and at a specific rate
+    """
+    def cmd_pub_cmd(self, cmd_msg):
+        self.get_logger().info("Command sent: " + cmd_msg.data)
+        self.cmd_pub.publish(cmd_msg)
+
+    """
+    Snaps values into the nearest min/max value depen4ing on the deadband
     ex: 0.11166 -> 0.0 since < 0.35 deadband
         0.5 -> 1.0 since > 0.35 deadband and max is 1.0
     """

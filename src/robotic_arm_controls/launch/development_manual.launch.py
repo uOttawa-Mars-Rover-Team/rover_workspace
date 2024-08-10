@@ -58,21 +58,13 @@ def generate_launch_description():
             output="screen",
             )
 
-    # Manual controls
-    m_arm_controls = launch_ros.actions.Node(
-            package="robotic_arm_controls",
-            executable="m_arm_controls",
-            output="screen",
-            )
-
     return launch.LaunchDescription(
             [
                 logitech_joy,
                 #m_toggler,
                 ik_keyboard_controls,
                 ik_joy_controls,
-                m_router,
-                m_arm_controls
+                m_router
                 ]
             )
 

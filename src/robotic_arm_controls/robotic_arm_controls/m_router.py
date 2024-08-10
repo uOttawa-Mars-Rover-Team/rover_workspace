@@ -31,12 +31,7 @@ class Router(Node):
         self.get_logger().info(f"Started node at: {self.get_fully_qualified_name()}")
 
         #Subscribers
-        sub_callback_group = MutuallyExclusiveCallbackGroup()
-
-        self.m_subscriber = self.create_subscription(ToggleMessage, "/manual_states", self.mn_callback_function, qos_profile = 20, callback_group = sub_callback_group)
-        self.ik_subscriber = self.create_subscription(ArmPose, "/goal_states", self.ik_callback_function, qos_profile = 20, callback_group = sub_callback_group)
-        self.mode_subscriber = self.create_subscription(String, "/mode", self.mode_callback_function, qos_profile = 20, callback_group = sub_callback_group)
-        self.cmd_subscriber = self.create_subscription(String, "/arm_cmd", self.cmd_callback_function, qos_profile = 20, callback_group = sub_callback_group)
+        self.cmd_subscriber = self.create_subscription(String, "/arm_cmd", self.cmd_callback_function, 20)
 
         #Publishers
         self.state_publisher = self.create_publisher(ArmPose, '/arm_feedback', 20)
@@ -93,7 +88,7 @@ class Router(Node):
     """
     def read_loop(self):
         self.get_logger().info("Running serial reader thread...")
-        time.sleep(1)
+        #time.sleep(1)
     
         while self.run:
             try:
@@ -101,8 +96,8 @@ class Router(Node):
                     
                     byte_chunk = self.ARDUINO.read_until(b'!')
                         
-                    self.tp_executor.submit(self.publishMessage, byte_chunk[:-1])
-                    self.get_logger().info(byte_chunk[:-1])
+                    #self.tp_executor.submit(self.publishMessage, byte_chunk[:-1])
+                    #self.get_logger().info(byte_chunk[:-1])
             except:
                 self.get_logger().info("Could not publish message even while connected!")
                 self.get_logger().info("Will attempt to reconnect")
@@ -137,76 +132,6 @@ class Router(Node):
                 self.connecting = True # connect flag true -> connector will try to establish a connection
 
     """
-    Checks whether threads are alive, revives them if they're not
-    """
-    def check_threads(self):
-
-        if (self.reconnector.done()):
-            self.get_logger().info("Reconnector thread is dead, restarting...")
-            self.reconnector = self.tp_executor.submit(self.connect_serial)
-        
-        '''
-        if (self.publisher.done()):
-            self.get_logger().info("Publisher thread is dead, restarting...")
-            self.publisher = self.tp_executor.submit(self.publishing_loop)
-            '''
-
-    """
-    This method takes the decoded string and builds the ArmState message, returns message to be published
-    """
-    def build_arm_pose_message(self, string_message):
-        #self.get_logger().info(string_message[2:])
-        state_values = string_message.split(";") # Split string into array using ';' as the delimiter
-
-        if (len(state_values) != 8):
-            self.get_logger().warn("Invalid feedback message")
-            return None
-        
-        # positions: 4 wide array of float
-        # 0: angle to execute of tower in rad
-        # 1: extension la1 in inches from 0 to 6
-        # 2: extension of la2 in inches
-        # 3: pitch of wrist in radians
-        
-        positions = [0.0, 0.0, 0.0, 0.0]
-
-        for i in range(4):
-            positions[i] = round(float(state_values[i+1]),3)
-        
-        #self.get_logger().info(f"{positions[0]}, {positions[1]}, {positions[2]}, {positions[3]}")
-
-        message_to_send = ArmPose()
-        message_to_send.positions = positions
-
-        return message_to_send
-
-
-    # Callbacks
-    """
-    Sends serial messages to the arduino based on messages recieved from the IK node
-    """
-    def ik_callback_function(self, message: ArmPose) -> None:
-        positions = message.positions
-
-        string_message = f"S;{round(positions[0],3)};{round(positions[1],3)};{round(positions[2],3)};{round(positions[3],3)};!"
-        
-        self.publishToArduino(string_message)
-    
-    """
-    Sends serial messages to the arduino based on messages recieved from the Manual node
-    """
-    def mn_callback_function(self, message: ToggleMessage) -> None:
-        string_message = f"S;{message.tw};{message.la1};{message.la2};{message.wr_pitch};{message.wr_roll};{message.ee};!"
-        
-        self.publishToArduino(string_message)
-
-    """
-    Sends serial messages to the arduino based on messages recieved from the IK node
-    """
-    def mode_callback_function(self, message: String) -> None:
-        self.publishToArduino(str(message.data))
-
-    """
     Sends serial messages to the arduino based on messages recieved from the Manual node
     """
     def cmd_callback_function(self, message: String) -> None:
@@ -223,40 +148,6 @@ class Router(Node):
         if (message != self.movement):
             self.movement = message
             self.write_serial()
-
-    """
-    Thread loop for publishing arduino messages to the /arm_feedback topic
-    """
-    def publishMessage(self, byte_chunk):
-        
-        string_message = str(byte_chunk, 'UTF-8')
-        
-        if "f" in string_message:
-            #self.get_logger().info("Publishing arm state")
-            state_values = string_message.split(";") # Split string into array using ';' as the delimiter
-
-            if (len(state_values) != 8):
-                self.get_logger().warn("Invalid feedback message")
-                return None
-            
-            # positions: 4 wide array of float
-            # 0: angle to execute of tower in rad
-            # 1: extension la1 in inches from 0 to 6
-            # 2: extension of la2 in inches
-            # 3: pitch of wrist in radians
-            
-            positions = [0.0, 0.0, 0.0, 0.0]
-
-            for i in range(4):
-                positions[i] = float(state_values[i+1])
-            
-            #self.get_logger().info(f"{positions[0]}, {positions[1]}, {positions[2]}, {positions[3]}")
-
-            message_to_send = ArmPose()
-            message_to_send.positions = positions
-            
-            if (message_to_send != None):
-                self.state_publisher.publish(message_to_send)
         
     """
     Helper function to declare and get the value of a ROS launch parameter,
@@ -295,12 +186,10 @@ def main(args=None):
     '''
     router_node = Router() # class above
 
-    executor = MultiThreadedExecutor()  # for multiple threads
-
     # For some weird reason, raising an error in try makes it
     # so that the node shuts down properly on Ctrl-C
     try:
-        rclpy.spin(router_node, executor = executor) # spin = debounce (run for as long as it's on)
+        rclpy.spin(router_node) # spin = debounce (run for as long as it's on)
     except KeyboardInterrupt:
         print("Spin interrupted by user (Ctrl+C)")
 

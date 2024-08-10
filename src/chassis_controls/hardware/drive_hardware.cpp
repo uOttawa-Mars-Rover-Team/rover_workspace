@@ -26,13 +26,19 @@ namespace chassis_controls {
 CallbackReturn
 DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
 
-  tested_pwm_ = 5.0;
-  RCLCPP_INFO(logger_, "!!! Testing at: %f.3%% PWM. !!!", tested_pwm_);
-
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
   }
+
+  testing_ = std::stoi(info_.hardware_parameters["testing"]);
+  tested_pwm_ = std::stod(info_.hardware_parameters["tested_pwm"]);
+
+  if (!testing_) {
+    tested_pwm_ = 0.0;
+  }
+
+  RCLCPP_INFO(logger_, "!!! Testing at: %f%% PWM. !!!", tested_pwm_);
 
   wheel_position_.assign(4, 0);
   wheel_velocities_.assign(4, 0);
@@ -52,8 +58,10 @@ DriveSystem::on_init(const hardware_interface::HardwareInfo &info) {
       std::stoi(info_.hardware_parameters["wheel_enc_counts_per_rev"]);
   cfg_.controller_period =
       std::stod(info_.hardware_parameters["controller_period"]);
-  cfg_.wheel_m = {0.27291033895945316, 0.2730788189594534, 0.28206923374321247, 0.27404910467374133};
-  cfg_.wheel_b = {-1.295702995675999, -1.3075589956760272, -1.5866751633510998, -1.528822567105082};
+  cfg_.wheel_m = {0.27291033895945316, 0.2730788189594534, 0.28206923374321247,
+                  0.27404910467374133};
+  cfg_.wheel_b = {-1.295702995675999, -1.3075589956760272, -1.5866751633510998,
+                  -1.528822567105082};
 
   talons_.reserve(4);
   talons_[FL] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(
@@ -178,8 +186,10 @@ hardware_interface::return_type DriveSystem::read(const rclcpp::Time &,
         (cfg_.controller_period * cfg_.enc_counts_per_rev);
 
     RCLCPP_INFO(logger_, "!!! Wheel feedback: %zu !!!", wheel);
-    RCLCPP_INFO(logger_, "!!! Wheel velocity: %f !!!", wheel_velocities_[wheel]);
-    RCLCPP_INFO(logger_, "!!! Wheel current consumption: %f !!!", talons_[wheel]->GetOutputCurrent());
+    RCLCPP_INFO(logger_, "!!! Wheel velocity: %f !!!",
+                wheel_velocities_[wheel]);
+    RCLCPP_INFO(logger_, "!!! Wheel current consumption: %f !!!",
+                talons_[wheel]->GetOutputCurrent());
   };
   return hardware_interface::return_type::OK;
 }
@@ -201,16 +211,27 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
 
   for (size_t wheel = FL; wheel < LAST; wheel++) {
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
-    double command = pids_[wheel]->computeCommand(error, period);
-    double pwm = (command - cfg_.wheel_b[wheel]) / cfg_.wheel_m[wheel];
+    double velocity_command = pids_[wheel]->computeCommand(error, period);
+    double pwm_command = velocity_to_pwm(velocity_command, wheel);
+    double pwm_magnitude = abs(pwm_command);
+    double clamped_pwm_magnitude =
+        std::clamp(pwm_magnitude, get_x_intercept(wheel), 100.0);
 
-    // FOR TESTING, UNCOMMENT
-    // pwm = tested_pwm_/100;
-    // COMMENT AGAIN AFTER TESTING
+    double pwm_output = 0;
+    if (pwm_command >= 0) {
+      pwm_output = clamped_pwm_magnitude;
+    } else {
+      pwm_output = clamped_pwm_magnitude * -1;
+    }
+
+    if (testing_) {
+      pwm_output = tested_pwm_ / 100;
+    }
 
     if (wheel != FR) {
       talons_[wheel]->Set(
-          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm);
+          ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+          pwm_output);
     } else {
       talons_[wheel]->Set(
           ctre::phoenix::motorcontrol::TalonSRXControlMode::Follower, 10);
@@ -218,6 +239,27 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
   }
 
   return hardware_interface::return_type::OK;
+}
+
+double DriveSystem::pwm_to_velocity(double pwm, size_t wheel) {
+  double slope = cfg_.wheel_m[wheel];
+  double y_intercept = cfg_.wheel_b[wheel];
+  double velocity = pwm * slope + y_intercept;
+  return velocity;
+}
+
+double DriveSystem::velocity_to_pwm(double velocity, size_t wheel) {
+  double slope = cfg_.wheel_m[wheel];
+  double y_intercept = cfg_.wheel_b[wheel];
+  double pwm = (velocity - y_intercept) / slope;
+  return pwm;
+}
+
+double DriveSystem::get_x_intercept(size_t wheel) {
+  double slope = cfg_.wheel_m[wheel];
+  double y_intercept = cfg_.wheel_b[wheel];
+  double x_intercept = -1 * y_intercept / slope;
+  return x_intercept;
 }
 
 }; // namespace chassis_controls

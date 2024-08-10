@@ -7,6 +7,7 @@
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
+#include <cstddef>
 #include <memory>
 #include <rclcpp/logger.hpp>
 
@@ -36,6 +37,12 @@ public:
   hardware_interface::return_type write(const rclcpp::Time & /*time*/,
                                         const rclcpp::Duration &dt) override;
 
+
+  // Helper methods for converting velocity to pwm and back
+  double velocity_to_pwm(double velocity, size_t wheel);
+  double pwm_to_velocity(double pwm, size_t wheel);
+  double get_x_intercept(size_t wheel);
+
 protected:
   enum Wheels {
     FL,
@@ -60,6 +67,7 @@ protected:
   std::vector<double> wheel_position_;
   std::vector<double> wheel_velocities_;
 
+  bool testing_;
   double tested_pwm_;
 
   std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {

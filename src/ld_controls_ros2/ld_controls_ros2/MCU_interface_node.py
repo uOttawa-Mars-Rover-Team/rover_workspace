@@ -14,12 +14,9 @@ class MCU_interface_node(Node):
         self.soilCollectionSub = self.create_subscription(Key, "keyup", self.soilCollectionCB, 10)
  
     def soilCollectionCB(self, msg):
-        msg = int(msg.code)
-        print(bytes( str(msg) + "f", 'utf-8'))
-        port.write(bytes( str(msg) + "f", 'utf-8'))
-        self.get_logger().info(port.readline())
-
-"""         if msg == 102:
+        msg = msg.code
+        if msg == 102:
+            print("hello")
             port.write(bytearray('f','ascii'))
         elif msg == 274:
             port.write(bytearray('d','ascii'))
@@ -48,7 +45,13 @@ class MCU_interface_node(Node):
         elif msg == 118:
             port.write(bytearray('v','ascii'))
         elif msg == 112:
-            port.write(bytearray('p','ascii')) """
+            port.write(bytearray('p','ascii'))
+        elif msg == 121:
+            port.write(bytearray('y','ascii'))
+        # msg = int(msg.code)
+        # print(bytes( str(msg) + "f", 'utf-8'))
+        # port.write(bytes( str(msg) + "f", 'utf-8'))
+        # self.get_logger().info(port.readline())
         
 
 

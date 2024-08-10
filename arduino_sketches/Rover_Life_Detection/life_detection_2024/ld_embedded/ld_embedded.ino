@@ -41,10 +41,10 @@ void setup() {
   funnelFlap.attach(0);
   funnelFlap.write(0);
 
-  linearActuator.attach(11);
+  linearActuator.attach(12);
   linearActuator.write(90);
 
-  vacuum.attach(12);
+  vacuum.attach(11);
   vacuum.write(90);
 
   drill.attach(13);
@@ -177,12 +177,21 @@ bool vacStatus = 0;
 void toggleVac() {
   if (vacStatus == 0) {
     vacStatus = 1;
-    vacuum.write(0);
     Serial.println("Vac on;");
+    for (int i = 90; i >= 0; i = i -1) {
+      vacuum.write(i);
+      delay(10);
+    }
+
+
   } else if (vacStatus = 1) {
     vacuum.write(90);
     vacStatus = 0;
     Serial.println("Vac off;");
+    for (int i = 0; i <= 90; i++) {
+      vacuum.write(i);
+      delay(10);
+    }
   }
 }
 

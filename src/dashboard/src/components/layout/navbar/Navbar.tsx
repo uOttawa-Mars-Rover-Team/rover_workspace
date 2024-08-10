@@ -19,6 +19,8 @@ import {
   RobotOutlined,
   FieldTimeOutlined,
   NodeIndexOutlined,
+  VideoCameraOutlined,
+  RadarChartOutlined,
 } from "@ant-design/icons";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -94,6 +96,14 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
                 <Menu.Item key="overview">
                   <HomeOutlined />
                   <span>Overview</span>
+                </Menu.Item>
+                <Menu.Item key="telemetry">
+                <RadarChartOutlined />
+                  <span>Telemetry</span>
+                </Menu.Item>
+                <Menu.Item key="camera">
+                <VideoCameraOutlined />
+                  <span>Camera</span>
                 </Menu.Item>
                 <Menu.Item key="scienceMission">
                   <ExperimentOutlined />

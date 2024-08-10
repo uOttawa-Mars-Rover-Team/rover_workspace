@@ -41,7 +41,7 @@ const operations = {
 const ScienceMission: React.FC = () => (
   <>
     <Helmet>
-      <title>uoRover - Science Mission</title>
+      <title>rDash - Science Mission</title>
     </Helmet>
     <Layout title="Science Mission" menuKey="scienceMission">
       <Header title="Beakers" icon={<FilterOutlined />} />

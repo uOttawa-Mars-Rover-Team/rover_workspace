@@ -6,10 +6,10 @@ from general_interfaces.msg import GPS
 
 # Rough modifiable test for rover icon movement on dashboard nav map
 
-class GPSMsgTest(Node):
+class GPSDummyNode(Node):
 
-    def __init__(self, node_name: str = "gps_msg_test"):
-        super().__init__('gps_msg_test')
+    def __init__(self, node_name: str = "gps_dymmy_node"):
+        super().__init__('gps_dummy_node')
         self.publisher_ = self.create_publisher(GPS, 'GPS', 10)
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -39,11 +39,11 @@ class GPSMsgTest(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    gps_msg_test = GPSMsgTest()
+    gps_dummy_node = GPSDummyNode()
 
-    rclpy.spin(gps_msg_test)
+    rclpy.spin(gps_dummy_node)
 
-    gps_msg_test.destroy_node()
+    gps_dummy_node.destroy_node()
     rclpy.shutdown()
 
 

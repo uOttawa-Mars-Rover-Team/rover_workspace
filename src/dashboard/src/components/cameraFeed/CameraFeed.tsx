@@ -14,18 +14,20 @@ import {
   Result,
   CollapseProps,
 } from "antd";
-import { EditOutlined, SaveOutlined, DeleteOutlined } from "@ant-design/icons";
+import {EditOutlined, SaveOutlined, DeleteOutlined, PauseCircleOutlined, CameraOutlined, VideoCameraOutlined, PictureOutlined, PlayCircleOutlined, ExportOutlined} from "@ant-design/icons";
 import React, { useContext, useEffect, useState } from "react";
 import ROSLIB from "roslib";
 
 import CopiableTag from "../copiableTag/CopiableTag";
 import { DashboardContext, RosContext } from "../../contexts";
+import { useNavigate } from "react-router-dom";
 
 interface CameraFeedProps {
   arrayIndex: number;
   topicName: string;
   title: string;
   messageType: string;
+  singleCamera?: false | boolean;
 }
 
 enum CameraState {
@@ -47,6 +49,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
   topicName,
   title,
   messageType,
+  singleCamera,
 }) => {
   const [edit, setEdit] = useState(false);
   const [cameraState, setCameraState] = useState<CameraState>(
@@ -57,8 +60,32 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
   const { rosClient } = useContext(RosContext);
   const [image, setImage] = useState("");
 
+  const [cameraRefresh, setCameraRefresh] = useState(true);
+  const navigate = useNavigate();
+
+  //function to download current image displayed in feed. Image is saved in default browser download folder.
+  const onDownload = () => {
+    const d = new Date();
+    const formattedDate = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDay()} ${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
+    console.log(d);
+    console.log("" +formattedDate);
+    fetch(image)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${title} ${formattedDate}.png`;
+        document.body.appendChild(link);
+        link.click();
+        URL.revokeObjectURL(url);
+        link.remove();
+      });
+  };
+
   useEffect(() => {
-    if (rosClient) {
+    if (rosClient && cameraRefresh) {
+    //if (rosClient) {
       setCameraState(CameraState.Connecting);
       let topic = new ROSLIB.Topic({
         ros: rosClient!,
@@ -77,7 +104,24 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
         topic.unsubscribe();
       };
     }
-  }, [topicName, messageType, rosClient]);
+  }, [topicName, messageType, rosClient, cameraRefresh]);
+
+  const itemsNest: CollapseProps['items'] = [
+    {
+      key: '1',
+      label: 'ROS Details',
+      children: (
+        <Descriptions bordered size="small" layout="vertical" column={1}>
+          <Descriptions.Item label={<b>ROS Topic Name</b>}>
+            <CopiableTag name={topicName} />
+          </Descriptions.Item>
+          <Descriptions.Item label={<b>ROS Message Type</b>}>
+            <CopiableTag name={messageType} />
+          </Descriptions.Item>
+        </Descriptions>
+      ),
+    },
+  ];
 
   const cameraFeedItems: CollapseProps["items"] = [
     {
@@ -136,14 +180,83 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
       ),
       extra: !edit && (
         // eslint-disable-next-line jsx-a11y/anchor-is-valid
-        <a
+        <div>
+
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            style={{marginRight: 12}}
+            >
+            <PictureOutlined />
+          </a>
+
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload();
+            }}
+            style={{marginRight: 12}}
+            >
+            <CameraOutlined/>
+          </a>
+
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            style={{marginRight: 12}}
+            >
+            <VideoCameraOutlined/>
+          </a>
+
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+              setCameraRefresh(!cameraRefresh)
+            }}
+            style={{marginRight: 12}}
+            >
+              {cameraRefresh ? <PauseCircleOutlined/> : <PlayCircleOutlined />}
+            {/* <PauseCircleOutlined/>*/ }
+          </a>
+
+          {!singleCamera &&
+            <a
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Camera array index" + arrayIndex);
+                const cameraIndex = arrayIndex;
+                navigate("/camera/singleCamera", { state: { key: `${cameraIndex}`}});
+              }}
+              style={{marginRight: 12}}
+              >
+              <ExportOutlined/>
+            </a>
+          }
+          {/*
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Camera array index" + arrayIndex);
+              const cameraIndex = arrayIndex;
+              navigate("/camera/singleCamera", { state: { key: `${cameraIndex}`}});
+            }}
+            style={{marginRight: 12}}
+            >
+            <ExportOutlined/>
+          </a>
+          */}
+
+          <a
           onClick={(e) => {
             e.stopPropagation();
             setEdit((prev) => !prev);
           }}
         >
-          <EditOutlined /> Edit
+          <EditOutlined/> Edit
         </a>
+        </div>
       ),
       style: { margin: 0, padding: 0 },
       children: (
@@ -162,8 +275,9 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
             <Skeleton.Image style={{ height: 300, width: "100%" }} />
           )}
           {cameraState === CameraState.Connected && image && (
-            <Image src={image} />
+            <Image src={image} height="100%" width="100%"/>
           )}
+          {/*<Image src={image} height="100%" width="100%"/>*/}
           {cameraState === CameraState.Error && (
             <Result
               status="error"
@@ -171,6 +285,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
               subTitle="Make sure everything is running."
             />
           )}
+          {/*
           <Descriptions bordered size="small" layout="vertical" column={1}>
             <Descriptions.Item label={<b>ROS Topic Name</b>}>
               <CopiableTag name={topicName} />
@@ -179,15 +294,34 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
               <CopiableTag name={messageType} />
             </Descriptions.Item>
           </Descriptions>
+          */}
+          <Collapse items={itemsNest} style={{margin: 10}}/>
         </>
       ),
     },
   ];
 
   return (
+    <>
+      {singleCamera ?
+        <Col sm={24} lg={12} xl={12} xxl={12}>
+          <Collapse items={cameraFeedItems} defaultActiveKey={["1"]} />
+        </Col>
+      :
+        <Col sm={24} lg={12} xl={8} xxl={6}>
+          <Collapse items={cameraFeedItems} defaultActiveKey={["1"]} />
+        </Col>
+      }
+
+  {/*
     <Col sm={24} lg={12} xl={8} xxl={6}>
       <Collapse items={cameraFeedItems} defaultActiveKey={["1"]} />
     </Col>
+  */}
+
+    </>
+    
+    
   );
 };
 

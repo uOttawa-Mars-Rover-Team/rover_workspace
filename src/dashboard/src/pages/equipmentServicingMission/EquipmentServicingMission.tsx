@@ -5,7 +5,7 @@ import { Layout } from "../../components";
 const EquipmentServicingMission: React.FC = () => (
   <>
     <Helmet>
-      <title>uoRover - Equipment Servicing Mission</title>
+      <title>rDash - Equipment Servicing Mission</title>
     </Helmet>
     <Layout
       title="Equipment Servicing Mission"

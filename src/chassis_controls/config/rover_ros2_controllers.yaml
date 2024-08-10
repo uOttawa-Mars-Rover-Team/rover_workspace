@@ -1,0 +1,22 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 5
+
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+    
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+diff_cont:
+  ros__parameters:
+    odom_frame_id: odom
+    base_frame_id: base_link
+    left_wheel_names: ['q1','q4']
+    right_wheel_names: ['q2','q3']
+    wheels_per_side: 2
+    wheel_separation: 0.5698        # center to center = 0.7524; inner to inner = 0.5698
+    wheel_radius: 0.203005
+    open_loop: false
+    enable_odom_tf: true
+    use_stamped_vel: false

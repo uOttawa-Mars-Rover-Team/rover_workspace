@@ -6,6 +6,8 @@ src/chassis_controls/bin/
 install/
 log/
 .cache/
+.ipynb_checkpoints/
+.virtual_documents/
 
 **/.vscode/
 **/.vs/

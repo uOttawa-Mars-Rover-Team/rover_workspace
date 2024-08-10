@@ -236,12 +236,10 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
     double error = wheel_velocity_command_[wheel] - wheel_velocities_[wheel];
     double velocity_command = pids_[wheel]->computeCommand(error, period);
     double pwm_command = velocity_to_pwm(velocity_command, wheel);
-    RCLCPP_INFO(logger_, "!!! Wheel velocity command (corrected): %f !!!", velocity_command);
     double pwm_magnitude = abs(pwm_command);
     double clamped_pwm_magnitude =
         std::clamp(pwm_magnitude, 1.0, 100.0);
 
-    RCLCPP_INFO(logger_, "!!! Wheel clamed magnitude: %f !!!", clamped_pwm_magnitude);
     double pwm_output = 0;
     if (pwm_command >= 0) {
       pwm_output = clamped_pwm_magnitude/100;
@@ -253,7 +251,6 @@ hardware_interface::return_type DriveSystem::write(const rclcpp::Time &,
       pwm_output = tested_pwm_ / 100;
 
     }
-    RCLCPP_INFO(logger_, "!!! Wheel pwm command: %f !!!", pwm_output);
     
     talons_[wheel]->Set(
 		    ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, pwm_output);

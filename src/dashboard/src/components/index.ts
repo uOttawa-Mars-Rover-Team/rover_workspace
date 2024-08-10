@@ -7,6 +7,7 @@ export { default as Layout } from "./layout/Layout";
 export { default as Navigation } from "./navigation/Navigation";
 export { default as TemperatureChart } from "./temperatureChart/TemperatureChart";
 export { default as CameraControls } from "./cameraControls/CameraControls";
+export { default as Telemetry } from "./telemetry/Telemetry";
 
 export {
   ServicesPanel,

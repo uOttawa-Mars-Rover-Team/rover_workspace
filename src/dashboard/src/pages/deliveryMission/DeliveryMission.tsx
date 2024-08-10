@@ -5,7 +5,7 @@ import { Layout } from "../../components";
 const DeliveryMission: React.FC = () => (
   <>
     <Helmet>
-      <title>uoRover - Delivery Mission</title>
+      <title>rDash - Delivery Mission</title>
     </Helmet>
     <Layout title="Delivery Mission" menuKey="deliveryMission" />
   </>

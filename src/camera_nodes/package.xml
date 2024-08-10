@@ -13,6 +13,8 @@
   <!-- Used to make sure launch files can be used and different launch file
   formats are recognized -->
   <exec_depend>ros2launch</exec_depend>
+  <!-- Used for the camera control app -->
+  <exec_depend>python3-urwid</exec_depend>
 
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>

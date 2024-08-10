@@ -162,7 +162,7 @@ class Joy_IK_Controller(Node):
                         elif self.curr_btns_sm[1]:
                             self.vel_control_msg.ee_velocity = self.curr_btns_sm[1] * self.max_vel
 
-                    elif len(message.buttons == 12): # logitech
+                    elif len(message.buttons) == 12: # logitech
                         if self.curr_btns_lt[0]:
                             self.vel_control_msg.ee_velocity = self.curr_btns_lt[0] * self.max_vel
                         elif self.curr_btns_lt[1]:

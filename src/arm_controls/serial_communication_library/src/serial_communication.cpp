@@ -141,15 +141,20 @@ void SerialCommunication::read_serial() {
     
     while (run_) {
         if (!connecting_ && my_serial_) {
-            string response = my_serial_->readline(80, "!");
-            
-            //Accept only strings that fall between shortest and longest sensible strings
-            //shortest (15): g;0;0;0;0;0;0;!
-            //longest  (49): f;-100.00;-99.00;-99.00;-100.00;-1000.00;-99.00;!
-            if (!response.empty() and (response.size() > 15 and response.size() < 55)) {
-                    publishMessage(response);
-                    std::cout << std::flush; // clear buffer to print per msg instead of a block
+            try {
+                string response = my_serial_->readline(80, "!");
+                
+                //Accept only strings that fall between shortest and longest sensible strings
+                //shortest (15): g;0;0;0;0;0;0;!
+                //longest  (49): f;-100.00;-99.00;-99.00;-100.00;-1000.00;-99.00;!
+                if (!response.empty() and (response.size() > 15 and response.size() < 55)) {
+                        publishMessage(response);
+                        std::cout << std::flush; // clear buffer to print per msg instead of a block
+                }
+            } catch (...) {
+    cout << "[" << current_time_.tv_sec << "." << current_time_.tv_nsec << "]" << " [DEBUG] Had problem reading serial" << endl;
             }
+
         }
     }
 }

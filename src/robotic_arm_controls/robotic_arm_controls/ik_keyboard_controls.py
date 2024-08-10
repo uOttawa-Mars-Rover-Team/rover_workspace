@@ -47,7 +47,7 @@ class KeyboardListener(Node):
         #self.get_logger().info(f'Key pressed: {key_str}')
 
         # Call service when 's' key is pressed
-        if key.char == 's':
+        if key_str == 's':
             if self.client.wait_for_service(timeout_sec=1.0):
                 self.send_request()
             else:

@@ -22,25 +22,16 @@ namespace arm_controls
         joint_velocity_state_.assign(num_joints, 0);
         joint_position_command_.assign(num_joints, 0);
 
-        prev_position_command_ = "";
-        
-        //peripheral command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en, stop
+        //gpio command vector order: stepper1 en, stepper2 en, stepper3 en, stepper4 en, laser en, stop
         peripheral_command_ = vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
         peripheral_state_ =  vector<double>(std::begin(DEFLT_PERIPHERAL_STATE), std::end(DEFLT_PERIPHERAL_STATE)); //this means that on init, all the steppers are enabled and the laser and emergency stop are disabled
 
-        //PID Initialization
-        for (int i = 0; i < LAST; i++){
-            pids_.emplace_back(std::make_shared<control_toolbox::Pid>());
-        }
+        prev_position_command_ = "";
 
-        pids_[TOWER]->initPid(0.002342, 0, 0, 0, 0, true);
-        pids_[SHOULDER]->initPid(0.0078556, 0, 0, 0, 0, true);
-        pids_[ELBOW]->initPid(1.0, 0, 0, 0, 0, true);
-        pids_[PITCH]->initPid(0.00096076, 0, 0, 0, 0, true);
+       //TODO: Initialize PID Objects here (call initPID)
 
-        //Serial Intialization
         serialObject.connect_serial(0); 
-        serialObject.publishToArduino(MANUAL_START_COMMAND); //this will set the arduino in IK mode
+        serialObject.publishToArduino(IK_START_COMMAND); //this will set the arduino in IK mode
         
         return CallbackReturn::SUCCESS;
     }
@@ -74,7 +65,7 @@ namespace arm_controls
             command_interfaces.emplace_back(hardware_interface::CommandInterface(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &joint_position_command_[i]));
             
-            if (i >= LAST){ // based on the XACRO file this should be q5 and q6 which are being used for velocity P right now
+            if (i >= 4){ // based on the XACRO file this should be q5 and q6 which are being used for velocity P right now
                 command_interfaces.emplace_back(hardware_interface::CommandInterface(
                     info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &joint_position_command_[i]));
  
@@ -108,7 +99,7 @@ namespace arm_controls
             //getline will load the  next part of the string up to the semicolon
             //putting this in an if statement will ensure that the code doesn't break if the string stream is in a failure state
             if (std::getline(ss, temp, ';') && temp != "!"){ 
-                if (i < LAST){ // TOWER, SHOULDER, ELBOW, PITCH
+                if (i < 4){ // TOWER, SHOULDER, ELBOW, PITCH
                     double positionInRad = std::stod(temp) * PI / 180;
                     joint_position_state_[i] = positionInRad;
                 } else { // ROLL, EE
@@ -174,27 +165,13 @@ namespace arm_controls
         command_stream << "S;";
 
         for (size_t i = 0; i < num_joints; ++i) {
-            double valueToWrite;
-
-            if (i < LAST){
-                //valueToWrite = joint_position_command_[i] * 180 / PI;
-                double error = joint_position_command_[i] - joint_position_state_[i];
-                uint64_t dt = period.nanoseconds();
-
-                valueToWrite = pids_[i]->computeCommand(error, dt);
-            } else {
-                valueToWrite = joint_velocity_command_[i];
+            double positionInDegrees = joint_position_command_[i] * 180 / PI;
+            positionInDegrees = std::round(positionInDegrees * 100.0) / 100.0; //bruh
+            if (positionInDegrees == -0.00) {
+                positionInDegrees = 0.00;
             }
-
-            valueToWrite = std::round(valueToWrite * 100.0) / 100.0; //bruh
-
-            if (valueToWrite == -0.00) {
-                valueToWrite = 0.00;
-            }
-
-            command_stream << std::fixed << std::setprecision(2) << valueToWrite << ";";
+            command_stream << std::fixed << std::setprecision(2) << positionInDegrees << ";";
         }
-
         command_stream << "!";
         
         std::string command = command_stream.str();

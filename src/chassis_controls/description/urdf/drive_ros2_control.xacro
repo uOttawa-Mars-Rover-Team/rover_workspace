@@ -8,6 +8,18 @@
                 </xacro:if>
                 <xacro:unless value="${use_gazebo}">
                     <plugin>chassis_controls/DriveSystem</plugin>
+                    <param name="kp_fl">${kp_fl}</param>
+                    <param name="ki_fl">${ki_fl}</param>
+                    <param name="kd_fl">${kd_fl}</param>
+                    <param name="kp_fr">${kp_fr}</param>
+                    <param name="ki_fr">${ki_fr}</param>
+                    <param name="kd_fr">${kd_fr}</param>
+                    <param name="kp_rl">${kp_rl}</param>
+                    <param name="ki_rl">${ki_rl}</param>
+                    <param name="kd_rl">${kd_rl}</param>
+                    <param name="kp_rr">${kp_rr}</param>
+                    <param name="ki_rr">${ki_rr}</param>
+                    <param name="kd_rr">${kd_rr}</param>
                     <param name="testing">${testing}</param>
                     <param name="wheel_diameter">${wheel_diameter}</param>
                     <param name="wheel_max_velocity">${wheel_max_velocity}</param>

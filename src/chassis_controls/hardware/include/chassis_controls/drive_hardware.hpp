@@ -69,6 +69,10 @@ protected:
 
   bool testing_;
   double tested_pwm_;
+  double Kp_FL, Ki_FL, Kd_FL = 0;
+  double Kp_FR, Ki_FR, Kd_FR = 0;
+  double Kp_RR, Ki_RR, Kd_RR = 0;
+  double Kp_RL, Ki_RL, Kd_RL = 0;
 
   std::unordered_map<std::string, std::vector<std::string>> joint_interfaces = {
       {"position", {}}, {"velocity", {}}};

@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 50
+    update_rate: 5
 
     diff_cont:
       type: diff_drive_controller/DiffDriveController

@@ -1,6 +1,6 @@
 import cv2
 import rclpy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage, Image
 
 from .common import CameraNode
 
@@ -18,10 +18,17 @@ class ArucoDecoderNode(CameraNode):
         self.image_subscription_topic = self.get_param(
             "image_topic", rclpy.Parameter.Type.STRING
         )
+        self.image_is_compressed = self.get_param(
+            "is_compressed", rclpy.Parameter.Type.BOOL, default_val=False
+        )
         # Subscribe to a single ROS Image topic to receive images to detect
         # ArUco markers from
+
         self.image_subscription = self.create_subscription(
-            Image, self.image_subscription_topic, self.image_callback, 10
+            CompressedImage if self.image_is_compressed else Image,
+            self.image_subscription_topic,
+            self.image_callback,
+            10,
         )
         self.get_logger().info(
             f"Subscribing to messages from: {self.image_subscription.topic_name}"
@@ -36,9 +43,12 @@ class ArucoDecoderNode(CameraNode):
         # Convert the ROS image to an OpenCV image. Use output encoding as
         # "bgr8", however openCV seems to convert it into a grayscale image
         # anyways
-        frame = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+        if self.image_is_compressed:
+            frame = self.bridge.compressed_imgmsg_to_cv2(image, desired_encoding="bgr8")
+        else:
+            frame = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
 
-        arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
         arucoParams = cv2.aruco.DetectorParameters_create()
 
         # Detect ArUco markers in the input frame, dismissing rejectedImgPoints

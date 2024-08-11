@@ -69,6 +69,7 @@
         motor[i].desiredPos = 0.0;
         motor[i].enc_count = 0;
         motor[i].enc_turns = 0;
+        motor[i].speed = 0;
         setZeroSPI(motor[i].ENC_PIN);
       }
       Serial.println("Direction, current and desired states reset!");
@@ -110,6 +111,9 @@
       else
         digitalWrite(motor[EE].BOOT_PIN, HIGH);
 
+    } else if (equalsStr(tmp, "stepper_safety")) {
+      stepper_safety_en = not stepper_safety_en;
+
     } else if (equalsStr(tmp, "laser")) {
       if (digitalRead(LASER_PIN))
         digitalWrite(LASER_PIN, LOW);
@@ -136,6 +140,12 @@
 
     } else if (equalsStr(tmp, "ee_stop")) {
       motor[EE].desiredPos = 0;
+
+    }
+
+    
+     else if (equalsStr(tmp, "wrist_angle_abs")) {
+      wrist_angle_abs = not wrist_angle_abs;
 
     }
     
@@ -167,7 +177,7 @@
   }//end of serial available
 
   //Every dashb_delay ms, publish stuff
-  if (millis() - dashb_t >= dashb_delay and false) {
+  if (millis() - dashb_t >= dashb_delay) {
     if (not graph) {
 
       Serial.println();
@@ -187,8 +197,6 @@
     Serial.println();
     Serial.print("f;");
     for (int i = TW ; i < WR ; i++) {
-      motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
-      motor[i].currentPos *= motor[i].sign;
       Serial.print(motor[i].currentPos);
       Serial.print(";");
     }
@@ -235,5 +243,3 @@
     //update timer until enc_delay is over
     dashb_t = millis();
   }//end of dashboard delay if statement
-
-

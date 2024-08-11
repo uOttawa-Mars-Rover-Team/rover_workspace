@@ -78,9 +78,9 @@ class Joy_M_Controller(Node):
             self.max_vel = round(self.max_vel, 1)
 
             if message.axes[5] > 0:
-                self.curr_cmd += str(round(self.max_vel, 2))
+                self.curr_cmd += str(round(self.max_vel*0.5, 2))
             elif message.axes[5] < 0:
-                self.curr_cmd += str(round(-self.max_vel, 2))
+                self.curr_cmd += str(round(-self.max_vel*0.5, 2))
             else:
                 self.curr_cmd += "0.0"
             self.curr_cmd += ";"
@@ -99,9 +99,9 @@ class Joy_M_Controller(Node):
                 self.curr_cmd += "0.0"
             self.curr_cmd += ";"
             if message.axes[3] > 0:
-                self.curr_cmd += str(round(self.max_vel, 2))
+                self.curr_cmd += str(round(self.max_vel*0.5, 2))
             elif message.axes[3] < 0:
-                self.curr_cmd += str(round(-self.max_vel, 2))
+                self.curr_cmd += str(round(-self.max_vel*0.5, 2))
             else:
                 self.curr_cmd += "0.0"
             self.curr_cmd += ";"
@@ -114,9 +114,9 @@ class Joy_M_Controller(Node):
             self.curr_cmd += ";"
                 
             if message.buttons[0]:
-                self.curr_cmd += str(self.max_vel*0.5)
+                self.curr_cmd += str(self.max_vel*0.75)
             elif message.buttons[1]:
-                self.curr_cmd += str(-self.max_vel*0.5)
+                self.curr_cmd += str(-self.max_vel*0.75)
             else:
                 self.curr_cmd += "0.0"
             self.curr_cmd += ";!"

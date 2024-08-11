@@ -65,6 +65,8 @@ uint8_t attempts;
 #define verbose             false
 #define graph               true
 bool emergency_stop_en =    false;
+bool wrist_angle_abs = false;
+bool stepper_safety_en = false;
 
 //Stop variables for steppers & limit switch purposes
 int EEStopClose   = 0;

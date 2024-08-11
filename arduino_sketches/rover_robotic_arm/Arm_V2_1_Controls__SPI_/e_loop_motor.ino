@@ -17,6 +17,11 @@
   //Every enc_delay ms, sample encoder data and move motors when needed
   if (millis() - motor_t >= motor_delay) {
     
+    for (int i = TW ; i < WR ; i++) {
+      motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
+      motor[i].currentPos *= motor[i].sign;
+    }
+    
     if (equalsStr(mode,"M")) {
       for (int i = TW ; i < LAST ; i++) {
         if (motor[i].desiredPos < 0.0) {
@@ -76,9 +81,10 @@
     //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
     //if (motor[TW].direction)
     //if (motor[TW].currentPos > -90 and motor[TW].currentPos < 90)
-    if (abs(motor[TW].currentPos) < 90
+    if (not stepper_safety_en
+    or (abs(motor[TW].currentPos) < 90
     or motor[TW].currentPos >  90 and motor[TW].direction !=  1
-    or motor[TW].currentPos < -90 and motor[TW].direction != -1)
+    or motor[TW].currentPos < -90 and motor[TW].direction != -1))
       tower.run();
 
     //LAs handled by moveMotor
@@ -89,9 +95,10 @@
       //- LS3 is not clicked and pitching down
       //- LS4 is not clicked and pitching up
       //if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
-    if (abs(motor[WP].currentPos) < 60
-    or motor[WP].currentPos >  60 and motor[WP].direction !=  1
-    or motor[WP].currentPos < -60 and motor[WP].direction != -1)
+    if (not stepper_safety_en
+    or (abs(motor[WP].currentPos) < 60
+    or motor[WP].currentPos >  60 and motor[WP].direction !=-1
+    or motor[WP].currentPos < -60 and motor[WP].direction != 1))
         wristPitch.run();
       //}
       
@@ -279,4 +286,3 @@ return nextSpeed;
 
   return (int) s_final;*/
 }//end of calculateNextSpeed
-

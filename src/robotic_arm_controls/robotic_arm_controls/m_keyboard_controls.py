@@ -23,7 +23,6 @@ class KeyboardListener(Node):
         self.vel.data = 1.0
         self.arm_cmd = String()
 
-
     def on_press(self, key):
         # This is for special keys that don't have the char attribute
         try:
@@ -75,6 +74,12 @@ class KeyboardListener(Node):
         if key_str == '4':#laser
             self.arm_cmd.data = "laser;!"
             self.get_logger().info('Laser toggle')
+            self.cmd_pub.publish(self.arm_cmd)
+
+        #Handling laser
+        if key_str == '3':#disable arduino stepper protection from unsafe angles
+            self.arm_cmd.data = "stepper_safety;!"
+            self.get_logger().info('Stepper safety toggle')
             self.cmd_pub.publish(self.arm_cmd)
 
         #Handling emergency stop button

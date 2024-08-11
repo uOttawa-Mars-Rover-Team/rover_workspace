@@ -119,6 +119,24 @@
     } else if (equalsStr(tmp, "stop")) {
       emergency_stop_en = not emergency_stop_en;
 
+    } else if (equalsStr(tmp, "roll")) {
+      motor[WR].desiredPos = 0.4;
+
+    } else if (equalsStr(tmp, "unroll")) {
+      motor[WR].desiredPos = -0.4;
+
+    } else if (equalsStr(tmp, "roll_stop")) {
+      motor[WR].desiredPos = 0;
+
+    } else if (equalsStr(tmp, "ee_open")) {
+      motor[EE].desiredPos = -0.4;
+
+    } else if (equalsStr(tmp, "ee_close")) {
+      motor[EE].desiredPos = 0.4;
+
+    } else if (equalsStr(tmp, "ee_stop")) {
+      motor[EE].desiredPos = 0;
+
     }
     
     //LED related stuff
@@ -149,7 +167,7 @@
   }//end of serial available
 
   //Every dashb_delay ms, publish stuff
-  if (millis() - dashb_t >= dashb_delay) {
+  if (millis() - dashb_t >= dashb_delay and false) {
     if (not graph) {
 
       Serial.println();
@@ -166,27 +184,7 @@
     
 
 
-    //////testing: delete this block and replace with one below////////
-
-    motor[TW].currentPos = (360*float(motor[TW].enc_count)/4096 + float(motor[TW].enc_turns)*360)/50;
-    motor[TW].currentPos *= motor[TW].sign;
-    /*Serial.print("tower current ----------------");
-    Serial.print("!");
-    Serial.print(motor[TW].currentPos);
-    Serial.println("!");*/
-
     Serial.println();
-    Serial.print("f;");
-    Serial.print(motor[TW].desiredPos);
-    Serial.print(";");
-    for (int i = L1 ; i < LAST ; i++) {
-      Serial.print(motor[i].desiredPos);
-      Serial.print(";");
-    }
-    Serial.print("!");
-    //////testing: delete this block and replace with one below////////
-
-    /*Serial.println();
     Serial.print("f;");
     for (int i = TW ; i < WR ; i++) {
       motor[i].currentPos = 360*float(motor[i].enc_count)/4096 + float(motor[i].enc_turns)*360;
@@ -194,10 +192,8 @@
       Serial.print(motor[i].currentPos);
       Serial.print(";");
     }
-    motor[WR].currentPos = wristRoll.currentPosition();
-    Serial.print(motor[WR].currentPos*0.036);
-    Serial.print(";0.00;");
-    Serial.print("!");*/
+    Serial.print("!");
+    
     /*
     //Publishing/printing velocities
     Serial.println();
@@ -221,13 +217,8 @@
     */
 
     //Publishing gpio feedback
-      Serial.print("\nSpeeds: ");
-    for (int m = TW ; m < LAST ; m++) {
-      Serial.print(motor[m].speed);
-      Serial.print(", ");
-    }
-
-    Serial.print("\ng;");
+    Serial.println();
+    Serial.print("g;");
     Serial.print(digitalRead(motor[TW].BOOT_PIN));
     Serial.print(";");
     Serial.print(digitalRead(motor[WP].BOOT_PIN));
@@ -244,3 +235,5 @@
     //update timer until enc_delay is over
     dashb_t = millis();
   }//end of dashboard delay if statement
+
+

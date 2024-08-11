@@ -38,7 +38,7 @@ JrkG2I2C LA2(12);
 ////// Constant/Variable Declaration //////
 
 // Serial rates for UART
-#define BAUDRATE        500000
+#define BAUDRATE        115200
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -73,11 +73,11 @@ int wristStopUp   = 0;
 int wristStopDown = 0;
 
 //Time in ms for:
-int ls_delay    = 20; //limit switch debounce time (ms)
-int enc_delay   = 50;  //how often to update encoder data
-int motor_delay = 50; //how often to move motors
-int dashb_delay = 200;//how often to publish via serial encoder data, etc...
-int fault_delay = 500;//how often to check for faults on all drivers
+long ls_delay    = 20; //limit switch debounce time (ms)
+long enc_delay   = 50;  //how often to update encoder data
+long motor_delay = 50; //how often to move motors
+long dashb_delay = 200;//how often to publish via serial encoder data, etc...
+long fault_delay = 500;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates
 unsigned long encoder_t  = millis();//timer for encoder updates
@@ -122,17 +122,17 @@ struct Motor {
   int           ENC_PIN;      //enable pin for encoder, active low 
   int           BOOT_PIN;     //used to reboot the stepper drivers
   int           FAULT_PIN;    //to manage faults for all drivers
-  int           MAX_SPEED;    
+  int           MAX_SPEED;    //to manage faults for all drivers
 };
 
 //Create the motor objects
-//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P   MAX_SPEED
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68,        1000};
-Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30,        600};    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31,        600};
-Motor wp = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62,        1000};
-Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55,        1000};
-Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54,        1000};
+//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68,      1000};
+Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30,      600};    
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31,      600};
+Motor wp = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62,      1000};
+Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55,      1000};
+Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54,      1000};
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 

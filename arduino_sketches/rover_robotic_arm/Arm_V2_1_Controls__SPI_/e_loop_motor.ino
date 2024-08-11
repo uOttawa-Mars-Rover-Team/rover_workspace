@@ -19,15 +19,15 @@
     
     if (equalsStr(mode,"M")) {
       for (int i = TW ; i < LAST ; i++) {
-        if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
+        if (motor[i].desiredPos < 0.0) {
           motor[i].direction = -1;
           moveMotors(i, -1);
         }
-        else if (motor[i].desiredPos > 0.0 and not motor[i].direction) {
+        else if (motor[i].desiredPos > 0.0) {
           motor[i].direction = 1;
           moveMotors(i, 1);
         }
-        else if (floatsEqual(motor[i].desiredPos, 0.0, 0.02) and motor[i].direction) {
+        else if (floatsEqual(motor[i].desiredPos, 0.0, 0.02)) {
           motor[i].direction = 0;
           moveMotors(i, 0);
         }
@@ -43,11 +43,9 @@
       motorHomeToCount(L2, 0.75);
       //Move wrist up to 0.5 degrees around the goal
       motorHomeToCount(WP, 0.75);
-      //Move wrist up to 0.5 degrees around the goal
-      motorHomeToCount(WR, 0.75);
       
       //Move last 2 remaining motors by speed
-      for (int i = EE ; i < LAST ; i++) {
+      for (int i = WR ; i < LAST ; i++) {
         //move towards negative direction
         if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
@@ -77,6 +75,10 @@
     //Motor is allowed to run whenever it's in one of the cases
     //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
     //if (motor[TW].direction)
+    //if (motor[TW].currentPos > -90 and motor[TW].currentPos < 90)
+    if (abs(motor[TW].currentPos) < 90
+    or motor[TW].currentPos >  90 and motor[TW].direction !=  1
+    or motor[TW].currentPos < -90 and motor[TW].direction != -1)
       tower.run();
 
     //LAs handled by moveMotor
@@ -87,6 +89,9 @@
       //- LS3 is not clicked and pitching down
       //- LS4 is not clicked and pitching up
       //if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
+    if (abs(motor[WP].currentPos) < 60
+    or motor[WP].currentPos >  60 and motor[WP].direction !=  1
+    or motor[WP].currentPos < -60 and motor[WP].direction != -1)
         wristPitch.run();
       //}
       
@@ -153,9 +158,6 @@ void moveMotors(int i, int dir) {
 
   motor[i].speed = calculateNextSpeed(i);
   motor[i].direction = dir;
-
-  //Serial.println(motor[i].speed);
-  //Serial.println();
 
   //Tower motor
   if (i == TW) {
@@ -234,7 +236,7 @@ int calculateNextSpeed(int i) {
   //For use with IK when not PID'ing (constant speed)
   int nextSpeed = 0;
   if (equalsStr(mode,"M")) {
-    nextSpeed = abs(int(motor[i].desiredPos * motor[i].MAX_SPEED));
+    nextSpeed = abs(int(motor[i].desiredPos*motor[i].MAX_SPEED));
   } else {
     switch (i) {
       case TW:
@@ -250,10 +252,10 @@ int calculateNextSpeed(int i) {
         nextSpeed = 300;
         break;
       case WR:
-        nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
+        nextSpeed = 300;
         break;
       case EE:
-        nextSpeed = abs(motor[i].desiredPos * motor[i].MAX_SPEED);
+        nextSpeed = 300;
         break;
       default:
         nextSpeed = 0;

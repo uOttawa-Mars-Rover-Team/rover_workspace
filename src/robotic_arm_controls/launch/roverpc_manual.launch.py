@@ -18,7 +18,7 @@ def generate_launch_description():
             parameters=[
                 {'timeout_delay': 0.1},
                 {'serial_dev': "/dev/ttyACM0"},
-                {'baudrate': 500000}
+                {'baudrate': 115200}
             ],
             output="screen",
             )

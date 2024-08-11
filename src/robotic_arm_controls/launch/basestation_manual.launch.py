@@ -16,7 +16,8 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'dev': '/dev/input/arm_logitech'}
+                {'dev': '/dev/input/js3'},
+                {'deadzone': 0.4}
             ],
             remappings=[
                 ("/joy", "/joy/arm_cmd"),
@@ -24,25 +25,28 @@ def generate_launch_description():
             output="screen",
             )
             
-    # Toggler node
-    m_toggler = launch_ros.actions.Node(
+    # Keyboard
+    m_keyboard_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
-            executable="m_toggler",
+            executable="m_keyboard_controls",
             output="screen",
             )
 
-    # Manual controls
-    m_arm_controls = launch_ros.actions.Node(
+    # Joy M Controller
+    m_joy_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
-            executable="m_arm_controls",
+            executable="m_joy_controls",
+            parameters=[
+                {'deadzone': 0.4}
+            ],
             output="screen",
             )
 
     return launch.LaunchDescription(
             [
                 logitech_joy,
-                m_toggler,
-                m_arm_controls
+                m_keyboard_controls,
+                m_joy_controls,
                 ]
             )
 

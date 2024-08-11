@@ -33,24 +33,26 @@ class Router(Node):
         #Subscribers
         self.cmd_subscriber = self.create_subscription(String, "/arm_cmd", self.cmd_callback_function, 20)
 
-        #Publishers
-        self.state_publisher = self.create_publisher(ArmPose, '/arm_feedback', 20)
-        self.error_publisher = self.create_publisher(ArmError, '/arm_faults', 20)
-        
         #Parameters
         self.RETRY_DELAY = self.get_param("timeout_delay", rclpy.Parameter.Type.DOUBLE, 0.1)  # time (s) to attempt serial connection
-        self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING)
-        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 500000)
+        self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING, "/dev/arm_mega")
+        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 115200)
 
         #Threading
         #self.pool_executor = Pool()
-        self.run = True
-        self.tp_executor = ThreadPoolExecutor(max_workers=5) #creating 3 threads
-        self.reader = self.tp_executor.submit(self.read_loop)
+        self.run = False
+        #self.tp_executor = ThreadPoolExecutor(max_workers=4) #creating 3 threads
+        #self.reader = self.tp_executor.submit(self.read_loop)
+
         # whether to connect or not; reconnector will then try to establish a serial conn.
         self.connecting = True  
         # connection to serial will be handled by this thread
-        self.reconnector = self.tp_executor.submit(self.connect_serial)
+        #self.reconnector = self.tp_executor.submit(self.connect_serial)
+
+        self.get_logger().info("BEFORE CONNECT SERIAL")
+        self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
+        self.connecting = False
+        self.get_logger().info("AFTER CONNECT SERIAL")
 
         # Initialising variables
         self.movement = ""
@@ -86,6 +88,7 @@ class Router(Node):
     """
     Reading done on a seaparate thread to not block main
     """
+    '''
     def read_loop(self):
         self.get_logger().info("Running serial reader thread...")
         #time.sleep(1)
@@ -97,7 +100,7 @@ class Router(Node):
                     byte_chunk = self.ARDUINO.read_until(b'!')
                         
                     #self.tp_executor.submit(self.publishMessage, byte_chunk[:-1])
-                    #self.get_logger().info(byte_chunk[:-1])
+                    self.get_logger().info(byte_chunk[:-1])
             except:
                 self.get_logger().info("Could not publish message even while connected!")
                 self.get_logger().info("Will attempt to reconnect")
@@ -105,7 +108,7 @@ class Router(Node):
 
         # sends kill signal to the read process
         os.kill(os.getpid(), 9)
-
+    '''
     """
     Executes derived movement from the Joy (usually "/joy") topic
     """
@@ -122,6 +125,7 @@ class Router(Node):
     """
     Sends stop command to arduino and tries to reconnect if the connection is lost
     """
+    '''
     def force_stop(self):
         if not self.connecting:
             try:
@@ -130,7 +134,7 @@ class Router(Node):
             except:
                 self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
                 self.connecting = True # connect flag true -> connector will try to establish a connection
-
+    '''
     """
     Sends serial messages to the arduino based on messages recieved from the Manual node
     """
@@ -145,9 +149,8 @@ class Router(Node):
     Only publishes if the message is different from the last message sent
     """
     def publishToArduino(self, message) -> None:
-        if (message != self.movement):
-            self.movement = message
-            self.write_serial()
+        self.movement = message
+        self.write_serial()
         
     """
     Helper function to declare and get the value of a ROS launch parameter,
@@ -195,9 +198,6 @@ def main(args=None):
 
     router_node.destroy_node()
     rclpy.shutdown() # when the spinning above stops, node should shutdown; i.e. SIGINT or otherwise
-    
-
-
 
 if __name__ == "__main__":
     main()

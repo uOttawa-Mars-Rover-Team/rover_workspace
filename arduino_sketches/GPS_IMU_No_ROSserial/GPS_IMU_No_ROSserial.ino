@@ -73,12 +73,12 @@ void setup()
   mySerial.println(PMTK_Q_RELEASE);
 
   //IMU
-  Wire.begin();
+//  Wire.begin();
 
-  if (imu.begin() == false) // with no arguments, this uses default addresses (AG:0x6B, M:0x1E) and i2c port (Wire).
-  {
-    while (1);
-  }
+//  if (imu.begin() == false) // with no arguments, this uses default addresses (AG:0x6B, M:0x1E) and i2c port (Wire).
+//  {
+//    while (1);
+//  }
 }
 
 uint32_t timer = millis();
@@ -86,21 +86,21 @@ void loop()                     // run over and over again
 {
   //IMU
   // Update the sensor values whenever new data is available
-  if ( imu.gyroAvailable() )
-  {
-    // update gx, gy, and gz
-    imu.readGyro();
-  }
-  if ( imu.accelAvailable() )
-  {
-    // update ax, ay, and az
-    imu.readAccel();
-  }
-  if ( imu.magAvailable() )
-  {
-    // update mx, my, and mz
-    imu.readMag();
-  }
+//  if ( imu.gyroAvailable() )
+//  {
+//    // update gx, gy, and gz
+//    imu.readGyro();
+//  }
+//  if ( imu.accelAvailable() )
+//  {
+//    // update ax, ay, and az
+//    imu.readAccel();
+//  }
+//  if ( imu.magAvailable() )
+//  {
+//    // update mx, my, and mz
+//    imu.readMag();
+//  }
 
   //GPS
   char c = GPS.read();
@@ -150,42 +150,42 @@ void loop()                     // run over and over again
       Serial.println("lat: None,\nlon: None,");
     }
 
-    float ax, ay, az, mx, my, mz;
-    ax = imu.ax;
-    ay = imu.ay;
-    az = imu.az;
-    my = -imu.my;
-    mx = -imu.mx;
-    mz = imu.mz;
-    
-    float roll = atan2(ay, az);
-  float pitch = atan2(-ax, sqrt(ay * ay + az * az));
-
-  float heading;
-  if (my == 0)
-    heading = (mx < 0) ? PI : 0;
-  else
-    heading = atan2(mx, my);
-
-  heading -= DECLINATION * PI / 180;
-
-  if (heading > PI) heading -= (2 * PI);
-  else if (heading < -PI) heading += (2 * PI);
-
-  // Convert everything from radians to degrees:
-  heading *= 180.0 / PI;
-  pitch *= 180.0 / PI;
-  roll  *= 180.0 / PI;
-
-    //print the IMU stuff
-    Serial.print("roll: ");
-    Serial.print(roll, 4);
-    Serial.println(",");
-    Serial.print("pitch: ");
-    Serial.print(pitch, 4);
-    Serial.println(",");
-    Serial.print("yaw: ");
-    Serial.print(heading, 4);
-    Serial.println(",");
+//    float ax, ay, az, mx, my, mz;
+//    ax = imu.ax;
+//    ay = imu.ay;
+//    az = imu.az;
+//    my = -imu.my;
+//    mx = -imu.mx;
+//    mz = imu.mz;
+//    
+//    float roll = atan2(ay, az);
+//  float pitch = atan2(-ax, sqrt(ay * ay + az * az));
+//
+//  float heading;
+//  if (my == 0)
+//    heading = (mx < 0) ? PI : 0;
+//  else
+//    heading = atan2(mx, my);
+//
+//  heading -= DECLINATION * PI / 180;
+//
+//  if (heading > PI) heading -= (2 * PI);
+//  else if (heading < -PI) heading += (2 * PI);
+//
+//  // Convert everything from radians to degrees:
+//  heading *= 180.0 / PI;
+//  pitch *= 180.0 / PI;
+//  roll  *= 180.0 / PI;
+//
+//    //print the IMU stuff
+//    Serial.print("roll: ");
+//    Serial.print(roll, 4);
+//    Serial.println(",");
+//    Serial.print("pitch: ");
+//    Serial.print(pitch, 4);
+//    Serial.println(",");
+//    Serial.print("yaw: ");
+//    Serial.print(heading, 4);
+//    Serial.println(",");
   }
 }

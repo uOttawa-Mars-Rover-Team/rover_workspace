@@ -19,6 +19,8 @@ def generate_launch_description():
     compression_quality_launch_arg = DeclareLaunchArgument(
         "compression_quality", default_value="20"
     )
+    codec = LaunchConfiguration("codec")
+    codec_launch_arg = DeclareLaunchArgument("codec", default_value="MJPG")
 
     return LaunchDescription(
         [
@@ -26,6 +28,7 @@ def generate_launch_description():
             video_device_launch_arg,
             framerate_launch_arg,
             compression_quality_launch_arg,
+            codec_launch_arg,
             Node(
                 package="camera_nodes",
                 executable="publisher",
@@ -35,6 +38,7 @@ def generate_launch_description():
                         "video_device": video_device,
                         "framerate": framerate,
                         "compression_quality": compression_quality,
+                        "codec": codec,
                     }
                 ],
             ),

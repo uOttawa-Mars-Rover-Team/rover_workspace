@@ -28,17 +28,17 @@ void setup() {
   strip.setBrightness(50);
   strip.show();
 
-  vacTube.setMaxSpeed(3000);
-  vacTube.setAcceleration(1000);
-  vacTube.setSpeed(3000);
-  rotaryArray.setMaxSpeed(3000);
-  rotaryArray.setAcceleration(1000);
-  rotaryArray.setSpeed(3000);
+  vacTube.setMaxSpeed(500);
+  vacTube.setAcceleration(10000);
+  vacTube.setSpeed(500);
+  rotaryArray.setMaxSpeed(500);
+  rotaryArray.setAcceleration(10000);
+  rotaryArray.setSpeed(500);
 
   vacTopLS.setDebounceTime(50);
   vacBottomLS.setDebounceTime(50);
 
-  funnelFlap.attach(0);
+  funnelFlap.attach(8);
   funnelFlap.write(0);
 
   linearActuator.attach(12);
@@ -153,7 +153,10 @@ bool linearActuatorMoving = false;
 void moveLinearActuatorUp() {
   if (linearActuatorMoving == false) {
     linearActuatorMoving = true;
-    linearActuator.write(90);
+    for (int i = 90; i >= 0; i = i-1) {
+      linearActuator.write(i);
+      delay(10);
+    }
   } else {
     linearActuator.write(90);
     linearActuatorMoving = false;
@@ -164,7 +167,10 @@ void moveLinearActuatorUp() {
 void moveLinearActuatorDown() {
   if (linearActuatorMoving == false) {
     linearActuatorMoving = true;
-    linearActuator.write(180);
+    for (int i = 90; i <= 180; i++) {
+      linearActuator.write(i);
+      delay(10);
+    }
   } else {
     linearActuator.write(90);
     linearActuatorMoving = false;

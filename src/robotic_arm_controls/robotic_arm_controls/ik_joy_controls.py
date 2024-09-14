@@ -183,7 +183,7 @@ class Joy_IK_Controller(Node):
                     self.curr_cmd = "S;"
 
                     if self.curr_axes[0]:
-                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2))
+                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2)/4)
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"
@@ -214,16 +214,16 @@ class Joy_IK_Controller(Node):
                     if len(message.buttons) == 2: # spacemouse
                         
                         if self.curr_btns_sm[0]:
-                            self.curr_cmd += str(self.max_vel)
+                            self.curr_cmd += str(round(self.max_vel, 2))
                         elif self.curr_btns_sm[1]:
-                            self.curr_cmd += str(-self.max_vel)
+                            self.curr_cmd += str(-round(self.max_vel, 2))
                         else:
                             self.curr_cmd += "0.0"
                     elif len(message.buttons == 12): # logitech
                         if self.curr_btns_lt[0]:
-                            self.curr_cmd += str(self.max_vel)
+                            self.curr_cmd += str(round(self.max_vel, 2))
                         elif self.curr_btns_lt[1]:
-                            self.curr_cmd += str(-self.max_vel)
+                            self.curr_cmd += str(-round(self.max_vel, 2))
                         else:
                             self.curr_cmd += "0.0"
                     self.curr_cmd += ";!"

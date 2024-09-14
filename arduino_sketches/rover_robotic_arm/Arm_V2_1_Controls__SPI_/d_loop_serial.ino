@@ -177,7 +177,7 @@
   }//end of serial available
 
   //Every dashb_delay ms, publish stuff
-  if (millis() - dashb_t >= dashb_delay) {
+  if (millis() - dashb_t >= dashb_delay and verbose) {
     if (not graph) {
 
       Serial.println();

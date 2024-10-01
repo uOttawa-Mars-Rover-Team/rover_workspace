@@ -18,8 +18,6 @@ import PowerTelemetry from "../../components/powerTelemetry/PowerTelemetry";
 
 //waveform
 import WaveForm_Green from '/waveform.path.ecg.rectangle.green.svg'
-import WaveForm_red from '/waveform.path.ecg.rectangle.red.svg'
-import WaveForm_yellow from '/waveform.path.ecg.rectangle.yellow.svg'
 
 
 import styles from './telemetry.module.css'

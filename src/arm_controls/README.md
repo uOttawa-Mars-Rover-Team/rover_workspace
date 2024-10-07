@@ -1,3 +1,8 @@
+## Running The Program
+1. colcon build
+2. source install/setup.bash
+3. ros2 launch robotic_arm_controls development_ik.launch.py 
+
 ## Dependencies
 Before running the Inverse Kinematics code, make sure you have the following dependencies installed on your system:
 
@@ -20,10 +25,13 @@ pip3 install pynput
 pip3 install numpy
 ```
 
-## Running The Program
-1. colcon build
-2. source install/setup.bash
-3. ros2 launch robotic_arm_controls development_ik.launch.py 
+## RVIZ Configuration
+In order to see the robot model in the RVIZ window that is launched, follow these steps:
+
+1. On the bottom left corner click `Add`
+2. Select and add `RobotModel` from under `rviz_default_plugins`
+3. Under `Global Options` set `Fixed Frame` to `base_footprint`
+4. Under `RobotModel` set `Description Topic` to `/robot_description`
 
 ## Notes
 To run the Inverse Kinematics nodes you must have an Arduino and spacemouse/logitech joystick connected.

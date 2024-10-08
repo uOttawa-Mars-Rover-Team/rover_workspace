@@ -14,7 +14,7 @@
         <joint name="q2"/>
         <joint name="q3"/>
         <joint name="q4"/>
-        <joint name="q5"/>
+<!--        <joint name="q5"/>-->
     </group>
     <group name="uorover_end_effector">
         <link name="L7"/>
@@ -25,19 +25,21 @@
         <joint name="q2" value="0"/>
         <joint name="q3" value="0"/>
         <joint name="q4" value="0"/>
-        <joint name="q5" value="0"/>
+    <!--    <joint name="q5" value="0"/> -->
     </group_state>
     <group_state name="travel" group="uorover_arm">
         <joint name="q1" value="3.1415"/>
         <joint name="q2" value="0"/>
         <joint name="q3" value="0.2256"/>
         <joint name="q4" value="0.4686"/>
-        <joint name="q5" value="0"/>
+    <!--    <joint name="q5" value="0"/> -->
     </group_state>
     <group_state name="open" group="uorover_end_effector">
+        <joint name="q5" value="0"/>
         <joint name="q6" value="0"/>
     </group_state>
     <group_state name="closed" group="uorover_end_effector">
+        <joint name="q5" value="0"/>
         <joint name="q6" value="-0.7463"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->

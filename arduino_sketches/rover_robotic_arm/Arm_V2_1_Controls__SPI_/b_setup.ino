@@ -62,7 +62,7 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-#define verbose             false
+#define verbose             true
 #define graph               true
 bool emergency_stop_en =    false;
 bool wrist_angle_abs = false;

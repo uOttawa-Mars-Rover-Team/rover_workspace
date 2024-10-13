@@ -38,20 +38,11 @@ class Router(Node):
         self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING, "/dev/arm_mega")
         self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 115200)
 
-        #Threading
-        #self.pool_executor = Pool()
-        self.run = False
-        #self.tp_executor = ThreadPoolExecutor(max_workers=4) #creating 3 threads
-        #self.reader = self.tp_executor.submit(self.read_loop)
-
-        # whether to connect or not; reconnector will then try to establish a serial conn.
         self.connecting = True  
-        # connection to serial will be handled by this thread
-        #self.reconnector = self.tp_executor.submit(self.connect_serial)
-
         self.get_logger().info("BEFORE CONNECT SERIAL")
-        self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
-        self.connecting = False
+        self.connect_serial()
+        #self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
+        #self.connecting = False
         self.get_logger().info("AFTER CONNECT SERIAL")
 
         # Initialising variables
@@ -65,25 +56,21 @@ class Router(Node):
     frame represents the stack frame when the signal was triggered
     """
     def connect_serial(self):
-        self.get_logger().info("Running serial connector thread...")
+        self.get_logger().info("Connecting to serial")
         time.sleep(1)
     
-        while self.run:
-            if self.connecting:
-                time.sleep(self.RETRY_DELAY)
-                try:
-                    self.get_logger().info("Establishing serial connection...")
-                    self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
-                    
-                    self.get_logger().info("Connection to serial established:")
-                    self.connecting = False
+        while self.connecting:
+            time.sleep(self.RETRY_DELAY)
+            try:
+                self.get_logger().info("Establishing serial connection...")
+                self.ARDUINO = serial.Serial(port=self.serial_device, baudrate=self.baudrate, timeout=self.RETRY_DELAY)
+                
+                self.get_logger().info("Connection to serial established:")
+                self.connecting = False
 
-                except:
-                    self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
-                    self.connecting = True
-
-        # sends kill signal to the read process
-        os.kill(os.getpid(), 9)
+            except:
+                self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
+                self.connecting = True
 
     """
     Reading done on a seaparate thread to not block main
@@ -121,6 +108,10 @@ class Router(Node):
             except:
                 self.get_logger().warn(f"Connection Error: serial failed, trying every {self.RETRY_DELAY}s")
                 self.connecting = True
+
+        else:
+            self.get_logger().warn("Connection Error: serial not connected, trying to reconnect")
+            self.connect_serial()
 
     """
     Sends stop command to arduino and tries to reconnect if the connection is lost

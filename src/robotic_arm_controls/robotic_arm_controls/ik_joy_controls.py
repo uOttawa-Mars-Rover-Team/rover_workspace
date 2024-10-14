@@ -53,7 +53,7 @@ class Joy_IK_Controller(Node):
 
         # Pubs, subs and their variables
         self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
-        self.max_vel = 0.5 # subscribing to the keyboard, changes according to a dial
+        self.max_vel = 1.0 # set to max speed by default 
 
         self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
         self.twist_stamped_msg = TwistStamped()

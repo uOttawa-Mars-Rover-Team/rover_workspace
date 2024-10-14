@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from typing import NamedTuple, TypeVar
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -32,6 +33,12 @@ class KeyboardListener(Node):
 
         # Service client setup
         self.client = self.create_client(Trigger, 'servo_node/start_servo')
+
+        # This delay ensures that the joy node has been instantiated before this message has been published
+        # which solves the problem of the joy node and keyboard initial velocity being different
+        time.sleep(1) 
+        self.joy_vel_pub.publish(self.vel)
+
 
 
     def on_press(self, key):

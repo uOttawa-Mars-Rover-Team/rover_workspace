@@ -31,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmState.msg"
   "msg/ArmError.msg"
   "action/ZeroArm.action"
+  "action/FollowGpsWaypointsAction.action"
 )
 
 if(BUILD_TESTING)

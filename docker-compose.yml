@@ -1,0 +1,28 @@
+services:
+  ros2-workspace:
+    image: registry.gitlab.com/uorover/ros2-docker:improve-dockerfile
+    container_name: rover_ws
+    privileged: true
+    tty: true
+    environment:
+      - DISPLAY
+      - WAYLAND_DISPLAY
+      - XDG_RUNTIME_DIR
+      - PULSE_SERVER
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+      - LIBVA_DRIVER_NAME=d3d12
+    network_mode: "host"
+    volumes:
+      - rover_ws_home:/home
+      - rover_ws_usr:/usr
+      - rover_ws_etc:/etc
+      - .:/home/uorover/rover_workspace:cached
+      - /mnt/wslg:/mnt/wslg:cached
+      - /tmp/.X11-unix:/tmp/.X11-unix:cached
+      - /dev:/dev:cached
+      - /usr/lib/wsl:/usr/lib/wsl:cached
+
+volumes:
+  rover_ws_home:
+  rover_ws_usr:
+  rover_ws_etc:

@@ -1,0 +1,10 @@
+{
+  "name": "ROS 2 Development Container",
+  "containerUser": "uorover",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "ros2-workspace",
+  "workspaceFolder": "/home/uorover/rover_workspace",
+  // "workspaceMount": "source=${localWorkspaceFolder},target=/home/uorover/rover_workspace,type=bind",
+  "shutdownAction": "none",
+  "postCreateCommand": "sudo apt update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /home/$(whoami)/rover_workspace"
+}

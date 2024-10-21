@@ -1,0 +1,37 @@
+{
+  "name": "ROS 2 Development Container",
+  "privileged": true,
+  "remoteUser": "uorover",
+  "image": "registry.gitlab.com/uorover/ros2-docker:improve-dockerfile",
+  "workspaceFolder": "/home/uorover/rover_workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/uorover/rover_workspace,type=bind",
+  "containerEnv": {
+    "SHELL": "/bin/bash"
+  },
+  "runArgs": [
+    "--net=host",
+    "-e",
+    "DISPLAY",
+    "-e",
+    "WAYLAND_DISPLAY",
+    "-e",
+    "XDG_RUNTIME_DIR",
+    "-e",
+    "PULSE_SERVER",
+    "-e",
+    "LD_LIBRARY_PATH=/usr/lib/wsl/lib",
+    "-e",
+    "LIBVA_DRIVER_NAME=d3d12",
+    //"--gpus",
+    //"all",
+    "--name",
+    "rover_ws"
+  ],
+  "mounts": [
+    "source=/mnt/wslg,target=/mnt/wslg,type=bind,consistency=cached",
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+    "source=/dev,target=/dev,type=bind,consistency=cached",
+    "source=/usr/lib/wsl,target=/usr/lib/wsl,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": "sudo apt update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /home/$(whoami)/rover_workspace"
+}

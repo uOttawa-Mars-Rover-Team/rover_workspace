@@ -6,5 +6,5 @@
   "workspaceFolder": "/home/uorover/rover_workspace",
   // "workspaceMount": "source=${localWorkspaceFolder},target=/home/uorover/rover_workspace,type=bind",
   "shutdownAction": "none",
-  "postCreateCommand": "sudo apt update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /home/$(whoami)/rover_workspace"
+  "postCreateCommand": "sudo apt update && rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /home/$(whoami)/rover_workspace"
 }

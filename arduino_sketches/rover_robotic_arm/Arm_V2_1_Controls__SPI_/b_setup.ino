@@ -13,6 +13,7 @@
 #include <JrkG2.h>
 #include <SPI.h>
 #include <math.h>
+#include <TimerOne.h>
 
 ////// Object Declaration //////
 
@@ -62,7 +63,7 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-#define verbose             true
+#define verbose             false
 #define graph               true
 bool emergency_stop_en =    false;
 bool wrist_angle_abs = false;
@@ -229,4 +230,17 @@ void setup() {
   //start SPI bus
   SPI.begin();
 
+  // Isr timer for the run() function
+  Timer1.initialize(250); // Every 250us. This has been tested and is the minimum frequency that works without vribations.
+  Timer1.attachInterrupt(timerIsr);
+
 }//end of setup()
+
+void timerIsr() {
+    // The run function moves the steppers one step if the target position is not reached (set by the move function)
+    // Needs to be called consistently to avoid vibrations at a very high frequency
+    wristPitch.run();
+    tower.run();
+    wristRoll.run();
+    endEffector.run();
+}

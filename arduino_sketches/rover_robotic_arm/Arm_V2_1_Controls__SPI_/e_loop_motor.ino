@@ -73,46 +73,7 @@
     motor_t = millis();
   }//end of encoder delay if statement
 
-  if (not emergency_stop_en) {
-
-
-
-    //Motor is allowed to run whenever it's in one of the cases
-    //- mode == "M" (in manual mode) and desired speed is zero (floatsEqual(desiredStates[0], 0.0)
-    //if (motor[TW].direction)
-    //if (motor[TW].currentPos > -90 and motor[TW].currentPos < 90)
-    if (not stepper_safety_en
-    or (abs(motor[TW].currentPos) < 90
-    or motor[TW].currentPos >  90 and motor[TW].direction !=  1
-    or motor[TW].currentPos < -90 and motor[TW].direction != -1))
-      tower.run();
-
-    //LAs handled by moveMotor
-    
-    //Similar to tower, just with extra limit switch logic
-    //if (motor[WP].direction)
-      //Can move the wrist (differential) if:
-      //- LS3 is not clicked and pitching down
-      //- LS4 is not clicked and pitching up
-      //if ((LS3.getState() and motor[WP].direction == -1) | (LS4.getState() and motor[WP].direction == 1)) {
-    if (not stepper_safety_en
-    or (abs(motor[WP].currentPos) < 60
-    or motor[WP].currentPos >  60 and motor[WP].direction !=-1
-    or motor[WP].currentPos < -60 and motor[WP].direction != 1))
-        wristPitch.run();
-      //}
-      
-    //if (motor[WR].direction)
-      wristRoll.run();
-    
-    //similar to tower and similar limit switch logic to pitch
-    //if (motor[EE].direction)
-      //EE only allowed to close if LS1 is not pressed
-      //EE only allowed to open if LS2 is not pressed
-      //if ((LS1.getState() and motor[EE].direction == -1) | (LS2.getState() and motor[EE].direction == 1)) 
-        endEffector.run();
-
-  } else {
+  if (emergency_stop_en) {
     LA1.stopMotor();
     LA2.stopMotor();
   }

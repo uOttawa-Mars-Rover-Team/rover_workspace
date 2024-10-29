@@ -14,11 +14,32 @@
 //we import the AccelStepper library for stepper control
 #include <AccelStepper.h>
 
-int stepper1EnablePin = 24; //Enable pin for the step resolutions, enabeling this one gives full step resolution
+int towerEnablePin = 17; //Enable pin for the step resolutions, enabeling this one gives full step resolution
+int wristPitchEnablePin = 16;
+int wristRollEnablePin = 4;
+int endEffectorEnablePin = 5;
+
+int towerMaxRange = 1000000;
+int wristPitchMaxRange = 1000000;
+int wristRollMaxRange = 1000000;
+int endEffectorMaxRange = 1000000;
+
+int towerMaxSpeed = 1000;
+int wristPitchMaxSpeed = 1000;
+int wristRollMaxSpeed = 1000;
+int endEffectorMaxSpeed = 1000;
+
+int towerSpeed = 1;
+int wristPitchSpeed = 1;
+int wristRollSpeed = 1;
+int endEffectorSpeed = 1;
 
 //we initialise one stepper motor
 // Define a stepper and the pins it will use
-AccelStepper stepper(AccelStepper::DRIVER, 7, 6); // 1 = Easy Driver interface
+AccelStepper tower        (AccelStepper::DRIVER, 6,   7);  //step, direction
+AccelStepper wristPitch   (AccelStepper::DRIVER, 8,   9);
+AccelStepper wristRoll    (AccelStepper::DRIVER, 10,  11); 
+AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
 // NANO Pin 7 connected to STEP pin of Easy Driver
 // NANO Pin 6 connected to DIR 
 
@@ -30,51 +51,50 @@ AccelStepper stepper(AccelStepper::DRIVER, 7, 6); // 1 = Easy Driver interface
 
 
 void setup() {
-  // put your setup code here, to run once:
-  // Change these to suit your stepper if you want
-  stepper.setMaxSpeed(1000);
-  stepper.setAcceleration(1000);
-  //stepper.moveTo(-500);
-  
-  // stepper2.setMaxSpeed(1000);
-  // stepper2.setAcceleration(1000);
-  // stepper2.moveTo(500);
-  
-  // stepper3.setMaxSpeed(1000);
-  // stepper3.setAcceleration(1000);
-  // stepper3.moveTo(500);
+  // Tower
+  tower.setMaxSpeed(towerMaxSpeed * towerSpeed);
+  tower.setAcceleration(1000);
+  pinMode(towerEnablePin, OUTPUT);
+  digitalWrite(towerEnablePin, HIGH);
 
-  // stepper4.setMaxSpeed(1000);
-  // stepper4.setAcceleration(1000);
-  // stepper4.moveTo(-500);
+  // Wrist Pitch
+  wristPitch.setMaxSpeed(wristPitchMaxSpeed * wristPitchSpeed);
+  wristPitch.setAcceleration(1000);
+  pinMode(wristPitchEnablePin, OUTPUT);
+  digitalWrite(wristPitchEnablePin, HIGH);
 
-  //we set the digital
-  pinMode(stepper1EnablePin, OUTPUT);
-  digitalWrite(stepper1EnablePin, HIGH);
+  // Wrist Roll
+  wristRoll.setMaxSpeed(wristRollMaxSpeed * wristRollSpeed);
+  wristRoll.setAcceleration(1000);
+  pinMode(wristRollEnablePin, OUTPUT);
+  digitalWrite(wristRollEnablePin, HIGH);
 
+  // End Effector
+  endEffector.setMaxSpeed(endEffectorMaxSpeed * endEffectorSpeed);
+  endEffector.setAcceleration(1000);
+  pinMode(endEffectorEnablePin, OUTPUT);
+  digitalWrite(endEffectorEnablePin, HIGH);
+
+  // Tower
+  int towerDir = 1;
+  tower.moveTo(towerMaxRange * towerDir);
+
+  // Wrist Pitch
+  int wristPitchDir = 1;
+  wristPitch.moveTo(wristPitchMaxRange * wristPitchDir);
+
+  // Wrist Roll
+  int wristRollDir = 1;
+  wristRoll.moveTo(wristRollMaxRange * wristRollDir);
+
+  // End Effector
+  int endEffectorDir = 1;
+  endEffector.moveTo(endEffectorMaxRange * endEffectorDir);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  // If at the end of travel go to the other end
-    //if (stepper.distanceToGo() == 0)
-      //stepper.moveTo(-stepper.currentPosition());
-    
-    stepper.run();
-    // stepper2.run();
-    // stepper3.run();
-    // stepper4.run();
-
-
-    //we move the motor in both directions
-    Serial.println("Moving stepper clockwise");
-  stepper.setMaxSpeed(50);
-  stepper.moveTo(100);
-  stepper.runToPosition();
-
-  // we move anticlockwise to the max range for the tower
-  Serial.println("Moving tower counterclockwise");
-  stepper.moveTo(-100);
-  stepper.runToPosition();
-
+  tower.run();
+  wristPitch.run();
+  wristRoll.run();
+  endEffector.run();
 }

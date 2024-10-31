@@ -183,7 +183,7 @@ class Joy_IK_Controller(Node):
                     self.curr_cmd = "S;"
 
                     if self.curr_axes[0]:
-                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2)/4)
+                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";"

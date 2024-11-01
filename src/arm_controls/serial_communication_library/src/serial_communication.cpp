@@ -13,7 +13,7 @@ SerialCommunication* SerialCommunication::instance = nullptr;
 
 //============== Constructor ===============
 SerialCommunication::SerialCommunication()
-    : baudrate_(500000),
+    : baudrate_(115200),
       port_("/dev/ttyACM0"),
       timeout_delay_(serial::Timeout::simpleTimeout(100)),
       startup_(true),

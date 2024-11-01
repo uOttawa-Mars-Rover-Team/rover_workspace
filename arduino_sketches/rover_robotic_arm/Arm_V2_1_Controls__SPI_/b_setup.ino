@@ -156,7 +156,6 @@ LED led = {58,      59,      60};
 //Laser 
 int LASER_PIN = 29;
 
-
 //Everything setup related below
 
 void setup() {
@@ -231,16 +230,25 @@ void setup() {
   SPI.begin();
 
   // Isr timer for the run() function
-  Timer1.initialize(250); // Every 250us. This has been tested and is the minimum frequency that works without vribations.
+  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vribations.
   Timer1.attachInterrupt(timerIsr);
+  
 
 }//end of setup()
 
 void timerIsr() {
     // The run function moves the steppers one step if the target position is not reached (set by the move function)
     // Needs to be called consistently to avoid vibrations at a very high frequency
-    wristPitch.run();
+    static int interruptCount = 0;
+    interruptCount ++;
+
+    if (interruptCount >= 4){
+          wristPitch.run();
+          wristRoll.run();
+          endEffector.run();
+          
+          interruptCount = 0;
+    }
+
     tower.run();
-    wristRoll.run();
-    endEffector.run();
 }

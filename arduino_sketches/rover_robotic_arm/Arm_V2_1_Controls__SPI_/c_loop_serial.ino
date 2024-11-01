@@ -1,7 +1,8 @@
 
 //Everything to do with serial comms is here (read and writing)
-
+void loop(){
   //We check if a command has been given and then interpret it
+
   if (Serial.available()) {
     
     //use memset to 'empty' input buffer; may not be necessary,
@@ -174,6 +175,7 @@
     } else {
       Serial.println("Invalid command received!");
     }
+
   }//end of serial available
 
   //Every dashb_delay ms, publish stuff

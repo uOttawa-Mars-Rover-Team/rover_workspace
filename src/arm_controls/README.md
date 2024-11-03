@@ -9,6 +9,7 @@ Before running the Inverse Kinematics code, make sure you have the following dep
 ### Moveit Dependencies
 ```
 sudo apt install ros-humble-moveit
+sudo apt-get install ros-humble-moveit-servo
 ```
 
 ### ROS2 Control Related Dependencies**

@@ -111,8 +111,7 @@ const ScienceMission: React.FC = () => (
       {/* Weather block */}
       <Header
         title="Weather"
-        icon={<img src={weather_icon} alt="Weather Icon" />} >
-      </Header>
+        icon={<img src={weather_icon} alt="Weather Icon" />} />
       <Card>
         <Row gutter={[32, 32]}>
           {dummyWeatherData.map((item, index) => (

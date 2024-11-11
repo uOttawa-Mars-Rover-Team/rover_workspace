@@ -1,0 +1,3 @@
+uint32 goal_index
+geometry_msgs/PoseStamped goal
+uint16 error_code

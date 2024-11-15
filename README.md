@@ -25,7 +25,7 @@ uoRover development workspace. Currently using ROS2 Humble.
     ```
     ![](/docs/screenshot_1.png)
     
-3. Make sure the packages are update to date:
+3. Make sure the packages are up to date:
     ```bash
     sudo apt-get update
     ```

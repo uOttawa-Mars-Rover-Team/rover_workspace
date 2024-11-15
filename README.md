@@ -6,20 +6,41 @@
 
 uoRover development workspace. Currently using ROS2 Humble.
 
-## Getting started
+## Installing docker container
 
-These steps only need to be done once and will set up your entire dev environment, which includes ROS2 Humble, required ROS packages, and this code repository.
+0. Install [docker](https://www.docker.com) on your machine
 
-1. Create a Ubuntu 22.04 virtual machine or dual boot your computer.
-2. Install git on your machine `sudo apt install git`
-3. Clone this repository at your home location `cd ~ && git clone https://gitlab.com/uorover/rover_workspace.git`
-4. Run the setup script with `cd ~/rover_workspace/scripts && ./full_setup.sh`
-5. Build our ROS packages. Open a new terminal window and run the following: `cd ~/rover_workspace && colcon build`
-6. Open a new terminal window (to automatically source the setup script). Now you can use the ROS packages in this repo (using commands like `ros2 run`, `ros2 launch`, etc.)!
+1. Run the command on terminal:
+    ```bash
+    docker compose up -d
+    ```
 
-Make sure to repeat steps 5-6 to rebuild the code after making changes.
+- **Note: this must be run from the directory containing docker-compose.yal, which is located in the current branch at the time of writing.**
 
-## New features
+</br>
 
-As we add new features to the build keep new developments on a seperate branch from the master. This way the master branch will
-stay functional while we work on individual systems.
+2. Start rover workspace from terminal:
+    ```bash
+    docker exec -it rover_ws bash
+    ```
+    ![](/docs/screenshot_1.png)
+    
+3. Make sure the packages are update to date:
+    ```bash
+    sudo apt-get update
+    ```
+
+4. Change to directory "rover_workspace":
+    ```bash
+    cd ~/rover_workspace
+    ```
+
+5. Install dependencies:
+    ```bash
+    rosdep install --from-paths src --ignore-src -r -y
+    ```
+
+6. Build ROS packages on directory "rover_workspace":
+    ```bash
+    colcon build
+    ```

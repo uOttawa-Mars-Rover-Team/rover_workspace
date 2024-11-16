@@ -1,3 +1,4 @@
+from functools import partial
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
@@ -5,6 +6,7 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import GeoPose
 from general_interfaces.action import FollowGpsWaypointsAction
+from robot_localization.srv import FromLL
 
 
 class FollowGpsWaypoints(Node):
@@ -13,11 +15,29 @@ class FollowGpsWaypoints(Node):
         #initialize action server and navigator
         self.follow_gps_waypoints_ = ActionServer(self, FollowGpsWaypointsAction, "follow_gps_waypoints", execute_callback=self.nav_callback)
         self.navigator = BasicNavigator("basic_navigator")
+        
 
-    def conversion(self, geoPose:GeoPose): 
-        #calls fromll and converts frin ll_point to map_point, converts geopose
-        print("not implemented yet hehe")
-        pass
+
+    def convert_and_navigate(self, client, geoPose:GeoPose): 
+        #extracts the geopoint from the geopose message
+        geopoint = geoPose.position
+        #write some more logic to add the metadata for the posestamped header
+
+        #make the request for the FromLL service
+        request = FromLL.Request()
+        request.ll_point = geopoint
+        future = client.call_async(request)
+        future.add_done_callback(partial(self.go_to_pose_callback))
+
+    def go_to_pose_callback(self, future):
+
+        #convert from mappoint o posestamped
+        mappoint = future.result()
+        pose = PoseStamped
+
+        #go put the converted one in
+        self.navigator.goToPose()
+        #logic goes here do something with self.navigator.isTaskComplete()
 
     def nav_callback(self, goal_handle):
         """
@@ -26,18 +46,16 @@ class FollowGpsWaypoints(Node):
         number_of_loops = goal_handle.request.number_of_loops
         goal_index = goal_handle.request.goal_index    
         geo_poses = goal_handle.request.geo_poses
+        client = self.create_client(FromLL, "FromLL")
 
         for i in range(number_of_loops):
             count = 0
             for pose in geo_poses[goal_index:]:
-                pose: PoseStamped = self.conversion(pose)
-                #call the action server
-                self.navigator.goToPose(pose)
-                
-                #logic goes here 
-
+                #this converts and navigates, 
+                self.convert_and_navigate(client, pose)
+  
                 #send feedback
-                self.get_logger.info("Currently on waypoint " + count);
+                self.get_logger.info("Currently on waypoint #" + count);
                 goal_handle.publish_feedback(count)
                 count += 1
                 pass

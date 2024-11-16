@@ -22,6 +22,7 @@ class FollowGpsWaypoints(Node):
         #extracts the geopoint from the geopose message
         geopoint = geoPose.position
         #write some more logic to add the metadata for the posestamped header
+        #write some more logic to extract the oreintation from geopoint 
 
         #make the request for the FromLL service
         request = FromLL.Request()
@@ -30,10 +31,12 @@ class FollowGpsWaypoints(Node):
         future.add_done_callback(partial(self.go_to_pose_callback))
 
     def go_to_pose_callback(self, future):
+        #may just do smoething else instead of add_done_callback to contain the conversion inside the function and then navigate
 
-        #convert from mappoint o posestamped
-        mappoint = future.result()
-        pose = PoseStamped
+
+        #convert from point to posestamped, this needs orientation to become pose, then metadata to become posestamped
+        point = future.result()
+
 
         #go put the converted one in
         self.navigator.goToPose()

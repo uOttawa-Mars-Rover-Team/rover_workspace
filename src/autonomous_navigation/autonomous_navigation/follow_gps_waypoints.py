@@ -1,10 +1,9 @@
-from functools import partial
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
 from nav2_simple_commander.robot_navigator import BasicNavigator
-from geometry_msgs.msg import PoseStamped
-from geometry_msgs.msg import GeoPose
+from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion
+from geographic_msgs.msg import GeoPose, GeoPoint
 from general_interfaces.action import FollowGpsWaypointsAction
 from robot_localization.srv import FromLL
 
@@ -20,22 +19,30 @@ class FollowGpsWaypoints(Node):
 
     def convert_and_navigate(self, client, geoPose:GeoPose): 
         #extracts the geopoint from the geopose message
-        geopoint = geoPose.position
+        point: GeoPoint = geoPose.position
+        orientation: Quaternion = geoPose.orientation
         #write some more logic to add the metadata for the posestamped header
-        #write some more logic to extract the oreintation from geopoint 
-
+        
         #make the request for the FromLL service
         request = FromLL.Request()
-        request.ll_point = geopoint
+        request.ll_point = point
         future = client.call_async(request)
-        future.add_done_callback(partial(self.go_to_pose_callback))
+        future.add_done_callback(lambda future: self.go_to_pose_callback(future, orientation))
 
-    def go_to_pose_callback(self, future):
-        #may just do smoething else instead of add_done_callback to contain the conversion inside the function and then navigate
-
-
+    def go_to_pose_callback(self, future, orientation: Quaternion):
         #convert from point to posestamped, this needs orientation to become pose, then metadata to become posestamped
-        point = future.result()
+        point: Point = future.result()
+        orientation: Quaternion = orientation
+
+        #initialize the pose message type
+        pose: Pose = Pose()
+        pose.position = point
+        pose.orientation = orientation
+
+        #initialize the geopose
+        pose_stamped: PoseStamped = PoseStamped()
+        pose_stamped.pose = pose
+        # missing: pose_stamped.Header = header
 
 
         #go put the converted one in

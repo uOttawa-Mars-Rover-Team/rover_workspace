@@ -5,7 +5,9 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion
 from geographic_msgs.msg import GeoPose, GeoPoint
 from general_interfaces.action import FollowGpsWaypointsAction
+from std_msgs.msg import Header
 from robot_localization.srv import FromLL
+import time
 
 
 class FollowGpsWaypoints(Node):
@@ -17,19 +19,20 @@ class FollowGpsWaypoints(Node):
         
 
 
-    def convert_and_navigate(self, client, geoPose:GeoPose): 
+    def convert_and_navigate(self, client, geoPose:GeoPose, count): 
         #extracts the geopoint from the geopose message
         point: GeoPoint = geoPose.position
         orientation: Quaternion = geoPose.orientation
+        seq = count
         #write some more logic to add the metadata for the posestamped header
         
         #make the request for the FromLL service
         request = FromLL.Request()
         request.ll_point = point
         future = client.call_async(request)
-        future.add_done_callback(lambda future: self.go_to_pose_callback(future, orientation))
+        future.add_done_callback(lambda future: self.go_to_pose_callback(future, orientation, seq))
 
-    def go_to_pose_callback(self, future, orientation: Quaternion):
+    def go_to_pose_callback(self, future, orientation: Quaternion, seq):
         #convert from point to posestamped, this needs orientation to become pose, then metadata to become posestamped
         point: Point = future.result()
         orientation: Quaternion = orientation
@@ -38,15 +41,21 @@ class FollowGpsWaypoints(Node):
         pose: Pose = Pose()
         pose.position = point
         pose.orientation = orientation
+        
+        # initializing the header
+        header: Header = Header()
+        header.time = time.time()
+        header.seq = seq
+        header.frame_id = "map"
 
-        #initialize the geopose
+        #make the poseStamped message
+        #initialize the poseStamped
         pose_stamped: PoseStamped = PoseStamped()
         pose_stamped.pose = pose
-        # missing: pose_stamped.Header = header
-
+        pose_stamped.header = header
 
         #go put the converted one in
-        self.navigator.goToPose()
+        self.navigator.goToPose(pose_stamped)
         #logic goes here do something with self.navigator.isTaskComplete()
 
     def nav_callback(self, goal_handle):
@@ -62,7 +71,7 @@ class FollowGpsWaypoints(Node):
             count = 0
             for pose in geo_poses[goal_index:]:
                 #this converts and navigates, 
-                self.convert_and_navigate(client, pose)
+                self.convert_and_navigate(client, pose, count)
   
                 #send feedback
                 self.get_logger.info("Currently on waypoint #" + count);

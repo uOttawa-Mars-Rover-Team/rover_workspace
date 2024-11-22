@@ -22,6 +22,8 @@
         dependency, seach `ros-humble-moveit` on the website provided above, you will get the package
         name `moveit` under the column `Name`, then put `moveit` below (i.e. <depend>moveit</depend>)
 
+        Finally, run ` rosdep install --from-paths src --ignore-src -r -y --rosdistro humble`
+
         Note: Double check the Repo name when looking for a package name.
    -->
   <depend>moveit</depend>

@@ -23,7 +23,7 @@
         name `moveit` under the column `Name`, then put `moveit` below (i.e. <depend>moveit</depend>)
 
         Finally, run ` rosdep install - -from-paths src - -ignore-src -r -y - -rosdistro humble`
-        (remove the space in `- -`, since double hyphen will cause parser error in .xml file)
+        (when entering the command into terminal, remove the space between two hyphens `- -`, since double hyphens will cause parser error in .xml file)
 
         Note: Double check the Repo name when looking for a package name.
    -->

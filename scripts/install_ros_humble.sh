@@ -14,7 +14,7 @@ completed
 
 title "Setting up sources"
 sudo apt install software-properties-common
-sudo add-apt-repository universe
+sudo add-apt-repository -y universe
 
 sudo apt update && sudo apt install curl -y
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg

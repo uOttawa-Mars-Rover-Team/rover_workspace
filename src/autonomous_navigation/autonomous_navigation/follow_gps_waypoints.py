@@ -5,9 +5,28 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion
 from geographic_msgs.msg import GeoPose, GeoPoint
 from general_interfaces.action import FollowGpsWaypointsAction
-from std_msgs.msg import Header
+from std_msgs.msg import Header, UInt32
 from robot_localization.srv import FromLL
 import time
+
+
+'''
+this is what I used to test in command line:
+
+ros2 action send_goal /follow_gps_waypoints general_interfaces/action/FollowGpsWaypointsAction \
+"{
+  number_of_loops: 1,
+  goal_index: 0,
+  gps_poses: [
+    {position: {latitude: 37.7749, longitude: -122.4194, altitude: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}},
+    {position: {latitude: 34.0522, longitude: -118.2437, altitude: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}
+  ]
+}"
+
+
+
+
+'''
 
 
 class FollowGpsWaypoints(Node):
@@ -44,7 +63,7 @@ class FollowGpsWaypoints(Node):
         
         # initializing the header
         header: Header = Header()
-        header.time = time.time()
+        header.stamp = self.get_clock().now().to_msg()
         header.seq = seq
         header.frame_id = "map"
 
@@ -64,7 +83,7 @@ class FollowGpsWaypoints(Node):
         """
         number_of_loops = goal_handle.request.number_of_loops
         goal_index = goal_handle.request.goal_index    
-        geo_poses = goal_handle.request.geo_poses
+        geo_poses = goal_handle.request.gps_poses
         client = self.create_client(FromLL, "FromLL")
 
         for i in range(number_of_loops):
@@ -74,16 +93,18 @@ class FollowGpsWaypoints(Node):
                 self.convert_and_navigate(client, pose, count)
   
                 #send feedback
-                self.get_logger.info("Currently on waypoint #" + count);
-                goal_handle.publish_feedback(count)
+                self.get_logger().info("Currently on waypoint #" + str(count));
+
+                feedback = FollowGpsWaypointsAction.Feedback()  
+                feedback.current_waypoint = count 
+                goal_handle.publish_feedback(feedback)
                 count += 1
-                pass
         
         #set goal as complete once the navigation is done
         goal_handle.succeed();    
 
         #send result
-        result = FollowGpsWaypoints.Result()
+        result = FollowGpsWaypointsAction.Result()
         result.missed_waypoints = []
         result.error_code = 0
         result.error_msg = "test"

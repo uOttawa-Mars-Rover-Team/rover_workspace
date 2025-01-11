@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
-from nav2_simple_commander.robot_navigator import BasicNavigator
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion
 from geographic_msgs.msg import GeoPose, GeoPoint
 from general_interfaces.action import FollowGpsWaypointsAction
@@ -30,6 +30,11 @@ ros2 action send_goal /follow_gps_waypoints general_interfaces/action/FollowGpsW
 
 
 class FollowGpsWaypoints(Node):
+
+    missed_waypoints = []
+    error_code = 0
+    error_msg = "none"
+
     def __init__(self):
         super().__init__("FollowGpsWaypoints")
         #initialize action server and navigator
@@ -43,15 +48,14 @@ class FollowGpsWaypoints(Node):
         point: GeoPoint = geoPose.position
         orientation: Quaternion = geoPose.orientation
         seq = count
-        #write some more logic to add the metadata for the posestamped header
         
         #make the request for the FromLL service
         request = FromLL.Request()
         request.ll_point = point
         future = client.call_async(request)
-        future.add_done_callback(lambda future: self.go_to_pose_callback(future, orientation, seq))
+        future.add_done_callback(lambda future: self.go_to_pose_callback(future, orientation, seq, geoPose))
 
-    def go_to_pose_callback(self, future, orientation: Quaternion, seq):
+    def go_to_pose_callback(self, future, orientation: Quaternion, seq, geoPose: GeoPose):
         #convert from point to posestamped, this needs orientation to become pose, then metadata to become posestamped
         point: Point = future.result()
         orientation: Quaternion = orientation
@@ -73,9 +77,24 @@ class FollowGpsWaypoints(Node):
         pose_stamped.pose = pose
         pose_stamped.header = header
 
-        #go put the converted one in
+        #navigate to the converted pose stamped
         self.navigator.goToPose(pose_stamped)
-        #logic goes here do something with self.navigator.isTaskComplete()
+
+        #get result and add it to the missed wayponits if it failed
+        result = self.navigator.getResult()
+        if result == TaskResult.CANCELED:
+            self.get_logger().info("Canceled navigation to waypoint #" + str(seq))
+            self.missed_waypoints.append(geoPose)
+            self.error_code = 2
+            self.error_msg = "Canceled navigation"
+        elif result == TaskResult.FAILED:
+            self.get_logger().info("Failed to navigate to waypoint #" + str(seq))
+            self.missed_waypoints.append(geoPose)
+            self.error_code = 1
+            self.error_msg = "Failed to navigate one or more waypoints"
+
+        #todo: test if this works
+            
 
     def nav_callback(self, goal_handle):
         """
@@ -98,6 +117,7 @@ class FollowGpsWaypoints(Node):
                 feedback = FollowGpsWaypointsAction.Feedback()  
                 feedback.current_waypoint = count 
                 goal_handle.publish_feedback(feedback)
+                
                 count += 1
         
         #set goal as complete once the navigation is done
@@ -105,9 +125,9 @@ class FollowGpsWaypoints(Node):
 
         #send result
         result = FollowGpsWaypointsAction.Result()
-        result.missed_waypoints = []
-        result.error_code = 0
-        result.error_msg = "test"
+        result.missed_waypoints = self.missed_waypoints
+        result.error_code = self.error_code
+        result.error_msg = self.error_msg
         return result
 
 def main(args = None):

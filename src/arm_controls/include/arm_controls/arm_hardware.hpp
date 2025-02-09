@@ -22,7 +22,7 @@ namespace arm_controls {
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
     const double PI = 3.14159265358979;
-    const string IK_START_COMMAND = "!I;!";
+    const string IK_START_COMMAND = "I;!";
     double DEFLT_PERIPHERAL_STATE[] = {true, true, true, true, false, false};
     rclcpp::Duration peripheral_msg_period_(0, 200000000);
 

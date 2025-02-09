@@ -1,6 +1,6 @@
 void setup() {
   // Start the serial communication at 115200 baud rate
-  Serial.begin(500000);
+  Serial.begin(115200);
 }
 
 void loop() {

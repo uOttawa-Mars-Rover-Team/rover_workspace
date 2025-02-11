@@ -9,25 +9,25 @@ default_acceleration_scaling_factor: 0.1
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
   q1:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 1.00
+    has_acceleration_limits: true
+    max_acceleration: 1.00
   q2:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 1.00
+    has_acceleration_limits: true
+    max_acceleration: 1.00
   q3:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 1.00
+    has_acceleration_limits: true
+    max_acceleration: 1.00
   q4:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 1.00
+    has_acceleration_limits: true
+    max_acceleration: 1.00
   q5:
     has_velocity_limits: false
     max_velocity: 0

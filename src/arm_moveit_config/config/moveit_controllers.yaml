@@ -8,12 +8,10 @@ moveit_simple_controller_manager:
 
   uorover_arm_controller:
     type: FollowJointTrajectory
-    action_ns: follow_joint_trajectory
-    default: true
+    action_ns: follow_joint_trajectory #specify action namespace that moveit's commands are sent to
+    default: true #if multiple controllers are defined to control the same joints, this controller will be used by default
     joints:
       - q1
       - q2
       - q3
       - q4
-    action_ns: follow_joint_trajectory
-    default: true

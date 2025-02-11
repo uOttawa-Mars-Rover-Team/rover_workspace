@@ -111,7 +111,7 @@ def generate_launch_description():
 
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
-        name="moveit_servo_demo_container",
+        name="servo_container",
         namespace="/",
         package="rclcpp_components",
         executable="component_container_mt",

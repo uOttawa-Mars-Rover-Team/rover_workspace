@@ -43,12 +43,8 @@ setup(
         "console_scripts": [
             "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
-            "m_arm_controls = robotic_arm_controls.m_arm_controls:main",
-            "m_toggler = robotic_arm_controls.m_toggler:main",
-            "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
             "m_router = robotic_arm_controls.m_router:main",
-            "m_joy_controls = robotic_arm_controls.m_joy_controls:main",
-            "m_keyboard_controls = robotic_arm_controls.m_keyboard_controls:main"
+            "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
         ],
     },
 )

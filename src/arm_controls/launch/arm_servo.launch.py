@@ -23,7 +23,14 @@ def generate_launch_description():
             .to_dict()
             }
 
-    acceleration_filter_update_period = {"update_period": 0.05}
+    rviz_config_file = (
+            get_package_share_directory("arm_controls")
+            + "/config/servo.rviz"
+            )
+
+    # for moveit_servo's acceleration filter which keeps acceleration limits from being violated
+    acceleration_filter_update_period = {"update_period": 0.05} 
+
     planning_group_name = {"planning_group_name": "uorover_arm"}
 
     ros2_controllers_path = os.path.join(
@@ -31,6 +38,7 @@ def generate_launch_description():
             "config",
             "ros2_controllers.yaml",
             )
+
     ros2_control_node = launch_ros.actions.Node(
             package="controller_manager",
             executable="ros2_control_node",
@@ -76,6 +84,7 @@ def generate_launch_description():
                 "/controller_manager",
                 ],
             )
+
     peripheral_controller_spawner = launch_ros.actions.Node(
             package="controller_manager",
             executable="spawner",
@@ -87,6 +96,19 @@ def generate_launch_description():
                 "/controller_manager",
                 ],
             )
+
+    rviz = launch_ros.actions.Node(
+            package="rviz2",
+            executable="rviz2",
+            name="rviz2",
+            output="log",
+            arguments=["-d", rviz_config_file],
+            parameters=[
+                moveit_config.robot_description,
+                moveit_config.robot_description_semantic,
+                ],
+            )
+
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
         name="moveit_servo_demo_container",
@@ -124,14 +146,12 @@ def generate_launch_description():
         output="screen",
     )
 
-    return launch.LaunchDescription(
-            [
-                ros2_control_node,
-                joint_state_broadcaster_spawner,
-                uorover_arm_controller_spawner,
-                uorover_ee_controller_spawner,
-                peripheral_controller_spawner,
-                container,
-                ]
-            )
-
+    return launch.LaunchDescription([
+        ros2_control_node,
+        joint_state_broadcaster_spawner,
+        uorover_arm_controller_spawner,
+        uorover_ee_controller_spawner,
+        peripheral_controller_spawner,
+        rviz,
+        container,
+    ])

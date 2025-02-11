@@ -13,22 +13,7 @@ from launch.actions import IncludeLaunchDescription
 
 
 def generate_launch_description():
-        
-    '''
-    # Spacemouse joy
-    spacemouse_joy = launch_ros.actions.Node(
-            package="joy",
-            executable="joy_node",String
-            parameters=[
-                {'dev': '/dev/input/arm_spacemouse'}
-            ],
-            remappings=[
-                ("/joy", "/joy/arm_cmd"),
-                ],
-            output="screen",
-            )'''
-
-    # Logitech joy
+    # joy_node (gets input from joysticks and publishes it)
     logitech_joy = launch_ros.actions.Node(
             package="joy",
             executable="joy_node",
@@ -48,7 +33,7 @@ def generate_launch_description():
             output="screen",
             )
 
-    # Joy IK Controller
+    # IK joystick/controller
     ik_joy_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
             executable="ik_joy_controls",
@@ -60,42 +45,17 @@ def generate_launch_description():
             )
 
     # Include arm_servo.launch.py from arm_controls package
-    arm_servo_launch = IncludeLaunchDescription(
+    arm_gui_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory('arm_controls'), 'launch', 'arm_servo.launch.py')
+            os.path.join(get_package_share_directory('arm_controls'), 'launch', 'arm_gui.launch.py')
         )
     )
-    
-    # RViz
-    moveit_config = (
-            MoveItConfigsBuilder("arm")
-            .robot_description(file_path="config/uorover_ik_urdf.urdf.xacro")
-            .joint_limits(file_path="config/joint_limits.yaml")
-            .to_moveit_configs()
-            )
-    rviz_config_file = (
-            get_package_share_directory("arm_controls")
-            + "/config/rviz_config.rviz"
-            )
-    rviz = launch_ros.actions.Node(
-            package="rviz2",
-            executable="rviz2",
-            name="rviz2",
-            output="log",
-            arguments=["-d", rviz_config_file],
-            parameters=[
-                moveit_config.robot_description,
-                moveit_config.robot_description_semantic,
-                ],
-            )
 
     return launch.LaunchDescription(
             [
                 logitech_joy,
                 ik_keyboard_controls,
                 ik_joy_controls,
-                arm_servo_launch,
-                rviz
+                arm_gui_launch,
                 ]
             )
-

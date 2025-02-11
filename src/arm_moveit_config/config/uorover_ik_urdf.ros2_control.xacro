@@ -13,6 +13,7 @@
             <joint name="q1">
                 <command_interface name="position"/>
                 <state_interface name="position">
+                  <!--The initial position is taken from initial_positions.yaml-->
                   <param name="initial_value">${initial_positions['q1']}</param>
                 </state_interface>
                 <!--We currently don't publish any velocity feedback so all of the velocity interfaces are 0 by default-->

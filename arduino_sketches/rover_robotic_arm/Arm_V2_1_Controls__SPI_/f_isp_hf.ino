@@ -1,4 +1,3 @@
-
 // Absolute Encoder helper functions below
 
 // For a motor with id i, update its associated position by converting SPI enc. data to radians

@@ -1,7 +1,7 @@
 # This config file is used by ros2_control
 controller_manager:
   ros__parameters:	
-    update_rate: 20  # Hz (this changes the frequency that we serial read and write to and from the arduino as well)
+    update_rate: 10  # Hz (this changes the frequency that we serial read and write to and from the arduino as well)
 
     uorover_arm_controller: # Moveit controller for IK 
       type: joint_trajectory_controller/JointTrajectoryController

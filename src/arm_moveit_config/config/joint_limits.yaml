@@ -10,22 +10,22 @@ default_acceleration_scaling_factor: 0.1
 joint_limits:
   q1:
     has_velocity_limits: true
-    max_velocity: 1.00
+    max_velocity: 2.00
     has_acceleration_limits: true
     max_acceleration: 1.00
   q2:
     has_velocity_limits: true
-    max_velocity: 1.00
+    max_velocity: 2.00
     has_acceleration_limits: true
     max_acceleration: 1.00
   q3:
     has_velocity_limits: true
-    max_velocity: 1.00
+    max_velocity: 2.00
     has_acceleration_limits: true
     max_acceleration: 1.00
   q4:
     has_velocity_limits: true
-    max_velocity: 1.00
+    max_velocity: 2.00
     has_acceleration_limits: true
     max_acceleration: 1.00
   q5:

@@ -203,6 +203,7 @@ int calculateNextSpeed(int i) {
   //Temporary function that returns a speed depending on the motor
   //For use with IK when not PID'ing (constant speed)
   int nextSpeed = 0;
+
   if (equalsStr(mode,"M")) {
     nextSpeed = abs(int(motor[i].desiredPos*motor[i].MAX_SPEED));
   } else {
@@ -232,9 +233,9 @@ int calculateNextSpeed(int i) {
     
   }
 
-return nextSpeed;
+  return nextSpeed;
 
-/*
+  /*
   double r_steepness = 8;//acceleration
   double y_intercept = 0.015;
   double t_delta = (double)(millis()-startTime motor)/1000;//time since motor started moving
@@ -245,5 +246,26 @@ return nextSpeed;
   double k_adjust = 1.0322580645156 - 1/((countsR/20)+1);
   double s_final = (speedMax-s_base)*k_adjust*f_t + speedMin;
 
-  return (int) s_final;*/
+  return (int) s_final;
+  */
+
 }//end of calculateNextSpeed
+
+void timerIsr() {
+    // The run function moves the steppers one step if the target position is not reached (set by the move function)
+    // Needs to be called consistently to avoid vibrations at a very high frequency
+    static int interruptCount = 0;
+    interruptCount ++;
+
+    // To avoid vibrations, the tower stepper needs to be ran more often than the other steppers
+
+    if (interruptCount >= 4){
+          wristPitch.run();
+          wristRoll.run();
+          endEffector.run();
+          
+          interruptCount = 0;
+    }
+
+    tower.run();
+}

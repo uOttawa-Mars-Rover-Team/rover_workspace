@@ -19,10 +19,6 @@ void loop(){
     //Typical command example:
     //Manual: "M;1024;-1024;0;0;0;0;!"
     //IK: "I;1.57;2.0;3.0;0.5;-1024;-1024;!"
-    if (verbose) {
-      Serial.print("\nNew command received: ");
-      Serial.println(input);
-    }
 
     tmp = strtok(input, ";");
 
@@ -142,10 +138,7 @@ void loop(){
     } else if (equalsStr(tmp, "ee_stop")) {
       motor[EE].desiredPos = 0;
 
-    }
-
-    
-     else if (equalsStr(tmp, "wrist_angle_abs")) {
+    } else if (equalsStr(tmp, "wrist_angle_abs")) {
       wrist_angle_abs = not wrist_angle_abs;
 
     }
@@ -156,22 +149,6 @@ void loop(){
       delay(100);
       digitalWrite(LASER_PIN, HIGH);
       Serial.println("Turning laser on and off!");
-    } else if (equalsStr(tmp, "white")) {
-      writeLED(255,255,255);
-      Serial.println("LED set to white!");
-      
-    } else if (equalsStr(tmp, "red")) {
-      writeLED(255,0,0);
-      Serial.println("LED set to red!");
-      
-    } else if (equalsStr(tmp, "green")) {
-      writeLED(0,255,0);
-      Serial.println("LED set to green!");
-      
-    } else if (equalsStr(tmp, "blue")) {
-      writeLED(0,0,255);
-      Serial.println("LED set to blue!");
-      
     } else {
       Serial.println("Invalid command received!");
     }
@@ -180,22 +157,7 @@ void loop(){
 
   //Every dashb_delay ms, publish stuff
   if (millis() - dashb_t >= dashb_delay and verbose) {
-    if (not graph) {
-
-      Serial.println();
-      Serial.print("Tower_Pose:");
-      Serial.println(motor[TW].currentPos); //apply conversion using wrist mtr 1:50 and belt 1:10 => div by 500
-      Serial.print(",");
-      Serial.print("Tower_Ideal:");
-      Serial.println(motor[TW].desiredPos);
-      Serial.print("!");
-    }
-
     //Publishing/printing feedback below
-
-    
-
-
     Serial.println();
     Serial.print("f;");
     for (int i = TW ; i < WR ; i++) {
@@ -203,28 +165,6 @@ void loop(){
       Serial.print(";");
     }
     Serial.print("!");
-    
-    /*
-    //Publishing/printing velocities
-    Serial.println();
-    Serial.print("v;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].velocity);
-      Serial.print(";");
-    }
-    Serial.print("!");
-    */
-
-    /*debugging, uncomment later
-    //Publishing/printing desired pos below
-    Serial.println();
-    Serial.print("d;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].desiredPos);
-      Serial.print(";");
-    }
-    Serial.print("!");
-    */
 
     //Publishing gpio feedback
     Serial.println();
@@ -241,6 +181,28 @@ void loop(){
     Serial.print(";");
     Serial.print(emergency_stop_en);
     Serial.print(";!");
+
+    /*debugging, uncomment later
+    //Publishing/printing desired pos below
+    Serial.println();
+    Serial.print("d;");
+    for (int i = TW ; i < LAST ; i++) {
+      Serial.print(motor[i].desiredPos);
+      Serial.print(";");
+    }
+    Serial.print("!");
+    */  
+   
+    /*
+    //Publishing/printing velocities
+    Serial.println();
+    Serial.print("v;");
+    for (int i = TW ; i < LAST ; i++) {
+      Serial.print(motor[i].velocity);
+      Serial.print(";");
+    }
+    Serial.print("!");
+    */
 
     //update timer until enc_delay is over
     dashb_t = millis();

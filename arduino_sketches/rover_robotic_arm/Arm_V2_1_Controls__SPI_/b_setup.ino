@@ -1,27 +1,15 @@
-
-//Everything before setup()
-
 //We import the needed libraries namely:
 //- AccelStepper (used for stepper control)
-//- MultiStepper (used for simultaneous stepper control)
-//- ezButton (takes care of button debouncing)
 //- JrkG2 (used for linear actuator control)
+//- SPI (used for encoder comms)
+//- 
 // Include the SPI library for the arduino boards
 #include <AccelStepper.h>
-//#include <MultiStepper.h>
-#include <ezButton.h>
 #include <JrkG2.h>
 #include <SPI.h>
-#include <math.h>
 #include <TimerOne.h>
 
 ////// Object Declaration //////
-
-//We initialize the Wrist Limit switch objects
-ezButton LS1(43);
-ezButton LS2(44);
-ezButton LS3(45);
-ezButton LS4(46);
 
 //We declare the steppers
 AccelStepper tower        (AccelStepper::DRIVER, 6,   7);  //step, direction
@@ -64,7 +52,6 @@ int encoderPosition;
 uint8_t attempts;
 
 #define verbose             true
-#define graph               true
 bool emergency_stop_en =    false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
@@ -76,7 +63,6 @@ int wristStopUp   = 0;
 int wristStopDown = 0;
 
 //Time in ms for:
-long ls_delay    = 20; //limit switch debounce time (ms)
 long enc_delay   = 50;  //how often to update encoder data
 long motor_delay = 50; //how often to move motors
 long dashb_delay = 200;//how often to publish via serial encoder data, etc...
@@ -164,13 +150,19 @@ void setup() {
 
   //start I2C comms
   Wire.begin();
-
-  //we set the debounce time of the limitSwitches, that is the amount of time
-  //the program is going to wait until it accepts another input from the switches
-  LS1.setDebounceTime(ls_delay); //set debounce time to 50 milliseconds
-  LS2.setDebounceTime(ls_delay);
-  LS3.setDebounceTime(ls_delay);
-  LS4.setDebounceTime(ls_delay);
+  
+  //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
+  //500 kHz is a good speed for our test environment
+  //SPI.setClockDivider(SPI_CLOCK_DIV2);   // 8 MHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV8);   // 2 MHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV16);  // 1 MHz
+  SPI.setClockDivider(SPI_CLOCK_DIV32);    // 500 kHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV64);  // 250 kHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV128); // 125 kHz
+  
+  //start SPI bus
+  SPI.begin();
 
   //we configure the default speed for each stepper
   //TODO: verify each of these speeds in a separate test and then modify these values
@@ -215,40 +207,8 @@ void setup() {
   digitalWrite(motor[WR].BOOT_PIN, HIGH);
   pinMode(motor[EE].BOOT_PIN, OUTPUT);
   digitalWrite(motor[EE].BOOT_PIN, HIGH);
-  
-  //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
-  //500 kHz is a good speed for our test environment
-  //SPI.setClockDivider(SPI_CLOCK_DIV2);   // 8 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV8);   // 2 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV16);  // 1 MHz
-  SPI.setClockDivider(SPI_CLOCK_DIV32);    // 500 kHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV64);  // 250 kHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV128); // 125 kHz
-  
-  //start SPI bus
-  SPI.begin();
 
   // Isr timer for the run() function
-  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vribations.
+  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
   Timer1.attachInterrupt(timerIsr);
-  
-
 }//end of setup()
-
-void timerIsr() {
-    // The run function moves the steppers one step if the target position is not reached (set by the move function)
-    // Needs to be called consistently to avoid vibrations at a very high frequency
-    static int interruptCount = 0;
-    interruptCount ++;
-
-    if (interruptCount >= 4){
-          wristPitch.run();
-          wristRoll.run();
-          endEffector.run();
-          
-          interruptCount = 0;
-    }
-
-    tower.run();
-}

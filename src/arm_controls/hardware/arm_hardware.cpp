@@ -1,6 +1,5 @@
 #include "arm_controls/arm_hardware.hpp"
 #include "pluginlib/class_list_macros.hpp"
-#include <control_toolbox/pid.hpp>
 
 namespace arm_controls
 {

@@ -4,11 +4,11 @@ import { useState } from "react";
 
 interface messageString {
   name: number;
-  value: Number;
+  value: number;
 }
 interface Datapoint {
   name: Date;
-  value: Number;
+  value: number;
 }
 
 const TemperatureChart: React.FC = () => {

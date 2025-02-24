@@ -4,11 +4,12 @@ import { Param } from "../hooks/useParams";
 
 /**
  * Delete ROS param wrapper (making it async friendly, instead of using callbacks)
- * 
+ *
  * @param ros Ros client
  * @param name Name of param
  * @returns Promise wrapping the callback
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const deleteParam = (ros: Ros, name: string): Promise<any> =>
   new Promise((resolve, reject) => {
     try {
@@ -23,12 +24,13 @@ export const deleteParam = (ros: Ros, name: string): Promise<any> =>
 
 /**
  * Set ROS param wrapper (making it async friendly, instead of using callbacks)
- * 
+ *
  * @param ros Ros client
  * @param name Name of param
  * @param value Value of param
  * @returns Promise wrapping the callback
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const setParam = (ros: Ros, name: string, value: string): Promise<any> =>
   new Promise((resolve, reject) => {
     try {
@@ -43,7 +45,7 @@ export const setParam = (ros: Ros, name: string, value: string): Promise<any> =>
 
 /**
  * Get ROS param wrapper (making it async friendly, instead of using callbacks)
- * 
+ *
  * @param ros Ros client
  * @param name Name of param
  * @returns Promise returning the param (name and value)
@@ -62,7 +64,7 @@ export const getParam = (ros: Ros, name: string): Promise<Param> =>
 
 /**
  * Get ROS node wrapper (making it async friendly, instead of using callbacks)
- * 
+ *
  * @param ros Ros client
  * @param name Name of node
  * @returns Promise returning the node (publishing and subscribing topics and services)
@@ -70,6 +72,7 @@ export const getParam = (ros: Ros, name: string): Promise<Param> =>
 export const getNode = (ros: Ros, name: string): Promise<Node> =>
   new Promise((resolve, reject) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       ros.getNodeDetails(name, ({ publishing, subscribing, services }) =>
         resolve({ publishing, subscribing, services, name })

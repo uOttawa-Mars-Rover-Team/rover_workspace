@@ -46,7 +46,7 @@ export const MarkerPopup: React.FC<MarkerPopupProps> = ({
         >
           <Space direction="vertical">
             <div>{`${position.lat.toFixed(precision)}, ${position.lng.toFixed(
-              precision
+              precision,
             )}`}</div>
             <div>{children}</div>
           </Space>

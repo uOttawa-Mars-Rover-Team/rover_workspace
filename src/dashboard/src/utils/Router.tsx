@@ -25,7 +25,7 @@ const Router: React.FC = () => (
       <Route path="/scienceMission" element={<ScienceMission />} />
       <Route path="/overview" element={<Overview />} />
       <Route path="/camera" element={<Camera />} />
-      <Route path="/camera/singleCamera" element={<SingleCamera/>}/>
+      <Route path="/camera/singleCamera" element={<SingleCamera />} />
       <Route path="/telemetry" element={<Telemetry />} />
       <Route path="/" element={<Navigate to="/overview" replace />} />
     </Routes>

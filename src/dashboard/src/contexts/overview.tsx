@@ -20,7 +20,7 @@ interface AutoRefresh {
 interface ContextType {
   cameraFeeds: CameraFeed[];
   autoRefresh: AutoRefresh;
-  dashboardConfig: () => any;
+  dashboardConfig: () => string | void;
   addCameraFeed: (cameraFeed: CameraFeed) => void;
   removeCameraFeed: (index: number) => void;
   editCameraFeed: (cameraFeed: CameraFeed, index: number) => void;

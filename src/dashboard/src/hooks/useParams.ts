@@ -13,7 +13,7 @@ export interface Param {
 
 /**
  * React Hook wrapper on ROSLIB Params
- * 
+ *
  * @param shouldRefresh Specify if params should periodically get refreshed
  * @returns ROS params and time of last refresh
  */
@@ -23,12 +23,12 @@ export const useParams = (shouldRefresh: boolean) => {
   const [lastRefreshed, setLastRefreshed] = useState("");
 
   useEffect(() => {
-    let id = setInterval(() => {
+    const id = setInterval(() => {
       rosClient?.getParams(async (params) => {
-        let newRosParamsPromises = params.map((param) =>
+        const newRosParamsPromises = params.map((param) =>
           getParam(rosClient, param)
         );
-        let newRosParams = await Promise.all(newRosParamsPromises);
+        const newRosParams = await Promise.all(newRosParamsPromises);
 
         if (!isEqual(rosParams, newRosParams)) {
           setRosParams(newRosParams);

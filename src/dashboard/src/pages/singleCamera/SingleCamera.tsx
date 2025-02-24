@@ -1,17 +1,11 @@
-import { Image, Row} from "antd";
-import {
-  CameraOutlined,
-} from "@ant-design/icons";
-import { useContext} from "react";
+import { Image, Row } from "antd";
+import { CameraOutlined } from "@ant-design/icons";
+import { useContext } from "react";
 import { Helmet } from "react-helmet";
 
-import {
-  Layout,
-  CameraFeed,
-  Header,
-} from "../../components";
+import { Layout, CameraFeed, Header } from "../../components";
 import { DashboardContext } from "../../contexts";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
 const SingleCamera: React.FC = () => {
   const { cameraFeeds } = useContext(DashboardContext);
@@ -34,14 +28,14 @@ const SingleCamera: React.FC = () => {
         <Row gutter={[12, 12]} justify="center" align="middle">
           <Image.PreviewGroup>
             {
-                <CameraFeed
+              <CameraFeed
                 key={cameraIndex}
                 arrayIndex={cameraIndex}
                 topicName={selectedCamera.topicName}
                 title={selectedCamera.title}
                 messageType={selectedCamera.messageType}
-                singleCamera= {true}
-                />
+                singleCamera={true}
+              />
             }
           </Image.PreviewGroup>
         </Row>

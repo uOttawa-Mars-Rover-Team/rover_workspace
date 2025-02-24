@@ -48,7 +48,13 @@ const ParamsPanel: React.FC = () => {
     }
   };
 
-  const addParamOnFinish = async ({ name, value }: any) => {
+  const addParamOnFinish = async ({
+    name,
+    value,
+  }: {
+    name: string;
+    value: string;
+  }) => {
     try {
       await setParam(rosClient!, name, value);
       notification.success({

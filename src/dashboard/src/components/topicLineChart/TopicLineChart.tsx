@@ -4,7 +4,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
 } from "recharts";
@@ -16,7 +15,7 @@ import { RosContext } from "../../contexts";
 
 interface Datapoint {
   name: Date;
-  value: Number;
+  value: number;
 }
 type DatapointAccessorFunction = (message: string) => Datapoint;
 interface TopicLineChartProps {
@@ -25,36 +24,6 @@ interface TopicLineChartProps {
   dataName: string;
   stroke?: string;
 }
-interface CustomTooltipProps {
-  active: boolean;
-  payload: Array<Datapoint>;
-  label: String | Date;
-  dataName: string;
-}
-
-const CustomTooltip: React.FC<CustomTooltipProps> = ({
-  active,
-  payload,
-  label,
-  dataName,
-}) => {
-  if (active && label && payload && payload.length) {
-    return (
-      <div>
-        <h3>{dataName}</h3>
-        <p>
-          {label.toLocaleString()}: {payload[0].value.toString()}
-        </p>
-      </div>
-    );
-  } else {
-    return (
-      <>
-        <b>No data</b>
-      </>
-    );
-  }
-};
 
 const TopicLineChart: React.FC<TopicLineChartProps> = ({
   topicName,
@@ -74,13 +43,14 @@ const TopicLineChart: React.FC<TopicLineChartProps> = ({
 
   useEffect(() => {
     if (rosClient) {
-      let topic = new ROSLIB.Topic({
+      const topic = new ROSLIB.Topic({
         ros: rosClient!,
         name: topicName,
         messageType,
       });
 
       topic.subscribe((message) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const newDatapoint = messageDatapointAccessor(message.data);
         setData([...data, newDatapoint]);
@@ -125,9 +95,7 @@ const TopicLineChart: React.FC<TopicLineChartProps> = ({
             padding={{ left: 30, right: 30 }}
           />
           <YAxis />
-          {/* 
-            // @ts-ignore */}
-          <Tooltip content={<CustomTooltip dataName={dataName} />} />
+          {/* <Tooltip content={<CustomTooltip dataName={dataName} />} /> */}
           <Legend />
           <Line type="linear" dataKey="value" name={dataName} stroke={stroke} />
         </LineChart>

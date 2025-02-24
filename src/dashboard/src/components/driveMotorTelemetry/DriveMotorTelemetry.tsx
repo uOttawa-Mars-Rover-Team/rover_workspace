@@ -5,13 +5,13 @@ import { RosContext } from "../../contexts";
 import ROSLIB from "roslib";
 import { useContext, useEffect, useState } from "react";
 
-//components
-import TelemetryContainer from "../../components/telemetryContainer/TelemetryContainer";
-import TelemetryBox from "../../components/TelemetryBox/TelemetryBox";
+// Components
+import TelemetryContainer from "../telemetryContainer/TelemetryContainer";
+import TelemetryItem from "../telemetryItem/TelemetryItem";
 
-//icons
-//gearshape
-import GearShape_Green from '/gearshape.circle.fill.green.svg'
+// Icons
+// Gearshape
+import GearShape_Green from "/gearshape.circle.fill.green.svg";
 
 type MotorDataMessage = {
   velocity_feedback: number;
@@ -24,40 +24,59 @@ type MotorDataMessage = {
 
 export default function DriveMotorTelemetry() {
   const { rosClient } = useContext(RosContext);
-  //const [motorData, setMotorData] = useState<MotorDataMessage>();
   const [motorDataLeft, setMotorDataLeft] = useState<MotorDataMessage>();
   const [motorDataRight, setMotorDataRight] = useState<MotorDataMessage>();
-  const roundPrecision = 2
-
+  const roundPrecision = 2;
 
   useEffect(() => {
     if (rosClient) {
-        const motorDataTopic = new ROSLIB.Topic({
+      const motorDataTopic = new ROSLIB.Topic({
         ros: rosClient!,
         name: config.overview.telemetry.motorDataTopicName,
         messageType: "general_interfaces/msg/MotorData",
       });
-      
+
       motorDataTopic.subscribe((msg) => {
         const message = msg as MotorDataMessage;
-        if(message.sticky_faults === "Left Side") {
-          setMotorDataLeft(message)
+        if (message.sticky_faults === "Left Side") {
+          setMotorDataLeft(message);
         } else {
-          setMotorDataRight(message)
+          setMotorDataRight(message);
         }
-        //setMotorData(message);
       });
-      
+
       return () => {
         motorDataTopic.unsubscribe();
       };
     }
   }, [rosClient]);
-  
-  return <TelemetryContainer style={{width: '40%'}}>
-    <TelemetryBox name="RPM Front Left" data={motorDataLeft?.velocity_feedback.toFixed(roundPrecision) +" RPM"} image={GearShape_Green}></TelemetryBox>
-    <TelemetryBox name="RPM Front Right" data={motorDataRight?.velocity_feedback.toFixed(roundPrecision) +" RPM"} image={GearShape_Green}></TelemetryBox>
-    <TelemetryBox name="RPM Back Left" data={motorDataLeft?.velocity_feedback.toFixed(roundPrecision) +" RPM"} image={GearShape_Green}></TelemetryBox>
-    <TelemetryBox name="RPM Back Right" data={motorDataRight?.velocity_feedback.toFixed(roundPrecision) +" RPM"} image={GearShape_Green}></TelemetryBox>
-  </TelemetryContainer>
+
+  return (
+    <TelemetryContainer style={{ width: "40%" }}>
+      <TelemetryItem
+        name="RPM Front Left"
+        data={motorDataLeft?.velocity_feedback.toFixed(roundPrecision) + " RPM"}
+        image={GearShape_Green}
+      />
+      <TelemetryItem
+        name="RPM Front Right"
+        data={
+          motorDataRight?.velocity_feedback.toFixed(roundPrecision) + " RPM"
+        }
+        image={GearShape_Green}
+      />
+      <TelemetryItem
+        name="RPM Back Left"
+        data={motorDataLeft?.velocity_feedback.toFixed(roundPrecision) + " RPM"}
+        image={GearShape_Green}
+      />
+      <TelemetryItem
+        name="RPM Back Right"
+        data={
+          motorDataRight?.velocity_feedback.toFixed(roundPrecision) + " RPM"
+        }
+        image={GearShape_Green}
+      />
+    </TelemetryContainer>
+  );
 }

@@ -98,11 +98,11 @@ const Navbar: React.FC<NavbarProps> = ({ menuKey, title }) => {
                   <span>Overview</span>
                 </Menu.Item>
                 <Menu.Item key="telemetry">
-                <RadarChartOutlined />
+                  <RadarChartOutlined />
                   <span>Telemetry</span>
                 </Menu.Item>
                 <Menu.Item key="camera">
-                <VideoCameraOutlined />
+                  <VideoCameraOutlined />
                   <span>Camera</span>
                 </Menu.Item>
                 <Menu.Item key="scienceMission">

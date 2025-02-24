@@ -6,7 +6,6 @@ import {
   InfoCircleOutlined,
   WifiOutlined,
   FileAddOutlined,
-  SlidersOutlined,
 } from "@ant-design/icons";
 import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
@@ -23,7 +22,6 @@ import {
   AddCameraFeedModal,
   TemperatureChart,
   CameraControls,
-  Telemetry,
 } from "../../components";
 import { DashboardContext } from "../../contexts";
 
@@ -37,9 +35,6 @@ const Overview: React.FC = () => {
         <title>rDash - Overview</title>
       </Helmet>
       <Layout title="Overview" menuKey="overview">
-        <Header title="Telemetry" icon={<SlidersOutlined />} />
-        <Telemetry />
-
         <Header
           title={`Cameras (${cameraFeeds.length})`}
           icon={<CameraOutlined />}

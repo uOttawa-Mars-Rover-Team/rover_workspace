@@ -5,7 +5,7 @@ import { useState } from "react";
 
 /**
  * React Hook allowing persisted React state after browser refresh
- * 
+ *
  * @param key Key used in LocalStorage API to store the value
  * @param initialValue Initial value to set in LocalStorage if it's not already set
  * @returns Value and function to update value

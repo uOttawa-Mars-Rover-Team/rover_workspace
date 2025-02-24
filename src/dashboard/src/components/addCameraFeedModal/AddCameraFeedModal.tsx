@@ -17,7 +17,15 @@ const AddCameraFeedModal: React.FC<AddCameraFeedModalProps> = ({
 
   const dismissModal = () => setVisible(false);
 
-  const formOnFinish = ({ title, topicName, messageType }: any) => {
+  const formOnFinish = ({
+    title,
+    topicName,
+    messageType,
+  }: {
+    title: string;
+    topicName: string;
+    messageType: string;
+  }) => {
     addCameraFeed({ title, topicName, messageType });
     dismissModal();
     form.resetFields();

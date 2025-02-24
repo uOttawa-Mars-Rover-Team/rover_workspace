@@ -1,4 +1,4 @@
-import { Image, Row, Button} from "antd";
+import { Image, Row, Button } from "antd";
 import {
   CameraOutlined,
   VideoCameraAddOutlined,
@@ -51,16 +51,12 @@ const Camera: React.FC = () => {
           </Image.PreviewGroup>
         </Row>
 
-        
         <Header title="Camera Controls" icon={<FileAddOutlined />} />
-        <div style={{marginBottom:"30px"}}>
-        <CameraControls
-          cameraTopics={cameraFeeds.map(({ topicName }) => topicName)}
-        />
-
+        <div style={{ marginBottom: "30px" }}>
+          <CameraControls
+            cameraTopics={cameraFeeds.map(({ topicName }) => topicName)}
+          />
         </div>
-        
-        
       </Layout>
 
       <AddCameraFeedModal

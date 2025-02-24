@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 completed() { echo -e "\e[1m\e[32mComplete.\e[0m\n"; }
 title() { echo -e "\e[1m\e[44m $1 \e[0m"; }
 
@@ -13,8 +15,8 @@ sudo apt-get -y upgrade
 completed
 
 title "Setting up sources"
-sudo apt install software-properties-common
-sudo add-apt-repository universe
+sudo apt install -y software-properties-common
+sudo add-apt-repository -y universe
 
 sudo apt update && sudo apt install curl -y
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg

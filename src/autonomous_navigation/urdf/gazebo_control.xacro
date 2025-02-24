@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<!-- Source:
+https://github.com/joshnewans/articubot_one/blob/420dc2b4d1a14274d38e3e3c76f7aa0ee7842427/description/gazebo_control.xacro -->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <gazebo>
+        <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+            <ros>
+                <namespace>/gazebo_sim</namespace>
+            </ros>
+
+            <!-- Wheel Information -->
+            <!-- FL_wheel -->
+            <!-- <left_joint>q1</left_joint> -->
+            <!-- RL_wheel -->
+            <left_joint>q4</left_joint>
+            <!-- FR_wheel -->
+            <!-- <right_joint>q2</right_joint> -->
+            <!-- RR_wheel -->
+            <right_joint>q3</right_joint>
+
+            <wheel_separation>0.7524</wheel_separation>
+            <wheel_diameter>0.40601</wheel_diameter>
+
+            <!-- Limits -->
+            <max_wheel_torque>20</max_wheel_torque>
+            <max_wheel_acceleration>1.0</max_wheel_acceleration>
+
+            <!-- Output -->
+            <odometry_frame>odom</odometry_frame>
+            <robot_base_frame>base_link</robot_base_frame>
+
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>false</publish_odom_tf>
+            <publish_wheel_tf>true</publish_wheel_tf>
+        </plugin>
+    </gazebo>
+
+
+</robot>

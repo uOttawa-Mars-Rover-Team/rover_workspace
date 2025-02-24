@@ -1,6 +1,7 @@
 export type CreatePanoramaRequest = {
   path: string;
 };
+
 export type SaveImageRequest = CreatePanoramaRequest & {
   path: string;
   image_topic: string;
@@ -11,4 +12,5 @@ export type CreatePanoramaResponse = {
   status: boolean;
   message: string;
 };
+
 export type SaveImageResponse = CreatePanoramaResponse;

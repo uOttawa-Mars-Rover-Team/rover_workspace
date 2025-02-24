@@ -21,6 +21,7 @@ import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
 import ROSLIB from "roslib";
+import GpsWaypointRecorder from "../gpsWaypointRecorder/GpsWaypointRecorder";
 
 type NavigationType = {
   precision?: number;
@@ -28,7 +29,7 @@ type NavigationType = {
 type markerObjectListType = {
   [key: number]: JSX.Element;
 };
-type GPSMessage = {
+export type GPSMessage = {
   fix: number;
   satellites: number;
   latitude: number;
@@ -52,6 +53,12 @@ const Navigation: React.FC<NavigationType> = ({
     "https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}";
   const terrainTileLayer = "https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}";
   const [useTerrain, setUseTerrain] = useState(false);
+  const [gpsWaypointMessage, setGpsWaypointMessage] = useState<GPSMessage>({
+    fix: 0,
+    satellites: 0,
+    latitude: initPosition.lat,
+    longitude: initPosition.lng,
+  });
   const activeTileLayer = useTerrain ? terrainTileLayer : satelliteTileLayer;
 
   // Use a the leaflet map component's ref to allow it to be manipulated
@@ -71,7 +78,7 @@ const Navigation: React.FC<NavigationType> = ({
         map.off("move", onMoveCallback);
       };
     }
-  }, [map]);
+  }, [map, onMoveCallback]);
 
   const roverIcon = new Leaflet.DivIcon({
     html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
@@ -93,6 +100,7 @@ const Navigation: React.FC<NavigationType> = ({
       });
       topic.subscribe((msg) => {
         const message = msg as GPSMessage;
+        setGpsWaypointMessage(message);
         if (message.fix == 1) {
           setRoverPosition([message.latitude!, message.longitude!]);
         }
@@ -142,10 +150,10 @@ const Navigation: React.FC<NavigationType> = ({
       });
       // Add success callback functions for tiles that have been saved and
       // removed. These let you know when the tiles are finished saving/removing
-      offlineTileLayer.on("saveend", (_e) => {
+      offlineTileLayer.on("saveend", (_) => {
         window.alert("Success!");
       });
-      offlineTileLayer.on("tilesremoved", (_e) => {
+      offlineTileLayer.on("tilesremoved", (_) => {
         window.alert("Tiles removed");
       });
       offlineTileLayer.addTo(map);
@@ -299,6 +307,9 @@ const Navigation: React.FC<NavigationType> = ({
                 <div>Use terrain map</div>
                 <Switch onChange={() => setUseTerrain(!useTerrain)} />
               </Space>
+            </Col>
+            <Col>
+              <GpsWaypointRecorder message={gpsWaypointMessage} />
             </Col>
           </Row>
         </div>

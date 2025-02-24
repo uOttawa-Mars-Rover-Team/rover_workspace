@@ -54,7 +54,7 @@
     "telemetry": {
       "motorDataTopicName": "/MotorData",
       "powerDataTopicName": "/PowerData",
-      "imuTopicName" : "/IMU"
+      "imuTopicName": "/IMU"
     }
   }
 }

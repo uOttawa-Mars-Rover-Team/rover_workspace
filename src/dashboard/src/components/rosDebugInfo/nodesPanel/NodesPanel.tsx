@@ -10,7 +10,7 @@ import { DashboardContext } from "../../../contexts";
 const NodesPanel: React.FC = () => {
   const { autoRefresh } = useContext(DashboardContext);
   const [shouldRefresh, setShouldRefresh] = useState<boolean>(
-    autoRefresh.nodes
+    autoRefresh.nodes,
   );
   const { nodes, lastRefreshed } = useNodes(shouldRefresh);
 

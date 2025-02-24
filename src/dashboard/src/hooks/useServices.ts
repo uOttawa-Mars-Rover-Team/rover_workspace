@@ -6,8 +6,8 @@ import { RosContext } from "../contexts";
 import * as config from "../dashboardConfig.json";
 
 /**
- * React Hook wrapper on ROSLIB Serices
- * 
+ * React Hook wrapper on ROSLIB Services
+ *
  * @param shouldRefresh Specify if services should periodically get refreshed
  * @returns ROS services and time of last refresh
  */
@@ -17,7 +17,7 @@ export const useServices = (shouldRefresh: boolean) => {
   const [lastRefreshed, setLastRefreshed] = useState("");
 
   useEffect(() => {
-    let id = setInterval(() => {
+    const id = setInterval(() => {
       rosClient?.getServices((newRosServices) => {
         if (!isEqual(rosServices, newRosServices)) {
           setRosServices(newRosServices);

@@ -9,7 +9,7 @@ import { DashboardContext } from "../../../contexts";
 const TopicsPanel: React.FC = () => {
   const { autoRefresh } = useContext(DashboardContext);
   const [shouldRefresh, setShouldRefresh] = useState<boolean>(
-    autoRefresh.topics
+    autoRefresh.topics,
   );
   const { topics, lastRefreshed } = useTopics(shouldRefresh);
 

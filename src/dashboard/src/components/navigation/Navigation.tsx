@@ -78,7 +78,7 @@ const Navigation: React.FC<NavigationType> = ({
         map.off("move", onMoveCallback);
       };
     }
-  }, [map]);
+  }, [map, onMoveCallback]);
 
   const roverIcon = new Leaflet.DivIcon({
     html: '<i style="color:orange;font-size:2.5em;position:absolute;top:-0.3em;right:-0.4em;" class="fa-solid fa-rocket"></i>',
@@ -150,10 +150,10 @@ const Navigation: React.FC<NavigationType> = ({
       });
       // Add success callback functions for tiles that have been saved and
       // removed. These let you know when the tiles are finished saving/removing
-      offlineTileLayer.on("saveend", (_e) => {
+      offlineTileLayer.on("saveend", (_) => {
         window.alert("Success!");
       });
-      offlineTileLayer.on("tilesremoved", (_e) => {
+      offlineTileLayer.on("tilesremoved", (_) => {
         window.alert("Tiles removed");
       });
       offlineTileLayer.addTo(map);

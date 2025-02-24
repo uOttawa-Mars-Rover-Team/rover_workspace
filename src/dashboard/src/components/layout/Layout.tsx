@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, menuKey }) => {
         </Content>
       </Row>
       <Footer className="root-footer">
-        ©{year} Open source code available on
+        © {year} Open source code available on
         <a
           className="root-footer-link"
           target="_blank"

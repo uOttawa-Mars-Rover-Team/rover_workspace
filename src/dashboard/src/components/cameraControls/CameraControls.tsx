@@ -66,7 +66,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
     }
     return true;
   };
-  const useService = (
+  const callService = (
     serviceName: string,
     serviceType: string,
     serviceContent: VideoNodeRequest
@@ -143,7 +143,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
               type="primary"
               onClick={() => {
                 if (validatePath(pictureControlConfig.path)) {
-                  useService(
+                  callService(
                     config.overview.cameraControls.picture.serviceName,
                     "general_interfaces/srv/SaveImage",
                     pictureControlConfig
@@ -192,7 +192,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
                 const data = {
                   path: panoramaPath,
                 };
-                useService(
+                callService(
                   config.overview.cameraControls.panorama.serviceName,
                   "general_interfaces/srv/CreatePanorama",
                   data
@@ -244,7 +244,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
                   ...videoControlConfig,
                   path: "*",
                 };
-                useService(
+                callService(
                   config.overview.cameraControls.video.serviceName.stop,
                   "general_interfaces/srv/SaveImage",
                   data
@@ -257,7 +257,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
               danger
               onClick={() => {
                 if (validatePath(videoControlConfig.path)) {
-                  useService(
+                  callService(
                     config.overview.cameraControls.video.serviceName.stop,
                     "general_interfaces/srv/SaveImage",
                     videoControlConfig
@@ -285,7 +285,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraTopics }) => {
               type="primary"
               onClick={() => {
                 if (validatePath(videoControlConfig.path)) {
-                  useService(
+                  callService(
                     config.overview.cameraControls.video.serviceName.start,
                     "general_interfaces/srv/SaveImage",
                     videoControlConfig

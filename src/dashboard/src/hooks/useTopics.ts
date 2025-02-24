@@ -12,7 +12,7 @@ interface Topic {
 
 /**
  * React Hook wrapper on ROSLIB Topics
- * 
+ *
  * @param shouldRefresh Specify if topics should periodically get refreshed
  * @returns ROS topics and time of last refresh
  */
@@ -22,9 +22,9 @@ export const useTopics = (shouldRefresh: boolean) => {
   const [lastRefreshed, setLastRefreshed] = useState("");
 
   useEffect(() => {
-    let id = setInterval(() => {
+    const id = setInterval(() => {
       rosClient?.getTopics(({ topics, types }) => {
-        let newRosTopics = topics.map((topic, index) => ({
+        const newRosTopics = topics.map((topic, index) => ({
           name: topic,
           type: types[index],
         }));

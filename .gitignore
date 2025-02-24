@@ -6,12 +6,11 @@ src/chassis_controls/bin/
 install/
 log/
 .cache/
+compile_commands.json
 
 **/.vscode/
 **/.vs/
 **.pyc
 **.pyi
-
-.cache/
 
 .DS_Store

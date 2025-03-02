@@ -9,6 +9,7 @@
 #include <rclcpp/logging.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <string>
+#include <math.h>
 
 namespace chassis_controls {
 

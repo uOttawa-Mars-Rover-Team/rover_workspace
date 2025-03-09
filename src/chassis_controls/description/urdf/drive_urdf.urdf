@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by
+    Stephen Brawner (brawner@gmail.com) 
+    Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+    For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
+<!--<xacro:include filename="gazebo_imu.xacro" />
+<xacro:include filename="gazebo_2D_lidar.xacro" /> -->
+
+    <link name="base_link">
+        <inertial>
+            <origin xyz="-0.018756 0.0030187 0.29298" rpy="0 0 0" />
+            <mass value="20" />
+            <inertia
+                ixx="0.08369"
+                ixy="0.00027047"
+                ixz="-7.4838E-05"
+                iyy="0.096132"
+                iyz="-3.3912E-05"
+                izz="0.15542" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="package://chassis_controls/description/meshes/visual/base_link.STL" />
+            </geometry>
+            <material name="">
+
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="package://chassis_controls/description/meshes/visual/base_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="q1" type="continuous">
+        <origin xyz="0.41417 0.38597 0.19864" rpy="1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="FL_wheel" />
+        <axis xyz="0 0 -1" />
+        <limit
+            lower="0"
+            upper="0"
+            effort="0"
+            velocity="0" />
+    </joint>
+    <link name="FL_wheel">
+        <inertial>
+            <origin xyz="0.00039914 -0.00040979 -0.00052985" rpy="0 0 0" />
+            <mass value="7.5" />
+            <inertia
+                ixx="0.24161"
+                ixy="3.9685E-06"
+                ixz="-7.2069E-09"
+                iyy="0.24162"
+                iyz="-2.4995E-08"
+                izz="0.40243" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="package://chassis_controls/description/meshes/visual/FL_wheel.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/FL_wheel.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="q2" type="continuous">
+        <origin xyz="0.41412 -0.38743 0.19844" rpy="1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="FR_wheel" />
+        <axis xyz="0 0 -1" />
+    </joint>
+    <link name="FR_wheel">
+        <inertial>
+            <origin xyz="0.00053061 8.5616E-05 0.00052985" rpy="0 0 0" />
+            <mass value="7.5" />
+            <inertia
+                ixx="0.24161"
+                ixy="3.8671E-06"
+                ixz="-6.752E-09"
+                iyy="0.24162"
+                iyz="-2.5122E-08"
+                izz="0.40243" />
+
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/FR_wheel.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/FR_wheel.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="q3" type="continuous">
+        <origin xyz="-0.40511 -0.38743 0.19864" rpy="1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="RR_wheel" />
+        <axis xyz="0 0 -1" />
+    </joint>
+    <link name="RR_wheel">
+        <inertial>
+            <origin xyz="-0.00038558 -0.00027142 0.00052985" rpy="0 0 0" />
+            <mass value="7.5" />
+            <inertia
+                ixx="0.24161"
+                ixy="-3.8406E-06"
+                ixz="6.9605E-09"
+                iyy="0.24162"
+                iyz="-2.5065E-08"
+                izz="0.40243" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/RR_wheel.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/RR_wheel.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="q4" type="continuous">
+        <origin xyz="-0.40506 0.38597 0.19844" rpy="1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="RL_wheel" />
+        <axis xyz="0 0 -1" />
+    </joint>
+    <link name="RL_wheel">
+        <inertial>
+            <origin xyz="2.8197E-07 2.7432E-07 -0.00052985" rpy="0 0 0" />
+            <mass value="7.5" />
+            <inertia
+                ixx="0.24162"
+                ixy="7.576E-06"
+                ixz="-1.8739E-08"
+                iyy="0.24162"
+
+                iyz="-1.8043E-08"
+                izz="0.40243" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/RL_wheel.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://chassis_controls/description/meshes/visual/RL_wheel.STL" />
+            </geometry>
+        </collision>
+    </link>
+</robot>

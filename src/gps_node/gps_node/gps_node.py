@@ -65,7 +65,8 @@ class GPSNode(Node):
             # read all the data from the serial port until the message is
             # received
             info = ""
-            required_data = ["fix", "sats", "lat", "lon", "roll", "pitch", "yaw"]
+            required_data = ["fix", "sats", "lat", "lon"]
+#	    required_data = ["fix", "sats", "lat", "lon", "roll", "pitch", "yaw"]
             missing_data = True
 
             while missing_data:
@@ -82,13 +83,13 @@ class GPSNode(Node):
             # Extract the data from the serial data, and convert them into ROS
             # messages
             gps_data = self.parse_gps_data(info)
-            imu_data = self.parse_imu_data(info)
+#            imu_data = self.parse_imu_data(info)
 
             # publish the ros messages
             self.get_logger().info(f"Publishing gps data: {gps_data}")
             self.gps_publisher.publish(gps_data)
-            self.get_logger().info(f"Publishing imu data: {imu_data}")
-            self.imu_publisher.publish(imu_data)
+#            self.get_logger().info(f"Publishing imu data: {imu_data}")
+#            self.imu_publisher.publish(imu_data)
 
     def parse_imu_data(self, serial_data: str) -> IMU:
         """

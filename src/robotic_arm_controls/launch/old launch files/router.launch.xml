@@ -1,9 +1,0 @@
-<!--
-Launch file for the toggler node
--->
-<launch>
-    <!-- Toggler Node -->
-    <node pkg="robotic_arm_controls" exec="router" name="router_node" output="screen" respawn="true">
- 
-    </node>
-</launch>

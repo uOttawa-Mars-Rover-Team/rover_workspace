@@ -7,6 +7,9 @@ install/
 log/
 .cache/
 compile_commands.json
+.ipynb_checkpoints/
+.virtual_documents/
+*.ikcache
 
 **/.vscode/
 **/.vs/

@@ -1,0 +1,9 @@
+<library path="chassis_controls">
+  <class name="chassis_controls/DriveSystem"
+         type="chassis_controls::DriveSystem"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Drive hardware plugin for uORover chassis.
+    </description>
+  </class>
+</library>

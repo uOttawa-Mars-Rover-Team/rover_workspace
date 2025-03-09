@@ -45,6 +45,7 @@ setup(
             "video = camera_nodes.video:main",
             "aruco = camera_nodes.aruco:main",
             "controls = camera_nodes.camera_control_app:main",
+            "publisher = camera_nodes.publisher:main",
         ],
     },
 )

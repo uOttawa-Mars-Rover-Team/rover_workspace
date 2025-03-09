@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>arm_controls</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="61366851+Luka626@users.noreply.github.com">luka</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  
+  
+  <!--  If you want to download a new dependency for `ros-humble`, go to https://index.ros.org/search/ and
+        search the name of the package, which is under the column `Name`.
+
+        For python package, click on "System Dependencies".
+
+        For ros package, click on "Packages".
+
+        For example, if you want to use command `sudo apt install ros-humble-moveit` to download the new
+        dependency, seach `ros-humble-moveit` on the website provided above, you will get the package
+        name `moveit` under the column `Name`, then put `moveit` below (i.e. <depend>moveit</depend>)
+
+        Finally, run ` rosdep install - -from-paths src - -ignore-src -r -y - -rosdistro humble`
+        (when entering the command into terminal, remove the space between two hyphens `- -`, since double hyphens will cause parser error in .xml file)
+
+        Note: Double check the Repo name when looking for a package name.
+   -->
+  <depend>moveit</depend>
+  <depend>moveit_servo</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>joint_trajectory_controller</depend>
+  <depend>joint_state_broadcaster</depend>
+  <depend>controller_manager</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <depend>pynput-pip</depend>
+  <depend>python3-numpy</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>general_interfaces</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>control_toolbox</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

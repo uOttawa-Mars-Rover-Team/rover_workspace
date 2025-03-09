@@ -1,0 +1,7 @@
+# Limits for the Pilz planner
+# Motion planners like Pilz and OMPL generate trajectories for the arm to move in
+cartesian_limits:
+  max_trans_vel: 10.0 #Translational limits
+  max_trans_acc: 20.0
+  max_trans_dec: -20.0 #deceleration
+  max_rot_vel: 3.14 #Rotational limit

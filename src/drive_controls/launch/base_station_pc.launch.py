@@ -42,9 +42,7 @@ def generate_launch_description():
                     ],
                     {"max_speed": 1, "speed_levels": 3},
                 ],
-                remappings=[
-                    ("cmd_vel", "teleop/cmd_vel")
-                ],
+                remappings=[("cmd_vel", "diff_cont/cmd_vel_unstamped")],
             ),
             Node(
                 package="drive_controls",

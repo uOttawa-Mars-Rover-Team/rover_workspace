@@ -1,9 +1,0 @@
-<!--
-Launch file for the manual node
--->
-<launch>
-    <!-- Manual Node -->
-    <node pkg="robotic_arm_controls" exec="m_arm_controls" name="m_arm_controller_node" output="screen" respawn="true">
- 
-    </node>
-</launch>

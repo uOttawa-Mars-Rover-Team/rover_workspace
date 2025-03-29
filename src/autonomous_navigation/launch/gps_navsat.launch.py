@@ -3,7 +3,6 @@
 
 import os
 
-from ament_index_python import get_package_share_directory
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 
@@ -15,12 +14,17 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     pkg_path = os.path.join(get_package_share_directory("autonomous_navigation"))
 
+    ekf_config_file = os.path.join(pkg_path, "config", "dual_ekf_navsat.yaml")
+
+    # launch configurations
+    use_sim_time_launch_config = LaunchConfiguration("use_sim_time")
+
+    # launch arguments
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         "use_sim_time",
         default_value="false",
         description="Use simulation (Gazebo) clock if true",
     )
-    ekf_config_file = os.path.join(pkg_path, "config/dual_ekf_navsat.yaml")
 
     return LaunchDescription(
         [
@@ -32,7 +36,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     ekf_config_file,
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")},
+                    {"use_sim_time": use_sim_time_launch_config},
                 ],
                 remappings=[("odometry/filtered", "odometry/local")],
             ),
@@ -43,7 +47,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     ekf_config_file,
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")},
+                    {"use_sim_time": use_sim_time_launch_config},
                 ],
                 remappings=[("odometry/filtered", "odometry/global")],
             ),
@@ -54,7 +58,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     ekf_config_file,
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")},
+                    {"use_sim_time": use_sim_time_launch_config},
                 ],
                 remappings=[
                     ("imu", "imu/data"),

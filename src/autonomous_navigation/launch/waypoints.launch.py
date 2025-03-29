@@ -4,7 +4,6 @@
 import os
 
 import xacro
-from ament_index_python import get_package_share_directory
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -21,12 +20,15 @@ def generate_launch_description():
 
     urdf_file = os.path.join(pkg_path, "urdf", "ab1", "robot.urdf.xacro")
     robot_description_config = xacro.process_file(urdf_file)
-    gazebo_world_file = os.path.join(pkg_path, "world/obstacles.world")
-    rviz_config_file = os.path.join(pkg_path, "rviz/nav2_config.rviz")
-    nav2_params = os.path.join(pkg_path, "config/nav2_no_map_params.yaml")
+    gazebo_world_file = os.path.join(pkg_path, "world", "obstacles.world")
+    rviz_config_file = os.path.join(pkg_path, "rviz", "nav2_config.rviz")
+    nav2_params = os.path.join(pkg_path, "config", "nav2_no_map_params.yaml")
     configured_params = RewrittenYaml(
         source_file=nav2_params, root_key="", param_rewrites="", convert_types=True
     )
+
+    # launch configurations
+    use_sim_time_launch_config = LaunchConfiguration("use_sim_time")
 
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time",
@@ -46,7 +48,7 @@ def generate_launch_description():
         parameters=[
             {
                 "robot_description": robot_description_config.toxml(),
-                "use_sim_time": LaunchConfiguration("use_sim_time"),
+                "use_sim_time": use_sim_time_launch_config,
             }
         ],
     )
@@ -65,12 +67,12 @@ def generate_launch_description():
     )
     robot_localization_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_path, "gps_navsat.launch.py")),
-        launch_arguments={"use_sim_time": LaunchConfiguration("use_sim_time")}.items(),
+        launch_arguments={"use_sim_time": use_sim_time_launch_config}.items(),
     )
     navigation2_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_path, "navigation.launch.py")),
         launch_arguments={
-            "use_sim_time": LaunchConfiguration("use_sim_time"),
+            "use_sim_time": use_sim_time_launch_config,
             "params_file": configured_params,
             "autostart": "True",
         }.items(),

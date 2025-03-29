@@ -13,18 +13,19 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 def generate_launch_description():
     package_name = "autonomous_navigation"
+    package_dir = get_package_share_directory(package_name)
 
     # Config and URDF paths
-    pkg_path = os.path.join(get_package_share_directory("autonomous_navigation"))
+    pkg_path = os.path.join(package_dir)
     urdf_file = os.path.join(pkg_path, "urdf", "drive_urdf.urdf")
     joy_config_file = os.path.join(
-        get_package_share_directory("autonomous_navigation"),
+        package_dir,
         "config",
         "f310.config.yaml",
     )
-    ekf_config_file = os.path.join(pkg_path, "config/ekf.yaml")
-    rviz_config_file = os.path.join(pkg_path, "rviz/urdf_config.rviz")
-    gazebo_world_file = os.path.join(pkg_path, "world/smalltown.world")
+    ekf_config_file = os.path.join(pkg_path, "config", "ekf.yaml")
+    rviz_config_file = os.path.join(pkg_path, "rviz", "urdf_config.rviz")
+    gazebo_world_file = os.path.join(pkg_path, "world", "smalltown.world")
 
     # URDF
     robot_description_config = xacro.process_file(urdf_file)
@@ -33,6 +34,10 @@ def generate_launch_description():
     joy_device_launch_config = LaunchConfiguration(
         "joy_device"
     )  # Joystick device for teleop control
+
+    use_sim_time_launch_config = LaunchConfiguration("use_sim_time")
+
+    rviz_config_launch_config = LaunchConfiguration("rvizconfig")
 
     # Launch arguments
     joy_device_arg = DeclareLaunchArgument("joy_device", default_value="/dev/input/js2")
@@ -55,7 +60,7 @@ def generate_launch_description():
         parameters=[
             {
                 "robot_description": robot_description_config.toxml(),
-                "use_sim_time": LaunchConfiguration("use_sim_time"),
+                "use_sim_time": use_sim_time_launch_config,
             }
         ],
     )
@@ -100,7 +105,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             ekf_config_file,
-            {"use_sim_time": LaunchConfiguration("use_sim_time")},
+            {"use_sim_time": use_sim_time_launch_config},
         ],
     )
 
@@ -109,7 +114,7 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="screen",
-        arguments=["-d", LaunchConfiguration("rvizconfig")],
+        arguments=["-d", rviz_config_launch_config],
     )
 
     # Launch them all!

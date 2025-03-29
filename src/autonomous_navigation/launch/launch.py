@@ -12,7 +12,9 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     # Get the launch directory
     bringup_dir = get_package_share_directory("autonomous_navigation")
-    launch_dir = os.path.join(bringup_dir, "launch")
+
+    urdf_file = os.path.join(bringup_dir, "urdf", "drive_urdf.urdf")
+    rviz_config_file = os.path.join(bringup_dir, "config", "urdf_config.rviz")
 
     # Launch configuration variables specific to simulation
     rviz_config_file = LaunchConfiguration("rviz_config_file")
@@ -23,7 +25,7 @@ def generate_launch_description():
 
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         "rviz_config_file",
-        default_value=os.path.join(bringup_dir, "config", "urdf_config.rviz"),
+        default_value=rviz_config_file,
         description="Full path to the RVIZ config file to use",
     )
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
@@ -42,7 +44,7 @@ def generate_launch_description():
 
     declare_urdf_cmd = DeclareLaunchArgument(
         "urdf_file",
-        default_value=os.path.join(bringup_dir, "urdf", "drive_urdf.urdf"),
+        default_value=urdf_file,
         description="Whether to start RVIZ",
     )
 

@@ -1,6 +1,9 @@
 controller_manager:
   ros__parameters:
     update_rate: 100
+    # Prevent unwanted random ros2-control errors during drive system startup
+    # https://github.com/ros-controls/ros2_control/issues/1905
+    lock_memory: false
 
     diff_cont:
       type: diff_drive_controller/DiffDriveController

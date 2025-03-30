@@ -1,14 +1,12 @@
 import os
 
-import xacro
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
@@ -26,9 +24,6 @@ def generate_launch_description():
     ekf_config_file = os.path.join(pkg_path, "config", "ekf.yaml")
     rviz_config_file = os.path.join(pkg_path, "rviz", "urdf_config.rviz")
     gazebo_world_file = os.path.join(pkg_path, "world", "smalltown.world")
-
-    # URDF
-    robot_description_config = xacro.process_file(urdf_file)
 
     # Launch configurations
     joy_device_launch_config = LaunchConfiguration(
@@ -50,35 +45,6 @@ def generate_launch_description():
         name="rvizconfig",
         default_value=rviz_config_file,
         description="Absolute path to rviz config file",
-    )
-
-    # Create a robot_state_publisher node
-    robot_state_publisher_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[
-            {
-                "robot_description": robot_description_config.toxml(),
-                "use_sim_time": use_sim_time_launch_config,
-            }
-        ],
-    )
-
-    # Run the spawner node from the gazebo_ros package. The entity name doesn't really matter if you only have a single robot.
-    gazebo_spawn_entity_node = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=["-topic", "robot_description", "-entity", "rover"],
-        output="screen",
-    )
-
-    diff_drive_spawner = Node(
-        package="controller_manager", executable="spawner", arguments=["diff_cont"]
-    )
-
-    joint_broad_spawner = Node(
-        package="controller_manager", executable="spawner", arguments=["joint_broad"]
     )
 
     joy_node = Node(
@@ -117,45 +83,24 @@ def generate_launch_description():
         arguments=["-d", rviz_config_launch_config],
     )
 
+    gazebo_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_path, "gazebo.launch.py")
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time_launch_config,
+            "roboto_description_file": urdf_file,
+            "gazebo_world_file": gazebo_world_file,
+        }.items(),
+    )
+
     # Launch them all!
     return LaunchDescription(
         [
             joy_device_arg,
             use_sim_time_arg,
             rviz_config_arg,
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    [
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("gazebo_ros"),
-                                "launch",
-                                "gzserver.launch.py",
-                            ]
-                        )
-                    ]
-                ),
-                launch_arguments={
-                    "world": gazebo_world_file,
-                }.items(),
-            ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    [
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("gazebo_ros"),
-                                "launch",
-                                "gzclient.launch.py",
-                            ]
-                        )
-                    ]
-                )
-            ),
-            robot_state_publisher_node,
-            gazebo_spawn_entity_node,
-            diff_drive_spawner,
-            joint_broad_spawner,
+            gazebo_cmd,
             joy_node,
             teleop_node,
             robot_localization_node,

@@ -1,7 +1,7 @@
 # Config parameters for the Logitech F310 controller
 #
 # The following parameters are for the node named "teleop_twist_joy"
-teleop_twist_joy:
+teleop_twist_joy_node:
   ros__parameters:
     axis_linear:
       x: 1 # linear joystick

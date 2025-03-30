@@ -5,7 +5,7 @@ if [ $# -gt 0 ]; then
     interface=$1
 fi
 
-sudo ifconfig can0 down
+sudo ip link set $interface down
 sudo ip link set $interface type can bitrate 1000000
 sudo ip link set $interface up
 sudo ip link set $interface txqueuelen 1000

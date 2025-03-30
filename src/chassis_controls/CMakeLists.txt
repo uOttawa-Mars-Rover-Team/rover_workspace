@@ -16,73 +16,80 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(xacro REQUIRED)
-find_package(control_toolbox REQUIRED)
 
-add_executable(power_data src/power_data_publisher.cpp)
-add_executable(drive_control src/drive_control.cpp)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l") # 32 bit Arm Linux
+  set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm32)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") # 64 bit Arm Linux
+  set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm64)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64") # x86-64 Linux
+  set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/x86-64)
+else()
+  message(WARNING "Detected ${CMAKE_SYSTEM_NAME} and ${CMAKE_SYSTEM_PROCESSOR}")
+  message(FATAL_ERROR "Unsupported system.")
+endif()
 
-add_library(
-    chassis_controls
-    SHARED
-    hardware/drive_hardware.cpp)
-target_compile_features(chassis_controls PUBLIC c_std_99 cxx_std_17)
-target_include_directories(chassis_controls PUBLIC
+add_executable(drive_test src/drive_test.cpp)
+target_link_libraries(
+    drive_test
+    ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so
+    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so
+    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so
+)
+ament_target_dependencies(drive_test rclcpp general_interfaces geometry_msgs)
+
+add_library(${PROJECT_NAME} SHARED src/drive_hardware.cpp)
+target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
+target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
-    $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(chassis_controls PUBLIC pluginlib rclcpp_lifecycle hardware_interface rclcpp control_toolbox)
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(
+    ${PROJECT_NAME}
+    PUBLIC
+    ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so
+    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so
+    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so
+)
+ament_target_dependencies(${PROJECT_NAME} PUBLIC rclcpp pluginlib rclcpp_lifecycle hardware_interface)
+pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-ament_target_dependencies(power_data rclcpp general_interfaces)
-ament_target_dependencies(drive_control rclcpp general_interfaces geometry_msgs)
-include_directories("${PROJECT_SOURCE_DIR}/include")
-
-pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
-
-install(TARGETS
-  power_data
-  drive_control
-  DESTINATION lib/${PROJECT_NAME})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 install(
-    DIRECTORY launch description config
-    DESTINATION share/${PROJECT_NAME})
-
+    TARGETS
+    drive_test
+    DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
     PROGRAMS scripts/can_start.sh
-    DESTINATION lib/${PROJECT_NAME})
+    DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
-    DIRECTORY hardware/include/
-    DESTINATION include/chassis_controls)
+    DIRECTORY
+    launch
+    description
+    config
+    DESTINATION share/${PROJECT_NAME}
+)
 
-install(TARGETS chassis_controls
+install(
+    DIRECTORY include/
+    DESTINATION include
+)
+
+install(
+    TARGETS chassis_controls
     EXPORT chassis_controls
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib)
-
-if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf") # Jetson TK1 / Pi
-    set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm32)
-elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu") # Jetson TX2
-    set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm64)
-else()
-    set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/x86-64) # Developing on VM
-endif()
-
-target_link_libraries(power_data ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so)
-target_link_libraries(power_data ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so)
-target_link_libraries(power_data ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so)
-
-target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so)
-target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so)
-target_link_libraries(drive_control ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so)
-
-target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so)
-target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so)
-target_link_libraries(chassis_controls PUBLIC ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so)
+    RUNTIME DESTINATION lib
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -96,7 +103,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_targets(chassis_controls HAS_LIBRARY_TARGET)
+ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
     ament_cmake
     rclcpp
@@ -106,5 +113,5 @@ ament_export_dependencies(
     hardware_interface
     rclcpp_lifecycle
     xacro
-    control_toolbox)
+)
 ament_package()

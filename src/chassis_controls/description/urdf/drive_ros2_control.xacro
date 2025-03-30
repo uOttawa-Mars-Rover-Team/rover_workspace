@@ -8,28 +8,24 @@
                 </xacro:if>
                 <xacro:unless value="${use_gazebo}">
                     <plugin>chassis_controls/DriveSystem</plugin>
-                    <param name="kp_fl">${kp_fl}</param>
-                    <param name="ki_fl">${ki_fl}</param>
-                    <param name="kd_fl">${kd_fl}</param>
-                    <param name="kp_fr">${kp_fr}</param>
-                    <param name="ki_fr">${ki_fr}</param>
-                    <param name="kd_fr">${kd_fr}</param>
-                    <param name="kp_rl">${kp_rl}</param>
-                    <param name="ki_rl">${ki_rl}</param>
-                    <param name="kd_rl">${kd_rl}</param>
-                    <param name="kp_rr">${kp_rr}</param>
-                    <param name="ki_rr">${ki_rr}</param>
-                    <param name="kd_rr">${kd_rr}</param>
-                    <param name="testing">${testing}</param>
-                    <param name="wheel_diameter">${wheel_diameter}</param>
-                    <param name="wheel_max_velocity">${wheel_max_velocity}</param>
-                    <param name="wheel_enc_counts_per_rev">${wheel_enc_counts_per_rev}</param>
-                    <param name="controller_period">${controller_period}</param>
                     <param name="FL_id">${FL_id}</param>
-                    <param name="RR_id">${RR_id}</param>
                     <param name="FR_id">${FR_id}</param>
+                    <param name="RR_id">${RR_id}</param>
                     <param name="RL_id">${RL_id}</param>
-                    <param name="tested_pwm">${tested_pwm}</param>
+                    <param name="Kp_FL">${Kp_FL}</param>
+                    <param name="Ki_FL">${Ki_FL}</param>
+                    <param name="Kd_FL">${Kd_FL}</param>
+                    <param name="Kp_FR">${Kp_FR}</param>
+                    <param name="Ki_FR">${Ki_FR}</param>
+                    <param name="Kd_FR">${Kd_FR}</param>
+                    <param name="Kp_RR">${Kp_RR}</param>
+                    <param name="Ki_RR">${Ki_RR}</param>
+                    <param name="Kd_RR">${Kd_RR}</param>
+                    <param name="Kp_RL">${Kp_RL}</param>
+                    <param name="Ki_RL">${Ki_RL}</param>
+                    <param name="Kd_RL">${Kd_RL}</param>
+                    <param name="wheel_diameter">${wheel_diameter}</param>
+                    <param name="wheel_encoder_counts_per_revolution">${wheel_encoder_counts_per_revolution}</param>
                 </xacro:unless>
             </hardware>
 
@@ -38,32 +34,32 @@
                     <param name="min">-10</param>
                     <param name="max">10</param>
                 </command_interface>
-                <state_interface name="velocity" />
                 <state_interface name="position" />
+                <state_interface name="velocity" />
             </joint>
             <joint name="q2"> <!-- FR_wheel -->
                 <command_interface name="velocity">
                     <param name="min">-10</param>
                     <param name="max">10</param>
                 </command_interface>
-                <state_interface name="velocity" />
                 <state_interface name="position" />
+                <state_interface name="velocity" />
             </joint>
             <joint name="q3"> <!-- RR_wheel -->
                 <command_interface name="velocity">
                     <param name="min">-10</param>
                     <param name="max">10</param>
                 </command_interface>
-                <state_interface name="velocity" />
                 <state_interface name="position" />
+                <state_interface name="velocity" />
             </joint>
             <joint name="q4"> <!-- RL_wheel -->
                 <command_interface name="velocity">
                     <param name="min">-10</param>
                     <param name="max">10</param>
                 </command_interface>
-                <state_interface name="velocity" />
                 <state_interface name="position" />
+                <state_interface name="velocity" />
             </joint>
         </ros2_control>
     </xacro:macro>

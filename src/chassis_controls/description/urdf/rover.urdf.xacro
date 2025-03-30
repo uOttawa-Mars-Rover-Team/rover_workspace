@@ -3,28 +3,24 @@
 
     <xacro:arg name="use_gazebo" default="false"/>
 
-    <xacro:property name="kp_fl" value="1.7322"/>
-    <xacro:property name="ki_fl" value="1.1277"/>
-    <xacro:property name="kd_fl" value="0.0"/>
-    <xacro:property name="kp_fr" value="1.9078"/>
-    <xacro:property name="ki_fr" value="1.495"/>
-    <xacro:property name="kd_fr" value="0"/>
-    <xacro:property name="kp_rl" value="1.7232"/>
-    <xacro:property name="ki_rl" value="1.13"/>
-    <xacro:property name="kd_rl" value="0"/>
-    <xacro:property name="kp_rr" value="1.941"/>
-    <xacro:property name="ki_rr" value="1.114"/>
-    <xacro:property name="kd_rr" value="0"/>
-    <xacro:property name="testing" value="0"/>
-    <xacro:property name="tested_pwm" value="20.0"/>
+    <xacro:property name="FL_id" value="20"/>
+    <xacro:property name="FR_id" value="40"/>
+    <xacro:property name="RR_id" value="10"/>
+    <xacro:property name="RL_id" value="30"/>
+    <xacro:property name="Kp_FL" value="0.4"/>
+    <xacro:property name="Ki_FL" value="0.002"/>
+    <xacro:property name="Kd_FL" value="160.0"/>
+    <xacro:property name="Kp_FR" value="0.4"/>
+    <xacro:property name="Ki_FR" value="0.002"/>
+    <xacro:property name="Kd_FR" value="160.0"/>
+    <xacro:property name="Kp_RR" value="0.4"/>
+    <xacro:property name="Ki_RR" value="0.002"/>
+    <xacro:property name="Kd_RR" value="160.0"/>
+    <xacro:property name="Kp_RL" value="0.4"/>
+    <xacro:property name="Ki_RL" value="0.002"/>
+    <xacro:property name="Kd_RL" value="160.0"/>
     <xacro:property name="wheel_diameter" value="0.40601"/>
-    <xacro:property name="wheel_max_velocity" value="20.0"/>
-    <xacro:property name="wheel_enc_counts_per_rev" value="4096"/>
-    <xacro:property name="controller_period" value="0.1"/>
-    <xacro:property name="FL_id" value="10"/>
-    <xacro:property name="FR_id" value="30"/>
-    <xacro:property name="RR_id" value="20"/>
-    <xacro:property name="RL_id" value="40"/>
+    <xacro:property name="wheel_encoder_counts_per_revolution" value="4096"/>
 
     <xacro:include filename="drive_urdf.urdf" />
 

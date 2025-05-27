@@ -30,10 +30,10 @@ type markerObjectListType = {
   [key: number]: JSX.Element;
 };
 export type GPSMessage = {
-  fix: number;
-  satellites: number;
+  status: { status: number };
   latitude: number;
   longitude: number;
+  altitude: number;
 };
 
 export const defaultPrecision = 5;
@@ -54,8 +54,8 @@ const Navigation: React.FC<NavigationType> = ({
   const terrainTileLayer = "https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}";
   const [useTerrain, setUseTerrain] = useState(false);
   const [gpsWaypointMessage, setGpsWaypointMessage] = useState<GPSMessage>({
-    fix: 0,
-    satellites: 0,
+    status: { status: -1 },
+    altitude: 0,
     latitude: initPosition.lat,
     longitude: initPosition.lng,
   });
@@ -96,13 +96,13 @@ const Navigation: React.FC<NavigationType> = ({
       const topic = new ROSLIB.Topic({
         ros: rosClient,
         name: topicName,
-        messageType: "general_interfaces/msg/GPS",
+        messageType: "sensor_msgs/NavSatFix",
       });
       topic.subscribe((msg) => {
         const message = msg as GPSMessage;
-        setGpsWaypointMessage(message);
-        if (message.fix == 1) {
+        if (message.status.status >= 0 && message.status.status <= 2) {
           setRoverPosition([message.latitude!, message.longitude!]);
+          setGpsWaypointMessage(message);
         }
       });
 
@@ -147,6 +147,8 @@ const Navigation: React.FC<NavigationType> = ({
     if (map) {
       const offlineTileLayer = tileLayerOffline(activeTileLayer, {
         attribution: "Google Maps",
+        maxNativeZoom: 21,
+        maxZoom: 21,
       });
       // Add success callback functions for tiles that have been saved and
       // removed. These let you know when the tiles are finished saving/removing

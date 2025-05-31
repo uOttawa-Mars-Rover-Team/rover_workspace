@@ -8,12 +8,8 @@
 twist_mux:
   ros__parameters:
     topics:
-      joystick:
-        topic: cmd_vel_joy
-        timeout: 2.0
-        priority: 100
-      keyboard:
-        topic: cmd_vel_keyboard
+      teleop:
+        topic: cmd_vel_teleop
         timeout: 2.0
         priority: 90
       autonomous:

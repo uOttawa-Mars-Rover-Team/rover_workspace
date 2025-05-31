@@ -2,23 +2,44 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
 
     <xacro:arg name="use_gazebo" default="false"/>
+    <xacro:arg name="sport_mode" default="true"/>
 
     <xacro:property name="FL_id" value="20"/>
     <xacro:property name="FR_id" value="40"/>
     <xacro:property name="RR_id" value="10"/>
     <xacro:property name="RL_id" value="30"/>
-    <xacro:property name="Kp_FL" value="0.4"/>
-    <xacro:property name="Ki_FL" value="0.002"/>
-    <xacro:property name="Kd_FL" value="160.0"/>
-    <xacro:property name="Kp_FR" value="0.4"/>
-    <xacro:property name="Ki_FR" value="0.002"/>
-    <xacro:property name="Kd_FR" value="160.0"/>
-    <xacro:property name="Kp_RR" value="0.4"/>
-    <xacro:property name="Ki_RR" value="0.002"/>
-    <xacro:property name="Kd_RR" value="160.0"/>
-    <xacro:property name="Kp_RL" value="0.4"/>
-    <xacro:property name="Ki_RL" value="0.002"/>
-    <xacro:property name="Kd_RL" value="160.0"/>
+
+    <!-- Allow for different PID gains to be used to select between
+    acceleration/responsivness and power usage -->
+    <xacro:if value="$(arg sport_mode)">
+        <xacro:property name="Kp_FL" value="0.8"/>
+        <xacro:property name="Ki_FL" value="0.008"/>
+        <xacro:property name="Kd_FL" value="220.0"/>
+        <xacro:property name="Kp_FR" value="0.8"/>
+        <xacro:property name="Ki_FR" value="0.008"/>
+        <xacro:property name="Kd_FR" value="220.0"/>
+        <xacro:property name="Kp_RR" value="0.8"/>
+        <xacro:property name="Ki_RR" value="0.008"/>
+        <xacro:property name="Kd_RR" value="220.0"/>
+        <xacro:property name="Kp_RL" value="0.8"/>
+        <xacro:property name="Ki_RL" value="0.008"/>
+        <xacro:property name="Kd_RL" value="220.0"/>
+    </xacro:if>
+    <xacro:unless value="$(arg sport_mode)">
+        <xacro:property name="Kp_FL" value="0.4"/>
+        <xacro:property name="Ki_FL" value="0.002"/>
+        <xacro:property name="Kd_FL" value="160.0"/>
+        <xacro:property name="Kp_FR" value="0.4"/>
+        <xacro:property name="Ki_FR" value="0.002"/>
+        <xacro:property name="Kd_FR" value="160.0"/>
+        <xacro:property name="Kp_RR" value="0.4"/>
+        <xacro:property name="Ki_RR" value="0.002"/>
+        <xacro:property name="Kd_RR" value="160.0"/>
+        <xacro:property name="Kp_RL" value="0.4"/>
+        <xacro:property name="Ki_RL" value="0.002"/>
+        <xacro:property name="Kd_RL" value="160.0"/>
+    </xacro:unless>
+
     <xacro:property name="wheel_diameter" value="0.40601"/>
     <xacro:property name="wheel_encoder_counts_per_revolution" value="4096"/>
 
@@ -26,7 +47,6 @@
 
     <!-- Import control_xacro -->
     <xacro:include filename="drive_ros2_control.xacro" />
-
 
     <xacro:drive_ros2_control 
         name="DriveSystem"

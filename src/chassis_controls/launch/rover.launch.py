@@ -27,6 +27,7 @@ def generate_launch_description():
 
     use_robot_state_pub = LaunchConfiguration("use_robot_state_pub")
     use_rviz = LaunchConfiguration("use_rviz")
+    sport_mode = LaunchConfiguration("sport_mode")
 
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
         "use_robot_state_pub",
@@ -35,6 +36,11 @@ def generate_launch_description():
     )
     declare_use_rviz_cmd = DeclareLaunchArgument(
         "use_rviz", default_value="False", description="Whether to start Rviz"
+    )
+    declare_sport_mode_cmd = DeclareLaunchArgument(
+        "sport_mode",
+        default_value="true",
+        description="Whether to use more responsive PID gains",
     )
 
     robot_description_content = Command(
@@ -49,6 +55,10 @@ def generate_launch_description():
                     "rover.urdf.xacro",
                 ]
             ),
+            " ",
+            "sport_mode:=",
+            sport_mode,
+            " ",
         ]
     )
 
@@ -120,7 +130,7 @@ def generate_launch_description():
         package="teleop_twist_joy",
         executable="teleop_node",
         parameters=[teleop_joy_params],
-        remappings=[("cmd_vel", "cmd_vel_joy")],
+        remappings=[("cmd_vel", "cmd_vel_teleop")],
     )
     twist_mux = Node(
         package="twist_mux",
@@ -133,6 +143,7 @@ def generate_launch_description():
         [
             declare_use_robot_state_pub_cmd,
             declare_use_rviz_cmd,
+            declare_sport_mode_cmd,
             ros2_control_node,
             start_rviz_cmd,
             start_robot_state_publisher_cmd,

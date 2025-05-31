@@ -31,7 +31,7 @@ class Router(Node):
         #Parameters
         self.RETRY_DELAY = self.get_param("timeout_delay", rclpy.Parameter.Type.DOUBLE, 0.1)  # time (s) to attempt serial connection
         self.serial_device = self.get_param("serial_dev", rclpy.Parameter.Type.STRING, "/dev/arm_mega")
-        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 115200)
+        self.baudrate = self.get_param("baudrate", rclpy.Parameter.Type.INTEGER, 1000000)
         self.read_enabled = self.get_param("read_enable", rclpy.Parameter.Type.BOOL, True) # boolean for arduino feedback status
 
         #Serial connection

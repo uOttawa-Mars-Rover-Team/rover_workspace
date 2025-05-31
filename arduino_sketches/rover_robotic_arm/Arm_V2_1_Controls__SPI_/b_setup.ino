@@ -27,7 +27,7 @@ JrkG2I2C LA2(12);
 ////// Constant/Variable Declaration //////
 
 // Serial rates for UART
-#define BAUDRATE        115200
+#define BAUDRATE        1000000
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -51,10 +51,12 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-#define verbose             true
+#define verbose             false
 bool emergency_stop_en =    false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
+bool commandFlag = false;
+
 
 //Stop variables for steppers & limit switch purposes
 int EEStopClose   = 0;
@@ -64,9 +66,9 @@ int wristStopDown = 0;
 
 //Time in ms for:
 long enc_delay   = 50;  //how often to update encoder data
-long motor_delay = 50; //how often to move motors
-long dashb_delay = 200;//how often to publish via serial encoder data, etc...
-long fault_delay = 500;//how often to check for faults on all drivers
+long motor_delay = 25; //how often to move motors
+long dashb_delay = 100;//how often to publish via serial encoder data, etc...
+//long fault_delay = 100;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates
 unsigned long encoder_t  = millis();//timer for encoder updates
@@ -118,12 +120,14 @@ struct Motor {
 //         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED
 Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68,      1000};
 Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30,      600};    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      64,     -1,      31,      600};
-Motor wp = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62,      1000};
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31,      600};
+Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62,      1000};
 Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55,      1000};
 Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54,      1000};
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
+
+//WP MAX IS 91/92
 
 //Pack into an array for iterability
 Motor motor[] = {tw, l1, l2, wp, wr, ee};
@@ -142,6 +146,9 @@ LED led = {58,      59,      60};
 //Laser 
 int LASER_PIN = 29;
 
+byte size = 0;
+
+
 //Everything setup related below
 
 void setup() {
@@ -153,13 +160,7 @@ void setup() {
   
   //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
   //500 kHz is a good speed for our test environment
-  //SPI.setClockDivider(SPI_CLOCK_DIV2);   // 8 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV8);   // 2 MHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV16);  // 1 MHz
-  SPI.setClockDivider(SPI_CLOCK_DIV32);    // 500 kHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV64);  // 250 kHz
-  //SPI.setClockDivider(SPI_CLOCK_DIV128); // 125 kHz
+  SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz
   
   //start SPI bus
   SPI.begin();

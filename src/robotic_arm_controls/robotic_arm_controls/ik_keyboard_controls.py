@@ -61,13 +61,13 @@ class KeyboardListener(Node):
                 self.get_logger().info('Service not available.')
                 
         # Handling velocity from dial
-        if key_str == 'm':#vel +0.1 up to 1.0 max
+        if key_str == '.':#vel +0.1 up to 1.0 max
             if (self.vel.data < 1.0):
                 self.vel.data += 0.1
                 self.vel.data = round(self.vel.data, 1)
                 self.joy_vel_pub.publish(self.vel)
                 self.get_logger().info('Max vel: '+str(self.vel.data))
-        if key_str == 'b':#vel -0.1 up to 0.1 min
+        if key_str == ',':#vel -0.1 up to 0.1 min
             if (self.vel.data > 0.1):
                 self.vel.data -= 0.1
                 self.vel.data = round(self.vel.data, 1)
@@ -91,7 +91,7 @@ class KeyboardListener(Node):
                 self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
-        if key_str == 'c':#stepper3 
+        if key_str == 'n':#stepper3 
             self.gpio_cmd.stepper3_en = not self.gpio_cmd.stepper3_en
             self.get_logger().info('WR toggled: '+str(self.gpio_cmd.stepper3_en))
             if self.mode == 'M':
@@ -99,7 +99,7 @@ class KeyboardListener(Node):
                 self.cmd_pub.publish(self.arm_cmd)
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
-        if key_str == 'v':#stepper4
+        if key_str == 'm':#stepper4
             self.gpio_cmd.stepper4_en = not self.gpio_cmd.stepper4_en
             self.get_logger().info('EE toggled: '+str(self.gpio_cmd.stepper4_en))
             if self.mode == 'M':
@@ -108,6 +108,15 @@ class KeyboardListener(Node):
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
 
+        
+
+        if key_str == 'v':#laser
+                self.get_logger().info('Verbose toggled')
+                if self.mode == 'M':
+                    msg = String()
+                    msg.data = "v;!"
+                    self.cmd_pub.publish(msg)                #else:
+                    #self.gpio_pub.publish(self.gpio_cmd)
         #Handling laser
         if key_str == '4':#laserr
             self.gpio_cmd.laser_en = not self.gpio_cmd.laser_en

@@ -152,7 +152,12 @@ void loop(){
       } else if (equalsStr(tmp, "stop")) {
         emergency_stop_en = not emergency_stop_en;
 
-      } else if (equalsStr(tmp, "roll")) {
+      } else if (equalsStr(tmp, "v")){ 
+        if (verbose)  
+          verbose = false;
+        else
+          verbose = true;
+      }else if (equalsStr(tmp, "roll")) {
         motor[WR].desiredPos = 0.4;
 
       } else if (equalsStr(tmp, "unroll")) {

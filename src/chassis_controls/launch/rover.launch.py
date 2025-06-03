@@ -22,12 +22,12 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     pkg_path = get_package_share_directory("chassis_controls")
-    teleop_joy_params = os.path.join(pkg_path, "config", "f310.config.yaml")
     twist_mux_parameters = os.path.join(pkg_path, "config", "twist_mux.config.yaml")
 
     use_robot_state_pub = LaunchConfiguration("use_robot_state_pub")
     use_rviz = LaunchConfiguration("use_rviz")
     sport_mode = LaunchConfiguration("sport_mode")
+    use_joystick = LaunchConfiguration("use_joystick")
 
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
         "use_robot_state_pub",
@@ -41,6 +41,11 @@ def generate_launch_description():
         "sport_mode",
         default_value="true",
         description="Whether to use more responsive PID gains",
+    )
+    declare_use_joystick_cmd = DeclareLaunchArgument(
+        "use_joystick",
+        default_value="true",
+        description="Whether to startup the nodes for joystick teleop control",
     )
 
     robot_description_content = Command(
@@ -122,15 +127,15 @@ def generate_launch_description():
         )
     )
 
-    joy_node = Node(
-        package="joy",
-        executable="joy_node",
-    )
-    teleop_twist_joy_node = Node(
-        package="teleop_twist_joy",
-        executable="teleop_node",
-        parameters=[teleop_joy_params],
-        remappings=[("cmd_vel", "cmd_vel_teleop")],
+    start_joystick_control_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                pkg_path,
+                "launch",
+                "joystick.launch.py",
+            )
+        ),
+        condition=IfCondition(use_joystick),
     )
     twist_mux = Node(
         package="twist_mux",
@@ -144,13 +149,13 @@ def generate_launch_description():
             declare_use_robot_state_pub_cmd,
             declare_use_rviz_cmd,
             declare_sport_mode_cmd,
+            declare_use_joystick_cmd,
             ros2_control_node,
             start_rviz_cmd,
             start_robot_state_publisher_cmd,
             joint_state_broadcaster,
             delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-            joy_node,
-            teleop_twist_joy_node,
+            start_joystick_control_cmd,
             twist_mux,
         ]
         # ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/diff_cont/cmd_vel_unstamped

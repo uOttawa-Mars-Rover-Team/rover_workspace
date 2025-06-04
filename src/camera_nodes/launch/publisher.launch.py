@@ -14,13 +14,21 @@ def generate_launch_description():
         "video_device", default_value="/dev/video0"
     )
     framerate = LaunchConfiguration("framerate")
-    framerate_launch_arg = DeclareLaunchArgument("framerate", default_value="30")
+    framerate_launch_arg = DeclareLaunchArgument("framerate", default_value="15")
     compression_quality = LaunchConfiguration("compression_quality")
     compression_quality_launch_arg = DeclareLaunchArgument(
         "compression_quality", default_value="20"
     )
     codec = LaunchConfiguration("codec")
     codec_launch_arg = DeclareLaunchArgument("codec", default_value="MJPG")
+    qos_profile = LaunchConfiguration("qos_profile")
+    qos_profile_launch_arg = DeclareLaunchArgument(
+        "qos_profile",
+        default_value="SENSOR_DATA",
+        description="QoS profile to use for published topics. Values include SYSTEM_DEFAULT and SENSOR_DATA.",
+    )
+    resolution = LaunchConfiguration("resolution")
+    resolution_launch_arg = DeclareLaunchArgument("resolution", default_value="480")
 
     return LaunchDescription(
         [
@@ -29,6 +37,8 @@ def generate_launch_description():
             framerate_launch_arg,
             compression_quality_launch_arg,
             codec_launch_arg,
+            qos_profile_launch_arg,
+            resolution_launch_arg,
             Node(
                 package="camera_nodes",
                 executable="publisher",
@@ -39,6 +49,8 @@ def generate_launch_description():
                         "framerate": framerate,
                         "compression_quality": compression_quality,
                         "codec": codec,
+                        "qos_profile": qos_profile,
+                        "resolution": resolution,
                     }
                 ],
             ),

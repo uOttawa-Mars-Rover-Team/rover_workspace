@@ -11,10 +11,10 @@
 
 ////// Object Declaration //////
 
-//We declare the steppers
-AccelStepper tower        (AccelStepper::DRIVER, 6,   7);  //step, direction
-AccelStepper wristPitch   (AccelStepper::DRIVER, 8,   9);
-AccelStepper wristRoll    (AccelStepper::DRIVER, 10,  11); 
+//We declare the steppers1
+AccelStepper tower        (AccelStepper::DRIVER, 0,  1);  //step, direction
+AccelStepper wristPitch   (AccelStepper::DRIVER, 4,   5);
+AccelStepper wristRoll    (AccelStepper::DRIVER, 8,   9); 
 AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
 
 //We set up the multistepper
@@ -118,12 +118,12 @@ struct Motor {
 
 //Create the motor objects
 //         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      17,     68,      1000};
-Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      30,      600};    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      31,      600};
-Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      16,     62,      1000};
-Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      4,      55,      1000};
-Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      5,      54,      1000};
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      16,     17,      1000};
+Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      58,      600};    
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      59,      600};
+Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      3,       2,      1000};
+Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      7,       6,      1000};
+Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      11,     10,      1000};
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 
@@ -133,15 +133,15 @@ Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    
 Motor motor[] = {tw, l1, l2, wp, wr, ee};
 
 //Define what variables to use for our LED
-struct LED {
-  int           R_PIN;    //red
-  int           G_PIN;    //green
-  int           B_PIN;    //blue
-};
+// struct LED {
+//   int           R_PIN;    //red
+//   int           G_PIN;    //green
+//   int           B_PIN;    //blue
+// };
 
 //Create the LED object(s)
 //         r_pin   g_pin   b_pin  
-LED led = {58,      59,      60};
+//LED led = {58,      59,      60};
 
 //Laser 
 int LASER_PIN = 29;
@@ -188,12 +188,12 @@ void setup() {
   pinMode(motor[WP].ENC_PIN, OUTPUT);
   digitalWrite(motor[WP].ENC_PIN, HIGH);
 
-  //Set the LED pins to output
-  pinMode(led.R_PIN, OUTPUT);
-  pinMode(led.G_PIN, OUTPUT);
-  pinMode(led.B_PIN, OUTPUT);
-  //Set the LED off
-  writeLED(255,255,255);
+  // //Set the LED pins to output
+  // pinMode(led.R_PIN, OUTPUT);
+  // pinMode(led.G_PIN, OUTPUT);
+  // pinMode(led.B_PIN, OUTPUT);
+  // //Set the LED off
+  // writeLED(255,255,255);
 
   //Turn laser on
   pinMode(LASER_PIN, OUTPUT);

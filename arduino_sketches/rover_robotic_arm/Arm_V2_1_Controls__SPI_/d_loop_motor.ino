@@ -77,6 +77,8 @@
     LA1.stopMotor();
     LA2.stopMotor();
   }
+
+  
   
 } //end of loop()
 
@@ -257,15 +259,16 @@ void timerIsr() {
     static int interruptCount = 0;
     interruptCount ++;
 
-    // To avoid vibrations, the tower stepper needs to be ran more often than the other steppers
-
+    // To avoid vibrations, the tower zstepper needs to be ran more often than the other steppers
+    
     if (interruptCount >= 4){
           wristPitch.run();
           wristRoll.run();
           endEffector.run();
+          tower.run();
+
           
           interruptCount = 0;
     }
 
-    tower.run();
 }

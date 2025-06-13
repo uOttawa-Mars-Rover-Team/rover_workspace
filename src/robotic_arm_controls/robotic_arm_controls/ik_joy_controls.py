@@ -76,8 +76,8 @@ class Joy_IK_Controller(Node):
         self.curr_axes = [0.0,0.0,0.0,0.0,0.0,0.0] # current  array of joy axes values
 
         self.STOP_BTNS    = [0,0,0,0,0,0] # default of what stop is for buttons
-        self.prev_btns_lt = [0,0,0,0,0,0] # previous array of joy btn values for logitech controller (int array)
-        self.curr_btns_lt = [0,0,0,0,0,0] # current  array of joy btn values
+        self.prev_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0] # previous array of joy btn values for logitech controller (int array)
+        self.curr_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0] # current  array of joy btn values
         self.prev_btns_sm = [0,0,0,0,0,0] # previous array of joy btn values; spacemouse(int array)
         self.curr_btns_sm = [0,0,0,0,0,0] # current  array of joy btn values
         
@@ -97,7 +97,7 @@ class Joy_IK_Controller(Node):
             self.sm_axes = [5, 1, 2, 3, 4, 0]
 
         self.lt_btns = [0,1,2,3,4,5,6,7,8,9,10,11]
-        self.lt_axes = [1, 0, 3, 4, 5, 2]
+        self.lt_axes = [2, 0, 1, 5, 4, 3]
         # logitech btns not needed since it's not used at all 
 
     # Callback this time around just changes self.twist_stamped_msg
@@ -219,7 +219,7 @@ class Joy_IK_Controller(Node):
                             self.curr_cmd += str(-round(self.max_vel, 2))
                         else:
                             self.curr_cmd += "0.0"
-                    elif len(message.buttons == 12): # logitech
+                    elif len(message.buttons) == 12: # logitech
                         if self.curr_btns_lt[0]:
                             self.curr_cmd += str(round(self.max_vel, 2))
                         elif self.curr_btns_lt[1]:

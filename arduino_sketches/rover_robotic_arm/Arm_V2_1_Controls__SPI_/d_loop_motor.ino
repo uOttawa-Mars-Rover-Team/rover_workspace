@@ -52,6 +52,8 @@
       //Move last 2 remaining motors by speed
       for (int i = WR ; i < LAST ; i++) {
         //move towards negative direction
+        /*
+        //move towards negative direction
         if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
           moveMotors(i, -1);
@@ -65,7 +67,7 @@
         else if (floatsEqual(motor[i].desiredPos, 0.0, 2) and motor[i].direction) {
           motor[i].direction = 0;
           moveMotors(i, 0);
-        }
+        }*/
       }
     }//end of IK mode
     

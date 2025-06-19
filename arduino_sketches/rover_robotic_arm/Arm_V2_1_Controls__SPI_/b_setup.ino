@@ -12,7 +12,7 @@
 ////// Object Declaration //////
 
 //We declare the steppers1
-AccelStepper tower        (AccelStepper::DRIVER, 0,  1);  //step, direction
+AccelStepper tower        (AccelStepper::DRIVER, 55,  54);  //step, direction
 AccelStepper wristPitch   (AccelStepper::DRIVER, 4,   5);
 AccelStepper wristRoll    (AccelStepper::DRIVER, 8,   9); 
 AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
@@ -127,7 +127,7 @@ Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 
-//WP MAX IS 91/92
+//WP MAX IS 91/
 
 //Pack into an array for iterability
 Motor motor[] = {tw, l1, l2, wp, wr, ee};

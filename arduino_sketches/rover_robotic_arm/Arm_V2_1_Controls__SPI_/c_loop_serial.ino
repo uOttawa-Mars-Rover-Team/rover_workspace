@@ -14,28 +14,28 @@ void loop(){
     //characters from the serial input are read into the input array
     //readBytesUntil returns the number of characters read to the size variable
 
-    // char head = Serial.read();
-    // // Serial.print("Head: ");
-    // // Serial.println(head);
-    // if(head == '!'){
-    //   input[size] = '\0';
-    //   commandFlag = true;
-    //   Serial.print("Recieved input: ");
-    //   Serial.println(input);
-    //   // Serial.print("Recieved Size: ");
-    //   // Serial.println(size);
-    // }
-    // else if(size < INPUT_SIZE - 1 ){
-    //   //Serial.println("Trigger ye?");
-    //   input[size++] = (char)head;
-    //   // size++;
-    //   input[size] = '\0'; // Null-terminate for printing
+    char head = Serial.read();
+    // Serial.print("Head: ");
+    // Serial.println(head);
+    if(head == '!'){
+      input[size] = '\0';
+      commandFlag = true;
+      Serial.print("Recieved input: ");
+      Serial.println(input);
+      // Serial.print("Recieved Size: ");
+      // Serial.println(size);
+    }
+    else if(size < INPUT_SIZE - 1 ){
+      //Serial.println("Trigger ye?");
+      input[size++] = (char)head;
+      // size++;
+      input[size] = '\0'; // Null-terminate for printing
 
-    // }
-    // else{
-    //   //size = 0;
-    // }
-    byte size = Serial.readBytesUntil('!', input, INPUT_SIZE);
+    }
+    else{
+      //size = 0;
+    }
+    // byte size = Serial.readBytesUntil('!', input, INPUT_SIZE);
 
 
     //Add the final 0 to end the C string
@@ -50,7 +50,7 @@ void loop(){
     //Manual: "M;1024;-1024;0;0;0;0;!"
     //IK: "I;1.57;2.0;3.0;0.5;-1024;-1024;!"
 
-    // if (commandFlag){
+    if (commandFlag){
 
       tmp = strtok(input, ";");
 
@@ -190,10 +190,10 @@ void loop(){
         Serial.println("Invalid command received!");
       }
 
-    //   commandFlag = false;
-    //   size = 0;
+      commandFlag = false;
+      size = 0;
 
-    // }
+    }
 
     
 

@@ -10,7 +10,7 @@
   <exec_depend>general_interfaces</exec_depend>
 
   <depend>rclpy</depend>
-  <depend>python3-serial</depend>
+  <depend>ublox_dgnss</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -41,7 +41,9 @@ def generate_launch_description():
             parameters=[
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
-                {'mode': "M"}
+                {'mode': "M"},
+                {'dirTW': -1},
+                {'dirL2': -1}
             ],
             output="screen",
             )

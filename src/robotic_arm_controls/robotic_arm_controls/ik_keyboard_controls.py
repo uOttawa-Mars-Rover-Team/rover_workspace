@@ -22,7 +22,7 @@ class KeyboardListener(Node):
         self.joy_vel_pub = self.create_publisher(Float32, '/keyboard/arm_vel', 10)
         self.gpio_pub = self.create_publisher(ArmGpio, '/peripheral_controller/peripheral_enables', 10) # for IK
         self.cmd_pub = self.create_publisher(String, '/arm_cmd', 10) # for M
-        self.listener = keyboard.Listener(on_press=self.on_press)
+        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         self.listener.start()
 
         self.vel = Float32()
@@ -134,6 +134,31 @@ class KeyboardListener(Node):
                 self.cmd_pub.publish("stop;!")
             else:
                 self.gpio_pub.publish(self.gpio_cmd)
+
+        # Handling the shoulder camera
+        if key_str == 'o':  # moves servo up while pressed 
+            self.arm_cmd.data = "svu"    #servo up
+            self.get_logger().info('Shoulder camera servo: up')   
+            self.cmd_pub.publish(self.arm_cmd)
+
+        if key_str == 'l':  # moves servo down while pressed
+            self.arm_cmd.data = "svd"   #servo down
+            self.get_logger().info('Shoulder camera servo: down')   
+            self.cmd_pub.publish(self.arm_cmd)
+    
+
+    def on_release(self, key):
+        try:
+            key_str = key.char
+        except AttributeError:
+            key_str = str(key)
+        
+        # Handling the shoulder camera
+        if key_str == 'o' or key_str == 'l':
+            self.arm_cmd.data = "svs"  #servo stop
+            self.get_logger().info('Stop shoulder camera servo')
+            self.cmd_pub.publish(self.arm_cmd)
+
 
     def send_request(self):
             request = Trigger.Request()

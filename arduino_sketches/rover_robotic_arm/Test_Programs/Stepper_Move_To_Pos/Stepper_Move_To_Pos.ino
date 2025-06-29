@@ -19,8 +19,8 @@
 #define RES12           12
 
 // SPI pins
-#define ENC_0           66 //TW
-// #define ENC_0           67 //WP
+//#define ENC_0           66 //TW
+#define ENC_0           67 //WP
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52
@@ -30,8 +30,8 @@ AccelStepper tower (AccelStepper::DRIVER, 55, 54);  //step, direction
 AccelStepper wristPitch (AccelStepper::DRIVER, 4, 5);
 
 //Additional stepper motor params
-float TW_STEP_ANGLE = 0.18/10;
-float PITCH_STEP_ANGLE = 0.18/100;
+float TW_STEP_ANGLE = 0.18/4;
+float PITCH_STEP_ANGLE = 0.018/2;
 float goalPosition = 0.0;
 
 void setup() 
@@ -63,6 +63,12 @@ void setup()
   wristPitch.setAcceleration(10000);
   wristPitch.setMaxSpeed(1000); 
 
+  pinMode(16, OUTPUT); //Tower enable pin
+  digitalWrite(16, HIGH);
+
+  pinMode(3, OUTPUT); //Pitch enable pin
+  digitalWrite(3, HIGH);
+
   //timer to run stepper motors  
   Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
   Timer1.attachInterrupt(timerIsr);
@@ -84,6 +90,9 @@ void loop()
     goalPosition = input.toFloat(); //convert the string to a float
   }
 
+//  Serial.print("goal position");
+//  Serial.println(goalPosition);
+  
   //this function gets the encoder position and returns it as a uint16_t
   //send the function either res12 or res14 for your encoders resolution
   encoderPosition = getPositionSPI(ENC_0, RES12); 
@@ -102,17 +111,29 @@ void loop()
   else //position was good, print to serial stream
   {
     encoderPositionDegrees = 360*float(encoderPosition)/4096;
+
+    if (encoderPositionDegrees >= 180.0){
+      encoderPositionDegrees -=360.0; 
+    }
+    
     float error = goalPosition - encoderPositionDegrees; //calculate the error from the goal position
     int stepsToMove = error/TW_STEP_ANGLE; //calculate the number of steps to move based on the error and step angle
     // int stepsToMove = error/PITCH_STEP_ANGLE;
 
     //move the stepper motor towards the goal position 
-    tower.move(stepsToMove); //move the stepper motor by the calculated steps relative to current position
-    //wristPitch.move(stepsToMove); 
+    //tower.move(stepsToMove); //move the stepper motor by the calculated steps relative to current position
+    if (abs(error) > 0.75){
+      wristPitch.move(stepsToMove);       
+    }
 
-    Serial.print("Position: ");
+    //wristPitch.runToPosition();
+    Serial.print("Encoder Position: ");
     Serial.print(encoderPositionDegrees, DEC); //print the position in decimal format
     Serial.write(NEWLINE);
+
+    double motorPosition = wristPitch.currentPosition() * PITCH_STEP_ANGLE; //motor position according to accelstepper
+    Serial.print("Motor Position: ");
+    Serial.println(motorPosition);  
   }
 }
 
@@ -121,7 +142,7 @@ uint16_t getPositionSPI(uint8_t encoder, uint8_t resolution)
   uint16_t currentPosition;       //16-bit response from encoder
   bool binaryArray[16];           //after receiving the position we will populate this array and use it for calculating the checksum
 
-  //get first byte which is the high byte, shift it 8 bits. don't release line for the first byte
+  //get first byte which fis the high byte, shift it 8 bits. don't release line for the first byte
   currentPosition = spiWriteRead(AMT22_NOP, encoder, false) << 8;   
 
   //this is the time required between bytes as specified in the datasheet.
@@ -209,6 +230,6 @@ void setZeroSPI(uint8_t encoder)
 }
 
 void timerIsr() {
-  // wristPitch.run();
-  tower.run();
+  wristPitch.run();
+  //tower.run();
 } //end of timerIsr

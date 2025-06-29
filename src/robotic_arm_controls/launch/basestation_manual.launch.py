@@ -16,8 +16,7 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'dev': '/dev/input/js3'},
-                {'deadzone': 0.4}
+                {'dev': '/dev/input/arm_logitech'}
             ],
             remappings=[
                 ("/joy", "/joy/arm_cmd"),
@@ -26,18 +25,25 @@ def generate_launch_description():
             )
             
     # Keyboard
-    m_keyboard_controls = launch_ros.actions.Node(
+    ik_keyboard_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
-            executable="m_keyboard_controls",
+            executable="ik_keyboard_controls",
+            parameters=[
+                {'mode': "M"}
+            ],
             output="screen",
             )
 
-    # Joy M Controller
-    m_joy_controls = launch_ros.actions.Node(
+    # Joy IK Controller
+    ik_joy_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
-            executable="m_joy_controls",
+            executable="ik_joy_controls",
             parameters=[
-                {'deadzone': 0.4}
+                {'deadzone': 0.4},
+                {'pub_rate': 20.0},
+                {'mode': "M"},
+                {'dirTW': -1},
+                {'dirL2': -1}
             ],
             output="screen",
             )
@@ -45,8 +51,7 @@ def generate_launch_description():
     return launch.LaunchDescription(
             [
                 logitech_joy,
-                m_keyboard_controls,
-                m_joy_controls,
+                ik_keyboard_controls,
+                ik_joy_controls,
                 ]
             )
-

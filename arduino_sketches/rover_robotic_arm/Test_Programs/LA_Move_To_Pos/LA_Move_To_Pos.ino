@@ -19,7 +19,7 @@
 
 // SPI pins
 #define ENC_0           68 //L1
-// #define ENC_0           69 //L2
+//#define ENC_0           69 //L2
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52
@@ -43,10 +43,11 @@ void setup()
 
   //Get the CS line high which is the default inactive state
   digitalWrite(ENC_0, HIGH);
+  digitalWrite(69, HIGH);
 
   //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
   //500 kHz is a good speed for our test environment
-  SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz
+  SPI.setClockDivider(SPI_CLOCK_DIV128);   // 4 MHz
   
   //start SPI bus
   SPI.begin();
@@ -90,17 +91,22 @@ void loop()
   else //position was good, print to serial stream
   {
     encoderPositionDegrees = 360*float(encoderPosition)/4096;
+    
+    if (encoderPositionDegrees >= 180.0){
+      encoderPositionDegrees -=360.0; 
+    }
+    
     float error = goalPosition - encoderPositionDegrees; //calculate the error from the goal position
     
     if (abs(error) < 0.5){ //0.5 degree tolerance for position
       LA1.stopMotor();
-      // LA2.stopMotor();
+      //LA2.stopMotor();
     } else if (error < 0){ //goal position lower than current position --> retract
       LA1.setTarget(2048-600);
-      // LA2.setTarget(2048-600);
+      LA2.setTarget(2048-600);
     } else { //goal position higher than current position --> extend
       LA1.setTarget(2048+600);
-      // LA2.setTarget(2048+600);
+      //LA2.setTarget(2048+600);
     }
 
     Serial.print("Position: ");

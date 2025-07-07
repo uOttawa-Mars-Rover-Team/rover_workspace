@@ -1,5 +1,7 @@
 /* Include the SPI library for the arduino boards */
 #include <SPI.h>
+#include <AccelStepper.h>
+#include <TimerOne.h>
 #include <JrkG2.h>
 
 /* Serial rates for UART */
@@ -18,17 +20,74 @@
 #define RES12           12
 
 // SPI pins
-#define ENC_0           68 //L1
-//#define ENC_0           69 //L2
+#define ENC_TW           66 //TW
+#define ENC_WP           67 //WP
+#define ENC_L1           68 //L1
+#define ENC_L2           69 //L2
+
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52
 
-float goalPosition = 0.0;
-
-// Linear actuator setup
+//stepper setup
+AccelStepper tower (AccelStepper::DRIVER, 55, 54);  //step, direction
+AccelStepper wristPitch (AccelStepper::DRIVER, 4, 5);
 JrkG2I2C LA1(11);
-//JrkG2I2C LA2(12);
+JrkG2I2C LA2(12);
+
+struct Motor {
+  float         currentPos;
+  float         desiredPos;
+  int           direction;    //changes the direction that the motor is set to move in
+  int           ENC_PIN;      //enable pin for encoder, active low 
+  int           BOOT_PIN;     //used to reboot the stepper drivers
+  float         STEP_ANGLE;   //how many degrees is 1 step based on gear reductions, etc.
+};
+
+//Additional stepper motor params
+float TW_STEP_ANGLE = 0.18/4;
+float PITCH_STEP_ANGLE = 0.018/2;
+float ANGULAR_ERROR = 0.5;
+
+Motor la1 = {
+    .currentPos = 0,
+    .desiredPos = 0,
+    .direction = -1,
+    .ENC_PIN = 68,
+    .BOOT_PIN = 0,
+    .STEP_ANGLE = 0
+};
+
+Motor la2 = {
+    .currentPos = 0,
+    .desiredPos = 0,
+    .direction = 1,
+    .ENC_PIN = 69,
+    .BOOT_PIN = 0,
+    .STEP_ANGLE = 0
+};
+
+Motor tw = {
+    .currentPos = 0,
+    .desiredPos = 0,
+    .direction = -1,
+    .ENC_PIN = 66,
+    .BOOT_PIN = 3,
+    .STEP_ANGLE = TW_STEP_ANGLE
+};
+
+Motor wp = {
+    .currentPos = 0,
+    .desiredPos = 0,
+    .direction = 1,
+    .ENC_PIN = 67,
+    .BOOT_PIN = 16,
+    .STEP_ANGLE = PITCH_STEP_ANGLE
+};
+
+Motor motors[] = {tw, la1, la2, wp};
+
+unsigned long print_timer = millis();
 
 void setup() 
 {
@@ -36,52 +95,118 @@ void setup()
   pinMode(SPI_SCLK, OUTPUT);
   pinMode(SPI_MOSI, OUTPUT);
   pinMode(SPI_MISO, INPUT);
-  pinMode(ENC_0, OUTPUT);
+  pinMode(la1.ENC_PIN, OUTPUT);
   
   //Initialize the UART serial connection for debugging
   Serial.begin(BAUDRATE);
 
   //Get the CS line high which is the default inactive state
-  digitalWrite(ENC_0, HIGH);
-  //digitalWrite(69, HIGH);
+  digitalWrite(la1.ENC_PIN, HIGH);
 
   //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
   //500 kHz is a good speed for our test environment
-  SPI.setClockDivider(SPI_CLOCK_DIV128);   // 4 MHz
+  SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz SPI clock
   
   //start SPI bus
   SPI.begin();
 
-  setZeroSPI(ENC_0); //sets starting position as 0 degrees
+  setZeroSPI(la1.ENC_PIN); //sets starting position as 0 degrees
 
-  //start I2C bus
-  Wire.begin();
+  //stepper setup
+  tower.setAcceleration(5000);
+  tower.setMaxSpeed(1000);
+  wristPitch.setAcceleration(10000);
+  wristPitch.setMaxSpeed(1000); 
+
+  pinMode(16, OUTPUT); //Tower enable pin
+  digitalWrite(16, HIGH);
+
+  pinMode(3, OUTPUT); //Pitch enable pin
+  digitalWrite(3, HIGH);
+
+  //timer to run stepper motors  
+  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
+  Timer1.attachInterrupt(timerIsr);
+
 }
 
 void loop() 
 {
+  static int motor_index = 0;
+  static String position_string = "";
+  
+  //serial read one byte at a time
+  if (Serial.available()){
+    char byte = Serial.read();
+    //when semicolon is read convert string to a float and save it
+    if (byte == ';'){
+      motors[motor_index].desiredPos = position_string.toFloat();
+      position_string = "";
+      motor_index = (motor_index + 1) % 4; //don't let motor index be greater than 3
+    } else { //if no semicolon, continue building the position string
+      position_string += byte;
+    }
+  }  
+
+  //read all encoders values and set target position/speed
+  for (int i = 0; i<4; i++){
+    motors[i].currentPos = getPositionDegrees(motors[i].ENC_PIN);
+    float error = motors[i].desiredPos - motors[i].currentPos;
+
+    if (abs(error) > ANGULAR_ERROR){
+      if (i == 0){
+        setStepperGoalPosition(tower, error, motors[i].STEP_ANGLE, motors[i].direction);
+      } else if (i == 3){
+        setStepperGoalPosition(wristPitch, error, motors[i].STEP_ANGLE, motors[i].direction);
+      } else if (i == 1){
+        moveLinearActuator(LA1, error, motors[i].direction);
+      } else{
+        moveLinearActuator(LA2, error, motors[i].direction);
+      }
+    }
+  }
+
+  //print encoder states every 0.5s
+  if (millis() - print_timer >= 500){
+    for (int i = 0; i<4; i++){
+      Serial.print(motors[i].currentPos);
+      Serial.print(";");    
+    }
+    Serial.print("\n");
+  }
+}
+
+void setStepperGoalPosition(AccelStepper stepper, float error, int stepAngle, int direction){
+  int stepsToMove = error/stepAngle;
+  stepper.move(stepsToMove * direction);
+}
+
+void moveLinearActuator(JrkG2I2C actuator, float error, int direction){
+  int bwdSpeed = 2048-(600*direction);
+  int fwdSpeed = 2048+(600*direction);
+  
+  if (error < 0){
+    actuator.setTarget(bwdSpeed);
+  } else{
+    actuator.setTarget(fwdSpeed);
+  }
+}
+
+float getPositionDegrees(uint8_t encoder){
   //create a 16 bit variable to hold the encoders position
   uint16_t encoderPosition;
   float encoderPositionDegrees;
   int attempts = 0;
 
-  //example string containing position to move the motor to:
-  //100.0 move to 100 degrees
-  if (Serial.available()) {
-    String input = Serial.readStringUntil('\n'); //read the input until newline
-    input.trim(); //remove any leading or trailing whitespace
-    goalPosition = input.toFloat(); //convert the string to a float
-  }
-
   //this function gets the encoder position and returns it as a uint16_t
   //send the function either res12 or res14 for your encoders resolution
-  encoderPosition = getPositionSPI(ENC_0, RES12); 
+  encoderPosition = getPositionSPI(encoder, RES12); 
 
   //if the position returned was 0xFFFF we know that there was an error calculating the checksum
   //make 3 attempts for position. we will pre-increment attempts because we'll use the number later and want an accurate count
   while (encoderPosition == 0xFFFF && ++attempts < 3)
   {
-    encoderPosition = getPositionSPI(ENC_0, RES12); //try again
+    encoderPosition = getPositionSPI(encoder, RES12); //try again
   }
 
   if (encoderPosition == 0xFFFF) //position is bad, let the user know how many times we tried
@@ -91,29 +216,13 @@ void loop()
   else //position was good, print to serial stream
   {
     encoderPositionDegrees = 360*float(encoderPosition)/4096;
-    
+
     if (encoderPositionDegrees >= 180.0){
       encoderPositionDegrees -=360.0; 
     }
-    
-    float error = goalPosition - encoderPositionDegrees; //calculate the error from the goal position
-    
-    if (abs(error) < 0.5){ //0.5 degree tolerance for position
-      LA1.stopMotor();
-      //LA2.stopMotor();
-    } else if (error < 0){ //goal position lower than current position --> retract
-      //LA1.setTarget(2048-600);
-      LA1.setTarget(2048+600);
-
-    } else { //goal position higher than current position --> extend
-      //LA1.setTarget(2048+600);
-      LA1.setTarget(2048-600);
-    }
-
-    Serial.print("Position: ");
-    Serial.print(encoderPositionDegrees, DEC); //print the position in decimal format
-    Serial.write(NEWLINE);
   }
+
+  return encoderPositionDegrees;
 }
 
 uint16_t getPositionSPI(uint8_t encoder, uint8_t resolution)
@@ -121,7 +230,7 @@ uint16_t getPositionSPI(uint8_t encoder, uint8_t resolution)
   uint16_t currentPosition;       //16-bit response from encoder
   bool binaryArray[16];           //after receiving the position we will populate this array and use it for calculating the checksum
 
-  //get first byte which is the high byte, shift it 8 bits. don't release line for the first byte
+  //get first byte which fis the high byte, shift it 8 bits. don't release line for the first byte
   currentPosition = spiWriteRead(AMT22_NOP, encoder, false) << 8;   
 
   //this is the time required between bytes as specified in the datasheet.
@@ -207,3 +316,8 @@ void setZeroSPI(uint8_t encoder)
   spiWriteRead(AMT22_ZERO, encoder, true);
   delay(250); //250 second delay to allow the encoder to reset
 }
+
+void timerIsr() {
+  wristPitch.run();
+  tower.run();
+} //end of timerIsr

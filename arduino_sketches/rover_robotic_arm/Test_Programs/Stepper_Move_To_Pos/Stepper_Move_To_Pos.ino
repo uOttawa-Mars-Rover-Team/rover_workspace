@@ -19,8 +19,8 @@
 #define RES12           12
 
 // SPI pins
-//#define ENC_0           66 //TW
-#define ENC_0           67 //WP
+#define ENC_0           66 //TW
+//#define ENC_0           67 //WP
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52
@@ -124,6 +124,7 @@ void loop()
     //tower.move(stepsToMove); //move the stepper motor by the calculated steps relative to current position
     if (abs(error) > 0.75){
       wristPitch.move(stepsToMove);       
+      tower.move(-stepsToMove);
     }
 
     //wristPitch.runToPosition();
@@ -131,9 +132,10 @@ void loop()
     Serial.print(encoderPositionDegrees, DEC); //print the position in decimal format
     Serial.write(NEWLINE);
 
-    double motorPosition = wristPitch.currentPosition() * PITCH_STEP_ANGLE; //motor position according to accelstepper
-    Serial.print("Motor Position: ");
-    Serial.println(motorPosition);  
+    //double motorPosition = wristPitch.currentPosition() * PITCH_STEP_ANGLE; //motor position according to accelstepper
+    double motorPosition = tower.currentPosition() * TW_STEP_ANGLE;
+//    Serial.print("Motor Position: ");
+//    Serial.println(motorPosition);  
   }
 }
 
@@ -230,6 +232,6 @@ void setZeroSPI(uint8_t encoder)
 }
 
 void timerIsr() {
-  wristPitch.run();
-  //tower.run();
+  //wristPitch.run();
+  tower.run();
 } //end of timerIsr

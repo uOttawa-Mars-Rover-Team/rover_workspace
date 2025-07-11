@@ -20,11 +20,18 @@ def generate_launch_description():
         default_value="False",
         description="When the `image_topic` param is provided, whether the image_topic being subscribed to publishes compressed images.",
     )
+    is_ffmpeg = LaunchConfiguration("is_ffmpeg")
+    is_ffmpeg_arg = DeclareLaunchArgument(
+        "is_ffmpeg",
+        default_value="False",
+        description="When the `image_topic` param is provided, whether the image_topic being subscribed to publishes FFMPEG packets.",
+    )
 
     return LaunchDescription(
         [
             image_topic_arg,
             is_compressed_arg,
+            is_ffmpeg_arg,
             GroupAction(
                 condition=LaunchConfigurationEquals("image_topic", ""),
                 actions=[
@@ -56,6 +63,7 @@ def generate_launch_description():
                             {
                                 "image_topic": image_topic,
                                 "is_compressed": is_compressed,
+                                "is_ffmpeg": is_ffmpeg,
                             }
                         ],
                     ),

@@ -1,8 +1,11 @@
 import cv2
 import rclpy
+from ffmpeg_image_transport_msgs.msg import FFMPEGPacket
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import CompressedImage, Image
 
 from .common import CameraNode
+from .ffmpeg_decoder import FFMPEGDecoder
 
 
 class ArucoDecoderNode(CameraNode):
@@ -21,15 +24,33 @@ class ArucoDecoderNode(CameraNode):
         self.image_is_compressed = self.get_param(
             "is_compressed", rclpy.Parameter.Type.BOOL, default_val=False
         )
+        self.image_is_ffmpeg = self.get_param(
+            "is_ffmpeg", rclpy.Parameter.Type.BOOL, default_val=False
+        )
         # Subscribe to a single ROS Image topic to receive images to detect
         # ArUco markers from
 
-        self.image_subscription = self.create_subscription(
-            CompressedImage if self.image_is_compressed else Image,
-            self.image_subscription_topic,
-            self.image_callback,
-            10,
-        )
+        if self.image_is_ffmpeg:
+            self.get_logger().info("Subscribing to FFMPEG messages")
+            self.ffmpeg_decoder = FFMPEGDecoder(self)
+            self.ffmpeg_decoder.start()
+            self.image_subscription = self.create_subscription(
+                FFMPEGPacket,
+                self.image_subscription_topic,
+                self.ffmpeg_decoder.consume,
+                qos_profile_sensor_data,
+            )
+            self.ffmpeg_decoder.on_new_image_message(self.image_callback)
+        else:
+            self.get_logger().info(
+                f"Subscribing to {'CompressedImage' if self.image_is_compressed else 'Image'} messages"
+            )
+            self.image_subscription = self.create_subscription(
+                CompressedImage if self.image_is_compressed else Image,
+                self.image_subscription_topic,
+                self.image_callback,
+                qos_profile_sensor_data,
+            )
         self.get_logger().info(
             f"Subscribing to messages from: {self.image_subscription.topic_name}"
         )
@@ -48,14 +69,19 @@ class ArucoDecoderNode(CameraNode):
         else:
             frame = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
 
-        arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
-        arucoParams = cv2.aruco.DetectorParameters_create()
+        dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
 
-        # Detect ArUco markers in the input frame, dismissing rejectedImgPoints
-        # returned by cv2.aruco.detectMarkers
-        corners, ids, _ = cv2.aruco.detectMarkers(
-            frame, arucoDict, parameters=arucoParams
-        )
+        # Try new API
+        try:
+            parameters = cv2.aruco.DetectorParameters()
+            detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+            corners, ids, _ = detector.detectMarkers(frame)
+        except AttributeError:
+            # Fall back to old API
+            parameters = cv2.aruco.DetectorParameters_create()
+            corners, ids, _ = cv2.aruco.detectMarkers(
+                frame, dictionary, parameters=parameters
+            )
 
         # Check to see at least one ArUco marker was detected
         if len(corners) > 0:

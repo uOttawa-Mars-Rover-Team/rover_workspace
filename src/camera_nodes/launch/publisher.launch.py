@@ -21,11 +21,17 @@ def generate_launch_description():
     )
     codec = LaunchConfiguration("codec")
     codec_launch_arg = DeclareLaunchArgument("codec", default_value="MJPG")
-    qos_profile = LaunchConfiguration("qos_profile")
-    qos_profile_launch_arg = DeclareLaunchArgument(
-        "qos_profile",
+    qos_profile_raw = LaunchConfiguration("qos_profile_raw")
+    qos_profile_raw_launch_arg = DeclareLaunchArgument(
+        "qos_profile_raw",
+        default_value="SYSTEM_DEFAULT",
+        description="QoS profile to use for raw image topic publishing. Values include SYSTEM_DEFAULT and SENSOR_DATA.",
+    )
+    qos_profile_compressed = LaunchConfiguration("qos_profile_compressed")
+    qos_profile_compressed_launch_arg = DeclareLaunchArgument(
+        "qos_profile_compressed",
         default_value="SENSOR_DATA",
-        description="QoS profile to use for published topics. Values include SYSTEM_DEFAULT and SENSOR_DATA.",
+        description="QoS profile to use for compressed image topic publishing. Values include SYSTEM_DEFAULT and SENSOR_DATA.",
     )
     resolution = LaunchConfiguration("resolution")
     resolution_launch_arg = DeclareLaunchArgument("resolution", default_value="480")
@@ -37,7 +43,8 @@ def generate_launch_description():
             framerate_launch_arg,
             compression_quality_launch_arg,
             codec_launch_arg,
-            qos_profile_launch_arg,
+            qos_profile_raw_launch_arg,
+            qos_profile_compressed_launch_arg,
             resolution_launch_arg,
             Node(
                 package="camera_nodes",
@@ -49,7 +56,8 @@ def generate_launch_description():
                         "framerate": framerate,
                         "compression_quality": compression_quality,
                         "codec": codec,
-                        "qos_profile": qos_profile,
+                        "qos_profile_raw": qos_profile_raw,
+                        "qos_profile_compressed": qos_profile_compressed,
                         "resolution": resolution,
                     }
                 ],

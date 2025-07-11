@@ -23,13 +23,11 @@ sudo apt-get upgrade
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y ca-certificates curl gnupg
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-NODE_MAJOR=18
-echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-sudo apt-get update
-sudo apt-get install nodejs -y
+sudo apt-get upgrade
+sudo apt-get install -y curl
+curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+sudo apt-get install -y nodejs
 ```
 
 [Source](https://github.com/nodesource/distributions#installation-instructions)
@@ -40,7 +38,7 @@ Make sure to check your node and npm versions, as described above, after install
 
 Make sure that **Node.js** and **npm** is installed.
 
-- To check if **Node.js** is installed, try running `node -v` it should return the version, ex: `v18.17.0`.
+- To check if **Node.js** is installed, try running `node -v` it should return the version, ex: `v22.17.0`.
 - To check if **npm** is installed, try running `npm -v` it should return the version number, ex: `9.8.1`.
 - Make sure that the major version (the `X` in version format `X.Y.Z`) is the same as the major versions listed above. The minor (`Y`) and patch (`Z`) portion don't have to be exactly the same.
 

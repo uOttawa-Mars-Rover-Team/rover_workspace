@@ -6,7 +6,7 @@
 
 uoRover development workspace. Currently using ROS2 Humble.
 
-## Getting started
+## Getting Started
 
 These steps only need to be done once and will set up your entire dev environment, which includes ROS2 Humble, required ROS packages, and this code repository.
 
@@ -19,7 +19,15 @@ These steps only need to be done once and will set up your entire dev environmen
 
 Make sure to repeat steps 5-6 to rebuild the code after making changes.
 
-## New features
+## New Features
 
 As we add new features to the build keep new developments on a seperate branch from the master. This way the master branch will
 stay functional while we work on individual systems.
+
+## Installing New Project Dependencies
+
+To install any new dependencies added to this workspace, you can run the following command at the root of the workspace at any point in time:
+
+```bash
+rosdep install --from-paths src -i -r -y
+```

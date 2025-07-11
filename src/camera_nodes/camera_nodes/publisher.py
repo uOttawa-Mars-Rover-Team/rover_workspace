@@ -1,9 +1,10 @@
 import cv2
 import rclpy
-from sensor_msgs.msg import Image, CompressedImage
-from cv_bridge import CvBridge
-from .common import CameraNode
 import rclpy.qos
+from cv_bridge import CvBridge
+from sensor_msgs.msg import CompressedImage, Image
+
+from .common import CameraNode
 
 
 class CameraPublisherNode(CameraNode):
@@ -32,17 +33,23 @@ class CameraPublisherNode(CameraNode):
 
         self.bridge = CvBridge()
 
-        self.qos_profile = self.get_param(
-            "qos_profile", rclpy.Parameter.Type.STRING, "SENSOR_DATA"
+        self.qos_profile_raw = self.get_param(
+            "qos_profile_raw", rclpy.Parameter.Type.STRING, "SENSOR_DATA"
         )
-        qos = rclpy.qos.QoSPresetProfiles.get_from_short_key(self.qos_profile)
+        qos_raw = rclpy.qos.QoSPresetProfiles.get_from_short_key(self.qos_profile_raw)
+        self.qos_profile_compressed = self.get_param(
+            "qos_profile_compressed", rclpy.Parameter.Type.STRING, "SENSOR_DATA"
+        )
+        qos_compressed = rclpy.qos.QoSPresetProfiles.get_from_short_key(
+            self.qos_profile_compressed
+        )
 
         self.publisher = self.create_publisher(
-            Image, f"{self.camera_name}/image_raw", qos
+            Image, f"{self.camera_name}/image_raw", qos_raw
         )
         # Create a publisher for compressed image
         self.compressed_publisher = self.create_publisher(
-            CompressedImage, f"{self.camera_name}/image_raw/compressed", qos
+            CompressedImage, f"{self.camera_name}/image_raw/compressed", qos_compressed
         )
 
         # Initialize OpenCV capture

@@ -5,7 +5,7 @@
 #include <JrkG2.h>
 
 /* Serial rates for UART */
-#define BAUDRATE        115200
+#define BAUDRATE        1000000
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -18,12 +18,6 @@
 
 // We will use these define macros so we can write code once compatible with 12 or 14 bit encoders
 #define RES12           12
-
-// SPI pins
-#define ENC_TW           66 //TW
-#define ENC_WP           67 //WP
-#define ENC_L1           68 //L1
-#define ENC_L2           69 //L2
 
 #define SPI_MOSI        51
 #define SPI_MISO        50
@@ -95,22 +89,23 @@ void setup()
   pinMode(SPI_SCLK, OUTPUT);
   pinMode(SPI_MOSI, OUTPUT);
   pinMode(SPI_MISO, INPUT);
-  pinMode(la1.ENC_PIN, OUTPUT);
-  
-  //Initialize the UART serial connection for debugging
-  Serial.begin(BAUDRATE);
-
-  //Get the CS line high which is the default inactive state
-  digitalWrite(la1.ENC_PIN, HIGH);
 
   //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
   //500 kHz is a good speed for our test environment
   SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz SPI clock
   
-  //start SPI bus
+  //Initialize the UART, I2C and SPI
+  Serial.begin(BAUDRATE);
+  Wire.begin();
   SPI.begin();
 
-  setZeroSPI(la1.ENC_PIN); //sets starting position as 0 degrees
+
+  //set up encoder pins
+  for (int i = 0; i < 4; i++){
+    pinMode(motors[i].ENC_PIN, OUTPUT);
+    digitalWrite(motors[i].ENC_PIN, HIGH);
+    setZeroSPI(motors[i].ENC_PIN);
+  }
 
   //stepper setup
   tower.setAcceleration(5000);
@@ -118,11 +113,11 @@ void setup()
   wristPitch.setAcceleration(10000);
   wristPitch.setMaxSpeed(1000); 
 
-  pinMode(16, OUTPUT); //Tower enable pin
-  digitalWrite(16, HIGH);
+  pinMode(wp.BOOT_PIN, OUTPUT); //Tower enable pin
+  digitalWrite(wp.BOOT_PIN, HIGH);
 
-  pinMode(3, OUTPUT); //Pitch enable pin
-  digitalWrite(3, HIGH);
+  pinMode(tw.BOOT_PIN, OUTPUT); //Pitch enable pin
+  digitalWrite(tw.BOOT_PIN, HIGH);
 
   //timer to run stepper motors  
   Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
@@ -143,10 +138,22 @@ void loop()
       motors[motor_index].desiredPos = position_string.toFloat();
       position_string = "";
       motor_index = (motor_index + 1) % 4; //don't let motor index be greater than 3
+    } else if (byte == "\n"){
+      // do nothing
     } else { //if no semicolon, continue building the position string
       position_string += byte;
     }
   }  
+
+  /*
+  //print desired states (test for checking if serial read logic works)
+  for (int i = 0; i<4; i++){
+    Serial.print(motors[i].desiredPos);
+    Serial.print(";");    
+  }
+  
+  Serial.print("\n");
+  */
 
   //read all encoders values and set target position/speed
   for (int i = 0; i<4; i++){
@@ -166,8 +173,11 @@ void loop()
     }
   }
 
+  
   //print encoder states every 0.5s
   if (millis() - print_timer >= 500){
+    print_timer = millis();
+    
     for (int i = 0; i<4; i++){
       Serial.print(motors[i].currentPos);
       Serial.print(";");    
@@ -176,7 +186,7 @@ void loop()
   }
 }
 
-void setStepperGoalPosition(AccelStepper stepper, float error, int stepAngle, int direction){
+void setStepperGoalPosition(AccelStepper stepper, float error, float stepAngle, int direction){
   int stepsToMove = error/stepAngle;
   stepper.move(stepsToMove * direction);
 }
@@ -195,7 +205,7 @@ void moveLinearActuator(JrkG2I2C actuator, float error, int direction){
 float getPositionDegrees(uint8_t encoder){
   //create a 16 bit variable to hold the encoders position
   uint16_t encoderPosition;
-  float encoderPositionDegrees;
+  float encoderPositionDegrees = 0;
   int attempts = 0;
 
   //this function gets the encoder position and returns it as a uint16_t

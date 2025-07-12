@@ -4,10 +4,10 @@
 #include <TimerOne.h>
 #include <JrkG2.h>
 
-/* Serial rates for UART */
+//Serial rates for UART 
 #define BAUDRATE        1000000
 
-// SPI commands */
+// Encoder SPI commands
 #define AMT22_NOP       0x00
 #define AMT22_RESET     0x60
 #define AMT22_ZERO      0x70
@@ -16,12 +16,24 @@
 #define NEWLINE         0x0A
 #define TAB             0x09
 
-// We will use these define macros so we can write code once compatible with 12 or 14 bit encoders
-#define RES12           12
+#define RES12           12 // encoder resolution
 
+// SPI pin defines
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52
+
+//Motor speed/accleration defines
+#define TW_MAX_SPEED          1000
+#define TW_MAX_ACCELERATION   5000
+#define WP_MAX_SPEED          1000
+#define WP_MAX_ACCELERATION   10000
+#define LA_ZERO_SPEED         2048
+#define LA_MAX_SPEED          600
+
+//period for timer ISR that runs all of the stepper motors
+//in testing, this was the maximum period that still prevented joints from vibrating too much
+#define TIMER_PERIOD_US 300 
 
 //stepper setup
 AccelStepper tower (AccelStepper::DRIVER, 55, 54);  //step, direction
@@ -92,13 +104,12 @@ void setup()
 
   //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
   //500 kHz is a good speed for our test environment
-  SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz SPI clock
+  SPI.setClockDivider(SPI_CLOCK_DIV4);   // 4 MHz SPI clock - this is the fastest rate that still seems to be reliable for comms
   
   //Initialize the UART, I2C and SPI
   Serial.begin(BAUDRATE);
   Wire.begin();
   SPI.begin();
-
 
   //set up encoder pins
   for (int i = 0; i < 4; i++){
@@ -108,10 +119,10 @@ void setup()
   }
 
   //stepper setup
-  tower.setAcceleration(5000);
-  tower.setMaxSpeed(1000);
-  wristPitch.setAcceleration(10000);
-  wristPitch.setMaxSpeed(1000); 
+  tower.setAcceleration(TW_MAX_ACCELERATION);
+  tower.setMaxSpeed(TW_MAX_SPEED);
+  wristPitch.setAcceleration(WP_MAX_ACCELERATION);
+  wristPitch.setMaxSpeed(WP_MAX_SPEED); 
 
   pinMode(wp.BOOT_PIN, OUTPUT); //Tower enable pin
   digitalWrite(wp.BOOT_PIN, HIGH);
@@ -120,7 +131,7 @@ void setup()
   digitalWrite(tw.BOOT_PIN, HIGH);
 
   //timer to run stepper motors  
-  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
+  Timer1.initialize(TIMER_PERIOD_US);
   Timer1.attachInterrupt(timerIsr);
 
 }
@@ -192,13 +203,14 @@ void setStepperGoalPosition(AccelStepper stepper, float error, float stepAngle, 
 }
 
 void moveLinearActuator(JrkG2I2C actuator, float error, int direction){
-  int bwdSpeed = 2048-(600*direction);
-  int fwdSpeed = 2048+(600*direction);
+  // if direction is -1, the speeds become reversed
+  int retract_speed = LA_ZERO_SPEED -(LA_MAX_SPEED*direction);
+  int extend_speed = LA_ZERO_SPEED+(LA_MAX_SPEED*direction); 
   
   if (error < 0){
-    actuator.setTarget(bwdSpeed);
+    actuator.setTarget(retract_speed);
   } else{
-    actuator.setTarget(fwdSpeed);
+    actuator.setTarget(extend_speed);
   }
 }
 

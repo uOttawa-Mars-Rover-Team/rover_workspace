@@ -3,7 +3,7 @@
 #include <JrkG2.h>
 
 /* Serial rates for UART */
-#define BAUDRATE        115200
+#define BAUDRATE        1000000
 
 // SPI commands */
 #define AMT22_NOP       0x00

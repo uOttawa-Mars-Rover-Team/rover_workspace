@@ -31,6 +31,8 @@
 #define LA_ZERO_SPEED         2048
 #define LA_MAX_SPEED          600
 
+#define NUM_MOTORS 4
+
 //period for timer ISR that runs all of the stepper motors
 //in testing, this was the maximum period that still prevented joints from vibrating too much
 #define TIMER_PERIOD_US 300 
@@ -138,53 +140,60 @@ void setup()
 
 void loop() 
 {
-  static int motor_index = 0;
+  static int serial_read_index = 0;
+  static int motor_array_index = 0;
   static String position_string = "";
+
+  float error;
   
   //serial read one byte at a time
   if (Serial.available()){
     char byte = Serial.read();
     //when semicolon is read convert string to a float and save it
     if (byte == ';'){
-      motors[motor_index].desiredPos = position_string.toFloat();
+      motors[serial_read_index].desiredPos = position_string.toFloat();
       position_string = "";
-      motor_index = (motor_index + 1) % 4; //don't let motor index be greater than 3
+      serial_read_index = (serial_read_index + 1) % NUM_MOTORS; //don't let motor index be greater than 3
     } else if (byte == "\n"){
       // do nothing
     } else { //if no semicolon, continue building the position string
       position_string += byte;
     }
+
+    //Serial.print("byte recieved: ");
+    //Serial.println(byte);
   }  
 
-  /*
-  //print desired states (test for checking if serial read logic works)
-  for (int i = 0; i<4; i++){
-    Serial.print(motors[i].desiredPos);
-    Serial.print(";");    
-  }
-  
-  Serial.print("\n");
-  */
-
-  //read all encoders values and set target position/speed
-  for (int i = 0; i<4; i++){
-    motors[i].currentPos = getPositionDegrees(motors[i].ENC_PIN);
-    float error = motors[i].desiredPos - motors[i].currentPos;
-
-    if (abs(error) > ANGULAR_ERROR){
-      if (i == 0){
-        setStepperGoalPosition(tower, error, motors[i].STEP_ANGLE, motors[i].direction);
-      } else if (i == 3){
-        setStepperGoalPosition(wristPitch, error, motors[i].STEP_ANGLE, motors[i].direction);
-      } else if (i == 1){
-        moveLinearActuator(LA1, error, motors[i].direction);
-      } else{
-        moveLinearActuator(LA2, error, motors[i].direction);
-      }
+  /*  
+  if (millis() - print_timer >= 500){
+    print_timer = millis();
+    Serial.print("motor array index:");
+    Serial.println(serial_read_index);
+    //print desired states (test for checking if serial read logic works)
+    for (int i = 0; i<4; i++){
+      Serial.print(motors[i].desiredPos);
+      Serial.print(";"); 
     }
+
+    Serial.print("\n");
+  }
+  */
+  //read all encoders values and set target position/speed
+  motors[motor_array_index].currentPos = getPositionDegrees(motors[motor_array_index].ENC_PIN);
+  error = motors[motor_array_index].desiredPos - motors[motor_array_index].currentPos;
+
+  if (motor_array_index == 0){
+    setStepperGoalPosition(tower, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
+  } else if (motor_array_index == 3){
+    setStepperGoalPosition(wristPitch, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
+  } else if (motor_array_index == 1){
+    moveLinearActuator(LA1, error, motors[motor_array_index].direction);
+  } else{
+    moveLinearActuator(LA2, error, motors[motor_array_index].direction);
   }
 
-  
+  motor_array_index = (motor_array_index + 1) % NUM_MOTORS;
+
   //print encoder states every 0.5s
   if (millis() - print_timer >= 500){
     print_timer = millis();
@@ -197,17 +206,20 @@ void loop()
   }
 }
 
-void setStepperGoalPosition(AccelStepper stepper, float error, float stepAngle, int direction){
-  int stepsToMove = error/stepAngle;
-  stepper.move(stepsToMove * direction);
+void setStepperGoalPosition(AccelStepper &stepper, float error, float stepAngle, int direction){
+  if (abs(error) > ANGULAR_ERROR){
+    int stepsToMove = error/stepAngle;
+    stepper.move(stepsToMove * direction);    
+  }
 }
 
-void moveLinearActuator(JrkG2I2C actuator, float error, int direction){
-  // if direction is -1, the speeds become reversed
-  int retract_speed = LA_ZERO_SPEED -(LA_MAX_SPEED*direction);
+void moveLinearActuator(JrkG2I2C &actuator, float error, int direction){
+  int retract_speed = LA_ZERO_SPEED-(LA_MAX_SPEED*direction);
   int extend_speed = LA_ZERO_SPEED+(LA_MAX_SPEED*direction); 
   
-  if (error < 0){
+  if (abs(error) <= ANGULAR_ERROR){
+    actuator.stopMotor();
+  } else if (error < 0){
     actuator.setTarget(retract_speed);
   } else{
     actuator.setTarget(extend_speed);

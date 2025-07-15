@@ -4,8 +4,9 @@
 #include <TimerOne.h>
 #include <JrkG2.h>
 
-//Serial rates for UART 
-#define BAUDRATE        1000000
+//UART Declaration
+#define BAUDRATE              9600
+#define POSITION_BUFFER_SIZE  50
 
 // Encoder SPI commands
 #define AMT22_NOP       0x00
@@ -33,13 +34,18 @@
 
 #define NUM_MOTORS 4
 
+//Timer Declarations
 //period for timer ISR that runs all of the stepper motors
 //in testing, this was the maximum period that still prevented joints from vibrating too much
 #define TIMER_PERIOD_US 300 
+#define PRINT_TIMER     1000
+#define MOTOR_TIMER     10
 
 //stepper setup
 AccelStepper tower (AccelStepper::DRIVER, 55, 54);  //step, direction
 AccelStepper wristPitch (AccelStepper::DRIVER, 4, 5);
+AccelStepper wristRoll    (AccelStepper::DRIVER, 8,   9); 
+AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
 JrkG2I2C LA1(11);
 JrkG2I2C LA2(12);
 
@@ -96,6 +102,9 @@ Motor wp = {
 Motor motors[] = {tw, la1, la2, wp};
 
 unsigned long print_timer = millis();
+unsigned long motor_timer = millis();
+
+bool debug = false;
 
 void setup() 
 {
@@ -126,6 +135,17 @@ void setup()
   wristPitch.setAcceleration(WP_MAX_ACCELERATION);
   wristPitch.setMaxSpeed(WP_MAX_SPEED); 
 
+  // wristRoll.setMaxSpeed(1000); 
+  // wristRoll.setAcceleration(20000);
+  // endEffector.setMaxSpeed(1000); 
+  // endEffector.setAcceleration(20000);
+
+  // pinMode(7, OUTPUT);
+  // pinMode(11, OUTPUT);
+  // digitalWrite(7, HIGH);
+  // digitalWrite(11, HIGH);
+
+
   pinMode(wp.BOOT_PIN, OUTPUT); //Tower enable pin
   digitalWrite(wp.BOOT_PIN, HIGH);
 
@@ -141,69 +161,84 @@ void setup()
 void loop() 
 {
   static int serial_read_index = 0;
+  static int buffer_index = 0;
   static int motor_array_index = 0;
-  static String position_string = "";
+  static char position_buffer[POSITION_BUFFER_SIZE];
 
   float error;
-  
+  bool commandFlag = false;
+
   //serial read one byte at a time
-  if (Serial.available()){
+  if (Serial.available()>0){
     char byte = Serial.read();
+
     //when semicolon is read convert string to a float and save it
     if (byte == ';'){
-      motors[serial_read_index].desiredPos = position_string.toFloat();
-      position_string = "";
+      position_buffer[buffer_index] = '\0';
+      buffer_index = 0;
+
+      motors[serial_read_index].desiredPos = atof(position_buffer);
       serial_read_index = (serial_read_index + 1) % NUM_MOTORS; //don't let motor index be greater than 3
     } else if (byte == "\n"){
       // do nothing
-    } else { //if no semicolon, continue building the position string
-      position_string += byte;
+    } else if (buffer_index < POSITION_BUFFER_SIZE - 1){ //if no semicolon, continue building the position string
+      position_buffer[buffer_index++] = (char)byte;
     }
-
-    //Serial.print("byte recieved: ");
-    //Serial.println(byte);
-  }  
-
-  /*  
-  if (millis() - print_timer >= 500){
-    print_timer = millis();
-    Serial.print("motor array index:");
-    Serial.println(serial_read_index);
-    //print desired states (test for checking if serial read logic works)
-    for (int i = 0; i<4; i++){
-      Serial.print(motors[i].desiredPos);
-      Serial.print(";"); 
-    }
-
-    Serial.print("\n");
-  }
-  */
-  //read all encoders values and set target position/speed
-  motors[motor_array_index].currentPos = getPositionDegrees(motors[motor_array_index].ENC_PIN);
-  error = motors[motor_array_index].desiredPos - motors[motor_array_index].currentPos;
-
-  if (motor_array_index == 0){
-    setStepperGoalPosition(tower, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
-  } else if (motor_array_index == 3){
-    setStepperGoalPosition(wristPitch, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
-  } else if (motor_array_index == 1){
-    moveLinearActuator(LA1, error, motors[motor_array_index].direction);
-  } else{
-    moveLinearActuator(LA2, error, motors[motor_array_index].direction);
   }
 
-  motor_array_index = (motor_array_index + 1) % NUM_MOTORS;
+  if (debug){
+    if (millis() - print_timer >= PRINT_TIMER){
+      print_timer = millis();
+      Serial.print("motor array index:");
+      Serial.println(serial_read_index);
+      //print desired states (test for checking if serial read logic works)
+      for (int i = 0; i<4; i++){
+        Serial.print(motors[i].desiredPos);
+        Serial.print(";"); 
+      }
 
-  //print encoder states every 0.5s
-  if (millis() - print_timer >= 500){
-    print_timer = millis();
-    
-    for (int i = 0; i<4; i++){
-      Serial.print(motors[i].currentPos);
-      Serial.print(";");    
+      Serial.print("\n");
     }
-    Serial.print("\n");
   }
+
+  // if (millis() - motor_timer >= MOTOR_TIMER){
+    motor_timer = millis();
+
+    //read all encoders values and set target position/speed
+    motors[motor_array_index].currentPos = getPositionDegrees(motors[motor_array_index].ENC_PIN);
+    error = motors[motor_array_index].desiredPos - motors[motor_array_index].currentPos;
+
+    if (motor_array_index == 0){
+      setStepperGoalPosition(tower, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
+    } else if (motor_array_index == 1){
+      moveLinearActuator(LA1, error, motors[motor_array_index].direction);
+    } else if (motor_array_index == 2){
+      moveLinearActuator(LA2, error, motors[motor_array_index].direction);
+    } else{
+      setStepperGoalPosition(wristPitch, error, motors[motor_array_index].STEP_ANGLE, motors[motor_array_index].direction);
+    }
+
+    motor_array_index = (motor_array_index + 1) % NUM_MOTORS;
+
+    // wristRoll.move(1000000);
+    // endEffector.move(1000000);
+  // }
+
+  if (!debug){
+    //print encoder states every 0.5s
+    if (millis() - print_timer >= 500){
+      print_timer = millis();
+      
+      for (int i = 0; i<4; i++){
+        Serial.print(motors[i].currentPos);
+        Serial.print(";");    
+      }
+      Serial.print("\n");
+    }
+  }
+  // wristPitch.run();
+  // tower.run();
+
 }
 
 void setStepperGoalPosition(AccelStepper &stepper, float error, float stepAngle, int direction){
@@ -354,4 +389,6 @@ void setZeroSPI(uint8_t encoder)
 void timerIsr() {
   wristPitch.run();
   tower.run();
+  // wristRoll.run();
+  // endEffector.run();
 } //end of timerIsr

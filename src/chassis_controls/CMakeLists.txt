@@ -28,36 +28,74 @@ else()
   message(FATAL_ERROR "Unsupported system.")
 endif()
 
+add_library(phoenix_core SHARED IMPORTED)
+set_target_properties(phoenix_core PROPERTIES
+  IMPORTED_LOCATION "${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so"
+)
+
+add_library(phoenix_tools SHARED IMPORTED)
+set_target_properties(phoenix_tools PROPERTIES
+  IMPORTED_LOCATION "${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so"
+)
+
+add_library(phoenix_cci SHARED IMPORTED)
+set_target_properties(phoenix_cci PROPERTIES
+  IMPORTED_LOCATION "${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so"
+)
+
+# --- drive_test executable ---
 add_executable(drive_test src/drive_test.cpp)
+# --- NEW: Add include directories for the executable's dependencies ---
+target_include_directories(
+    drive_test
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${rclcpp_INCLUDE_DIRS}
+    ${general_interfaces_INCLUDE_DIRS}
+    ${geometry_msgs_INCLUDE_DIRS}
+)
 target_link_libraries(
     drive_test
-    ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so
-    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so
-    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so
+    PRIVATE # Use PRIVATE for executables
+    phoenix_core
+    phoenix_tools
+    phoenix_cci
+    ${rclcpp_LIBRARIES}
+    ${general_interfaces_LIBRARIES}
+    ${geometry_msgs_LIBRARIES}
 )
-ament_target_dependencies(drive_test rclcpp general_interfaces geometry_msgs)
 
+
+# --- chassis_controls library ---
 add_library(${PROJECT_NAME} SHARED src/drive_hardware.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
+# --- MODIFIED: Add dependency include directories to the library ---
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    # Add dependency includes here. PUBLIC is correct because your public
+    # header drive_hardware.hpp includes them.
+    ${rclcpp_INCLUDE_DIRS}
+    ${pluginlib_INCLUDE_DIRS}
+    ${rclcpp_lifecycle_INCLUDE_DIRS}
+    ${hardware_interface_INCLUDE_DIRS}
 )
 target_link_libraries(
     ${PROJECT_NAME}
-    PUBLIC
-    ${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so
-    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so
-    ${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so
+    PUBLIC # PUBLIC is correct here
+    phoenix_core
+    phoenix_tools
+    phoenix_cci
+    ${rclcpp_LIBRARIES}
+    ${pluginlib_LIBRARIES}
+    ${rclcpp_lifecycle_LIBRARIES}
+    ${hardware_interface_LIBRARIES}
 )
-ament_target_dependencies(${PROJECT_NAME} PUBLIC rclcpp pluginlib rclcpp_lifecycle hardware_interface)
 pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-include_directories(${PROJECT_SOURCE_DIR}/include)
+# --- Installs are correct ---
 
 install(
     TARGETS
@@ -91,14 +129,19 @@ install(
     RUNTIME DESTINATION lib
 )
 
+install(
+    FILES
+    "${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so"
+    "${PHOENIX_LIBS_DIR}/libCTRE_PhoenixTools.so"
+    "${PHOENIX_LIBS_DIR}/libCTRE_PhoenixCCI.so"
+    DESTINATION lib
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()

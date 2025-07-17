@@ -73,7 +73,7 @@ namespace chassis_controls
       RCLCPP_INFO(logger_, "wheel_encoder_counts_per_revolution is %d.", config_.wheel_encoder_counts_per_revolution);
     }
     // -- Talons
-    const unsigned int FL_id = std::stoi(info_.hardware_parameters["FL_id"]);
+    const int FL_id = std::stoi(info_.hardware_parameters["FL_id"]);
     if (FL_id <= 0)
     {
       RCLCPP_ERROR(logger_, "Invalid FL_id!");
@@ -84,7 +84,7 @@ namespace chassis_controls
       RCLCPP_INFO(logger_, "FL_id is %d.", FL_id);
       talons_[FL] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(FL_id);
     }
-    const unsigned int FR_id = std::stoi(info_.hardware_parameters["FR_id"]);
+    const int FR_id = std::stoi(info_.hardware_parameters["FR_id"]);
     if (FR_id <= 0)
     {
       RCLCPP_ERROR(logger_, "Invalid FR_id!");
@@ -95,7 +95,7 @@ namespace chassis_controls
       RCLCPP_INFO(logger_, "FR_id is %d.", FR_id);
       talons_[FR] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(FR_id);
     }
-    const unsigned int RR_id = std::stoi(info_.hardware_parameters["RR_id"]);
+    const int RR_id = std::stoi(info_.hardware_parameters["RR_id"]);
     if (RR_id <= 0)
     {
       RCLCPP_ERROR(logger_, "Invalid RR_id!");
@@ -106,7 +106,7 @@ namespace chassis_controls
       RCLCPP_INFO(logger_, "RR_id is %d.", RR_id);
       talons_[RR] = std::make_shared<ctre::phoenix::motorcontrol::can::TalonSRX>(RR_id);
     }
-    const unsigned int RL_id = std::stoi(info_.hardware_parameters["RL_id"]);
+    const int RL_id = std::stoi(info_.hardware_parameters["RL_id"]);
     if (RL_id <= 0)
     {
       RCLCPP_ERROR(logger_, "Invalid RL_id!");
@@ -137,6 +137,13 @@ namespace chassis_controls
   {
     int PIDLoopIdx = 0;
     int timeoutMs = 100;
+
+    // Send some initial data over CAN to the motor controllers to allow it
+    // to detect the CAN bus and prevent errors
+    talons_[FL]->ConfigSelectedFeedbackSensor(
+          ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
+          0,
+          timeoutMs);
 
     int err;
     for (size_t wheel = FL; wheel < LAST; wheel++)

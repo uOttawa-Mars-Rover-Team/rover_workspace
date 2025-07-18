@@ -63,11 +63,11 @@
   </link>
 
   <joint name="q2" type="revolute">
-    <origin xyz="0.00686 0 0.111" rpy="1.5708 -1.5173 3.1416" />
+    <origin xyz="0.00686 0 0.111" rpy="1.5708 3.0 1.6" />
     <parent link="L2" />
     <child link="L3" />
-    <axis xyz="0 0 -1" />
-    <limit lower="1.584" upper="3.1415" effort="0" velocity="0"/>
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.584" effort="0" velocity="0"/>
   </joint>
 
   <link name="L4">
@@ -94,11 +94,11 @@
   </link>
 
   <joint name="q3" type="revolute">
-    <origin xyz="0.5 0 -0.0000984" rpy="-3.1416 0 2.3589" />
+    <origin xyz="0.5 0 -0.0000984" rpy="0 0 2.4" />
     <parent link="L3" />
     <child link="L4" />
     <axis xyz="0 0 -1" />
-    <limit lower="-0.15" upper="1.886" effort="0" velocity="0"/>
+    <limit lower="0" upper="1.767" effort="0" velocity="0"/>
   </joint>
 
   <link name="L5">

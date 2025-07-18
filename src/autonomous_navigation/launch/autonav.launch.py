@@ -113,7 +113,7 @@ def generate_launch_description():
             #
             drive_system,
             localization_system,
-            slam_toolbox_launch_file,
+            # slam_toolbox_launch_file,
             #
             imu_launch_file,
             lidar_launch_file,

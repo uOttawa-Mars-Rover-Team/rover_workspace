@@ -28,23 +28,23 @@ void setup() {
   strip.setBrightness(50);
   strip.show();
 
-  vacTube.setMaxSpeed(3000);
-  vacTube.setAcceleration(1000);
-  vacTube.setSpeed(3000);
-  rotaryArray.setMaxSpeed(3000);
-  rotaryArray.setAcceleration(1000);
-  rotaryArray.setSpeed(3000);
+  vacTube.setMaxSpeed(500);
+  vacTube.setAcceleration(10000);
+  vacTube.setSpeed(500);
+  rotaryArray.setMaxSpeed(500);
+  rotaryArray.setAcceleration(10000);
+  rotaryArray.setSpeed(500);
 
   vacTopLS.setDebounceTime(50);
   vacBottomLS.setDebounceTime(50);
 
-  funnelFlap.attach(0);
+  funnelFlap.attach(8);
   funnelFlap.write(0);
 
-  linearActuator.attach(11);
+  linearActuator.attach(12);
   linearActuator.write(90);
 
-  vacuum.attach(12);
+  vacuum.attach(11);
   vacuum.write(90);
 
   drill.attach(13);
@@ -153,7 +153,10 @@ bool linearActuatorMoving = false;
 void moveLinearActuatorUp() {
   if (linearActuatorMoving == false) {
     linearActuatorMoving = true;
-    linearActuator.write(90);
+    for (int i = 90; i >= 0; i = i-1) {
+      linearActuator.write(i);
+      delay(10);
+    }
   } else {
     linearActuator.write(90);
     linearActuatorMoving = false;
@@ -164,7 +167,10 @@ void moveLinearActuatorUp() {
 void moveLinearActuatorDown() {
   if (linearActuatorMoving == false) {
     linearActuatorMoving = true;
-    linearActuator.write(180);
+    for (int i = 90; i <= 180; i++) {
+      linearActuator.write(i);
+      delay(10);
+    }
   } else {
     linearActuator.write(90);
     linearActuatorMoving = false;
@@ -177,12 +183,21 @@ bool vacStatus = 0;
 void toggleVac() {
   if (vacStatus == 0) {
     vacStatus = 1;
-    vacuum.write(0);
     Serial.println("Vac on;");
+    for (int i = 90; i >= 0; i = i -1) {
+      vacuum.write(i);
+      delay(10);
+    }
+
+
   } else if (vacStatus = 1) {
     vacuum.write(90);
     vacStatus = 0;
     Serial.println("Vac off;");
+    for (int i = 0; i <= 90; i++) {
+      vacuum.write(i);
+      delay(10);
+    }
   }
 }
 

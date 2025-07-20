@@ -280,7 +280,7 @@ float getPositionDegrees(uint8_t encoder){
 
   if (encoderPosition == 0xFFFF) //position is bad, let the user know how many times we tried
   {
-    Serial.println("Encoder error");
+    // Serial.println("Encoder error");
   }
   else //position was good, print to serial stream
   {
@@ -388,7 +388,7 @@ void setZeroSPI(uint8_t encoder)
 
 void timerIsr() {
   wristPitch.run();
-  tower.run();
+  // tower.run();
   // wristRoll.run();
   // endEffector.run();
 } //end of timerIsr

@@ -27,15 +27,13 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
-
-from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, GroupAction,
-                            SetEnvironmentVariable)
-from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration, PythonExpression
 
 
 def generate_launch_description():
@@ -69,6 +67,7 @@ def generate_launch_description():
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
+    cmd_vel_topic = "cmd_vel_autonomous"
 
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {"use_sim_time": use_sim_time, "autostart": autostart}
@@ -176,7 +175,7 @@ def generate_launch_description():
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=["--ros-args", "--log-level", log_level],
-                remappings=remappings + [("cmd_vel", "diff_cont/cmd_vel_unstamped")],
+                remappings=remappings + [("cmd_vel", cmd_vel_topic)],
             ),
             Node(
                 package="nav2_bt_navigator",
@@ -212,7 +211,7 @@ def generate_launch_description():
                 remappings=remappings
                 + [
                     ("cmd_vel", "cmd_vel_nav"),
-                    ("cmd_vel_smoothed", "diff_cont/cmd_vel_unstamped"),
+                    ("cmd_vel_smoothed", cmd_vel_topic),
                 ],
             ),
             Node(
@@ -261,7 +260,7 @@ def generate_launch_description():
                 plugin="behavior_server::BehaviorServer",
                 name="behavior_server",
                 parameters=[configured_params],
-                remappings=remappings + [("cmd_vel", "diff_cont/cmd_vel_unstamped")],
+                remappings=remappings + [("cmd_vel", cmd_vel_topic)],
             ),
             ComposableNode(
                 package="nav2_bt_navigator",
@@ -285,7 +284,7 @@ def generate_launch_description():
                 remappings=remappings
                 + [
                     ("cmd_vel", "cmd_vel_nav"),
-                    ("cmd_vel_smoothed", "diff_cont/cmd_vel_unstamped"),
+                    ("cmd_vel_smoothed", cmd_vel_topic),
                 ],
             ),
             ComposableNode(

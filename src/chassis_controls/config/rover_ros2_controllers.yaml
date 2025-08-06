@@ -27,7 +27,7 @@ diff_cont:
     wheel_radius: 0.203005
 
     open_loop: false
-    enable_odom_tf: true
+    enable_odom_tf: false
     use_stamped_vel: false
 
     # Using a multiplier allows for more accurate turning odometry

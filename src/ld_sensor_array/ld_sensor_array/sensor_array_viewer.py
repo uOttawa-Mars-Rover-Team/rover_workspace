@@ -180,6 +180,7 @@ class SensorArrayViewer(Node):
         self.fig.canvas.flush_events()
         plt.pause(0.001)
 
+
         
     def destroy_node(self):
         """Custom cleanup method to close the CSV file."""

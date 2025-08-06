@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from std_msgs.msg import Float32
 from sensor_msgs.msg import NavSatFix  # Import for GPS data
 import matplotlib.pyplot as plt
 from collections import deque
@@ -28,7 +29,7 @@ class SensorArrayViewer(Node):
         )
         # Subscription for Geiger counter data
         self.geiger_subscription = self.create_subscription(
-            String, "/geiger/data", self.geiger_callback, 10
+            Float32, "/geiger/data", self.geiger_callback, 10
         )
 
         # --- Data Buffers for Plotting ---

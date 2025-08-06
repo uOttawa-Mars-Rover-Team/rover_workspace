@@ -166,15 +166,19 @@ class SensorArrayViewer(Node):
         else:
             self.ax1.set_xlim(0, 1)
 
-        if len(valid_times) > 0:
-            self.ax1.relim()
-            self.ax1.autoscale_view(scalex=False, scaley=True) # Autoscale y-axes
-            self.ax2.relim()
-            self.ax2.autoscale_view(scalex=False, scaley=True) # Autoscale y-axes
+        # --- Dynamic y-axis scaling ---
+        if self.hydrogen_data:
+            h_min, h_max = min(self.hydrogen_data), max(self.hydrogen_data)
+            self.ax1.set_ylim(h_min - 5, h_max + 5)  # Add 5 units padding
+
+        if self.ozone_data:
+            o_min, o_max = min(self.ozone_data), max(self.ozone_data)
+            self.ax2.set_ylim(o_min - 5, o_max + 5)  # Add 5 units padding
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         plt.pause(0.001)
+
         
     def destroy_node(self):
         """Custom cleanup method to close the CSV file."""

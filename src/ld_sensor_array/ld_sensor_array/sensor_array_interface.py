@@ -6,7 +6,7 @@ import serial
 import threading
 
 # Open serial port
-port = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=0.01)
+port = serial.Serial(port='/dev/ttyUSB1', baudrate=115200, timeout=0.01)
 
 class SensorArrayInterface(Node):
     def __init__(self):

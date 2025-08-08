@@ -8,6 +8,8 @@
 #include <JrkG2.h>
 #include <SPI.h>
 #include <TimerOne.h>
+#include <Servo.h>
+
 
 ////// Object Declaration //////
 
@@ -20,6 +22,7 @@ AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
 //We set up the multistepper
 //MultiStepper wristEE;
 
+Servo cameraServo;
 //We declare objects for the linear actuator drivers
 JrkG2I2C LA1(11);
 JrkG2I2C LA2(12);
@@ -46,6 +49,8 @@ JrkG2I2C LA2(12);
 #define SPI_MISO        50
 #define SPI_SCLK        52
 
+#define SERVO_PIN 6
+
 //#define verbose true
 
 //create a 16 bit variable to hold the encoders position
@@ -53,11 +58,18 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
+int servoPos = 90;
+int stepSize = 5;
+
 bool verbose = false;
 bool emergency_stop_en = false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
 bool commandFlag = false;
+bool svMoving = false;  
+bool svUp = false;
+bool svDown = false;
+
 
 
 //Stop variables for steppers & limit switch purposes
@@ -70,6 +82,7 @@ int wristStopDown = 0;
 long enc_delay   = 50;  //how often to update encoder data
 long motor_delay = 25; //how often to move motors
 long dashb_delay = 100;//how often to publish via serial encoder data, etc...
+long servo_delay = 500;
 //long fault_delay = 100;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates
@@ -77,6 +90,7 @@ unsigned long encoder_t  = millis();//timer for encoder updates
 unsigned long motor_t    = millis();//timer for encoder updates
 unsigned long dashb_t    = millis();//timer for sending data to dashboard
 unsigned long fault_t    = millis();//timer for sending fault data
+unsigned long camservo_t    = millis();//timer for servo movement (camera)
 
 //Received serial command variables
 const int INPUT_SIZE = 130;
@@ -166,6 +180,8 @@ void setup() {
   
   //start SPI bus
   SPI.begin();
+
+  cameraServo.attach(SERVO_PIN);
 
   //we configure the default speed for each stepper
   //TODO: verify each of these speeds in a separate test and then modify these values

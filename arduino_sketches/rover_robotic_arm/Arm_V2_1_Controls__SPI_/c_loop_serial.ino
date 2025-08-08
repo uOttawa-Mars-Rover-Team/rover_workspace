@@ -134,12 +134,25 @@ void loop(){
       } else if (equalsStr(tmp, "stop")) {
         emergency_stop_en = not emergency_stop_en;
 
-      // } else if (equalsStr(tmp, "v")){ 
-      //   if (verbose)  
-      //     verbose = false;
-      //   else
-      //     verbose = true;
-      // }else if (equalsStr(tmp, "roll")) {
+      } else if (equalsStr(tmp, "v")){ 
+        if (verbose)  
+          verbose = false;
+        else
+          verbose = true;
+      }else if (equalsStr(tmp, "svu")){
+        svDown = false;
+        svMoving = true;
+        svUp = true;
+        Serial.println("Servo moving up");
+      }else if (equalsStr(tmp, "svd")){
+        svUp = false;
+        svMoving = true;
+        svDown = true;
+        Serial.println("Servo moving down");
+      }else if (equalsStr(tmp, "svs")){
+        svMoving = false;
+        Serial.println("Servo stopped moving");
+      }else if (equalsStr(tmp, "roll")) {
         motor[WR].desiredPos = 0.4;
 
       } else if (equalsStr(tmp, "unroll")) {

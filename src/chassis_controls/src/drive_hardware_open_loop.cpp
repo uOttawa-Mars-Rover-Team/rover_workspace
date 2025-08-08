@@ -27,6 +27,7 @@ namespace chassis_controls
      */
     CallbackReturn DriveSystemOpenLoop::on_init(const hardware_interface::HardwareInfo &info)
     {
+        RCLCPP_INFO(logger_, "\n\n\n\nOPEN LOOP DRIVE HARDWARE INTERFACE\n\n\n\n");
         RCLCPP_INFO(logger_, "Configuring Hardware Interface...");
         if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
         {

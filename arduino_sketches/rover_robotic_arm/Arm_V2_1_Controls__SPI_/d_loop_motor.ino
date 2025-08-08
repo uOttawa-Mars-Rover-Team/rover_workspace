@@ -80,6 +80,23 @@
     LA2.stopMotor();
   }
 
+  if(millis-camservo_t >= servo_delay){
+    camservo_t = millis();
+    if (svMoving && svDown) {
+
+      servoPos -= stepSize;
+      if (servoPos < 0) svMoving = false; 
+      cameraServo.write(servoPos);
+      delay(200);  // Adjust speed as needed
+    } else if (svMoving && svUp) {
+      servoPos += stepSize;
+      if (servoPos > 180) svMoving = false;  // Wrap around
+      cameraServo.write(servoPos);
+      delay(200);  // Adjust speed as needed
+    }
+
+  }
+
   
   
 } //end of loop()

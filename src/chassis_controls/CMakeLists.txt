@@ -67,7 +67,10 @@ target_link_libraries(
 
 
 # --- chassis_controls library ---
-add_library(${PROJECT_NAME} SHARED src/drive_hardware.cpp)
+add_library(${PROJECT_NAME} SHARED
+  src/drive_hardware.cpp
+  src/drive_hardware_open_loop.cpp
+)
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
 # --- MODIFIED: Add dependency include directories to the library ---
 target_include_directories(

@@ -141,9 +141,9 @@ namespace chassis_controls
     // Send some initial data over CAN to the motor controllers to allow it
     // to detect the CAN bus and prevent errors
     talons_[FL]->ConfigSelectedFeedbackSensor(
-          ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
-          0,
-          timeoutMs);
+        ctre::phoenix::motorcontrol::FeedbackDevice::CTRE_MagEncoder_Relative,
+        0,
+        timeoutMs);
 
     int err;
     for (size_t wheel = FL; wheel < LAST; wheel++)
@@ -272,11 +272,11 @@ namespace chassis_controls
    * @params dt duration since last write command.
    * @returns OK flag if successful write, ERROR flag if write failed.
    */
-  hardware_interface::return_type DriveSystem::write(const rclcpp::Time & /*time*/, const rclcpp::Duration &dt)
+  hardware_interface::return_type DriveSystem::write(const rclcpp::Time & /*time*/, const rclcpp::Duration &period)
   {
     // Enable the Talon actuators (?) for more time
-    u_int64_t period = dt.nanoseconds();
-    ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period);
+    u_int64_t period_ns = period.nanoseconds();
+    ctre::phoenix::unmanaged::Unmanaged::FeedEnable(period_ns);
 
     // Zeroing out: Because this drive code operates in closed loop mode, it
     // can cause the rover to draw a lot of current without actually moving. For example, if the rover

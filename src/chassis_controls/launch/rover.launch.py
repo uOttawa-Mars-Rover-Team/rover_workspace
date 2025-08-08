@@ -27,6 +27,7 @@ def generate_launch_description():
     use_robot_state_pub = LaunchConfiguration("use_robot_state_pub")
     use_rviz = LaunchConfiguration("use_rviz")
     sport_mode = LaunchConfiguration("sport_mode")
+    open_loop = LaunchConfiguration("open_loop")
     use_joystick = LaunchConfiguration("use_joystick")
 
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
@@ -41,6 +42,11 @@ def generate_launch_description():
         "sport_mode",
         default_value="true",
         description="Whether to use more responsive PID gains",
+    )
+    declare_open_loop_cmd = DeclareLaunchArgument(
+        "open_loop",
+        default_value="false",
+        description="Whether to use an open loop drive hardware interface",
     )
     declare_use_joystick_cmd = DeclareLaunchArgument(
         "use_joystick",
@@ -63,6 +69,9 @@ def generate_launch_description():
             " ",
             "sport_mode:=",
             sport_mode,
+            " ",
+            "open_loop:=",
+            open_loop,
             " ",
         ]
     )
@@ -97,7 +106,12 @@ def generate_launch_description():
     ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, ros2_controllers_path],
+        parameters=[
+            robot_description,
+            ros2_controllers_path,
+            # This dictionary overrides the 'open_loop' parameter in the YAML
+            {"diff_cont.ros__parameters.open_loop": open_loop},
+        ],
         output="both",
     )
 
@@ -149,6 +163,7 @@ def generate_launch_description():
             declare_use_robot_state_pub_cmd,
             declare_use_rviz_cmd,
             declare_sport_mode_cmd,
+            declare_open_loop_cmd,
             declare_use_joystick_cmd,
             ros2_control_node,
             start_rviz_cmd,
@@ -158,5 +173,4 @@ def generate_launch_description():
             start_joystick_control_cmd,
             twist_mux,
         ]
-        # ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/diff_cont/cmd_vel_unstamped
     )

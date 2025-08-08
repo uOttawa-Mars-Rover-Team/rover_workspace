@@ -3,6 +3,7 @@
 
     <xacro:arg name="use_gazebo" default="false"/>
     <xacro:arg name="sport_mode" default="true"/>
+    <xacro:arg name="open_loop" default="false"/>
 
     <xacro:property name="FL_id" value="20"/>
     <xacro:property name="FR_id" value="40"/>
@@ -42,6 +43,7 @@
 
     <xacro:property name="wheel_diameter" value="0.40601"/>
     <xacro:property name="wheel_encoder_counts_per_revolution" value="4096"/>
+    <xacro:property name="max_wheel_rad_per_sec" value="10.0"/>
 
     <xacro:include filename="drive_urdf.urdf" />
 

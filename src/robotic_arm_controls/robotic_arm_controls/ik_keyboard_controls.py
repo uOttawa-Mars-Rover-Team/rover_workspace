@@ -146,7 +146,7 @@ class KeyboardListener(Node):
     Sends a command to control shoulder camera servo mount
     """
     def send_camera_servo_cmd(self, data: str, label: str):
-        self.arm_cmd.data = data
+        self.arm_cmd.data = f"{data};!"
         self.get_logger().info(label)
         self.cmd_pub.publish(self.arm_cmd)
 

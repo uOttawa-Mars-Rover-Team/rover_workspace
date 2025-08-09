@@ -29,14 +29,16 @@ class SensorArrayViewer(Node):
         )
         # Subscription for Geiger counter data
         self.geiger_subscription = self.create_subscription(
-            Float32, "/geiger/data", self.geiger_callback, 10
+            String, "/geiger/data", self.geiger_callback, 10
         )
 
         # --- Data Buffers for Plotting ---
         self.buffer_size = 50
         self.hydrogen_data = deque(maxlen=self.buffer_size)
         self.ozone_data = deque(maxlen=self.buffer_size)
+        self.geiger_data = deque(maxlen=self.buffer_size)
         self.time_data = deque(maxlen=self.buffer_size)
+        self.geiger_time_data = deque(maxlen=self.buffer_size)
         self.start_time = None
 
         # --- Storage for Latest Data for CSV Logging ---
@@ -44,7 +46,7 @@ class SensorArrayViewer(Node):
         self.current_longitude = None
         self.current_geiger_data = None
 
-        # --- Live Plot Setup ---
+        # --- Live Plot Setup for Hydrogen and Ozone Plots ---
         plt.ion()
         self.fig, self.ax1 = plt.subplots()
         self.ax2 = self.ax1.twinx()
@@ -59,6 +61,18 @@ class SensorArrayViewer(Node):
         self.ax1.set_xticks([])
         self.ax1.legend(loc='upper left')
         self.ax2.legend(loc='upper right')
+
+        # --- Plot for Geiger Radiation Data ---
+        plt.ion()
+        self.fig2, self.ax3 = plt.subplots()
+        self.g_line, = self.ax3.plot([], [], 'g-', label='Geiger CPS')
+        self.ax3.set_ylim(0, 150)  # adjust based on expected CPS range
+        self.ax3.set_xlabel("Time (s)")
+        self.ax3.set_ylabel("Geiger Counter (CPS)", color='green')
+        self.ax3.set_title("Live Geiger Readings")
+        self.ax3.set_xticks([])
+        self.ax3.legend(loc='upper left')
+        plt.show(block=False)
 
         # --- CSV File Setup ---
         self.csv_file = None
@@ -94,24 +108,41 @@ class SensorArrayViewer(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to set up CSV logging: {e}")
 
-    # --- Sensor Data Callbacks ---
 
+    # --- Sensor Data Callbacks ---
     def gps_callback(self, msg):
         """Callback for GPS data from 'rover/fix'."""
         self.current_latitude = msg.latitude
         self.current_longitude = msg.longitude
     
+    
     def geiger_callback(self, msg):
-        """Callback for Geiger data from '/geiger/data'."""
-        self.current_geiger_data = msg.data.strip()
+        try:
+            cps = float(msg.data)  # parse float from string message
+            self.current_geiger_data = cps  # store latest CPS for CSV logging
+
+            if self.start_time is None:
+                self.start_time = time.time()
+
+            now = time.time() - self.start_time
+            self.geiger_data.append(cps)
+            self.geiger_time_data.append(now)
+
+        except Exception as e:
+            self.get_logger().error(f"Error parsing Geiger data: {e}")
+
 
     def plot_sensor_data(self, msg):
-        """Callback for Hydrogen/Ozone data from 'sensorData'."""
         try:
             data = msg.data.strip()
             hydrogen_str, ozone_str = data.split(";")
             hydrogen = float(hydrogen_str)
             ozone = float(ozone_str)
+
+            # Filter out inf or NaN values
+            if not math.isfinite(hydrogen) or not math.isfinite(ozone):
+                self.get_logger().warning(f"Skipping invalid data: {data}")
+                return
 
             if self.start_time is None:
                 self.start_time = time.time()
@@ -125,8 +156,9 @@ class SensorArrayViewer(Node):
         except Exception as e:
             self.get_logger().error(f"Error parsing H2/O3 data '{msg.data}': {e}")
 
-    # --- Timer-based Methods ---
 
+
+    # --- Timer-based Methods ---
     def log_data_to_csv(self):
         """Logs the latest set of sensor data to the CSV file."""
         if self.csv_writer is None:
@@ -135,7 +167,7 @@ class SensorArrayViewer(Node):
         # Get latest data, using last item in deque or None if empty
         hydrogen_val = self.hydrogen_data[-1] if self.hydrogen_data else None
         ozone_val = self.ozone_data[-1] if self.ozone_data else None
-
+        
         # Prepare data row, handling None values by writing empty strings
         row = [
             time.time(),
@@ -155,7 +187,10 @@ class SensorArrayViewer(Node):
         h_data = list(self.hydrogen_data) + [float('nan')] * pad_len
         o_data = list(self.ozone_data) + [float('nan')] * pad_len
         t_data = list(self.time_data) + [float('nan')] * pad_len
-
+        g_data = list(self.geiger_data) + [float('nan')] * (self.buffer_size - len(self.geiger_data))
+        g_t_data = list(self.geiger_time_data) + [float('nan')] * (self.buffer_size - len(self.geiger_time_data))
+        
+        self.g_line.set_data(g_t_data, g_data)
         self.h_line.set_data(t_data, h_data)
         self.o_line.set_data(t_data, o_data)
 
@@ -167,6 +202,15 @@ class SensorArrayViewer(Node):
         else:
             self.ax1.set_xlim(0, 1)
 
+        valid_times_g = [t for t in g_t_data if not math.isnan(t)]
+        if len(valid_times_g) >= 2:
+            self.ax3.set_xlim(valid_times_g[0], valid_times_g[-1])
+        elif len(valid_times_g) == 1:
+            self.ax3.set_xlim(valid_times_g[0], valid_times_g[0] + 1)
+        else:
+            self.ax3.set_xlim(0, 1)
+
+
         # --- Dynamic y-axis scaling ---
         if self.hydrogen_data:
             h_min, h_max = min(self.hydrogen_data), max(self.hydrogen_data)
@@ -175,11 +219,17 @@ class SensorArrayViewer(Node):
         if self.ozone_data:
             o_min, o_max = min(self.ozone_data), max(self.ozone_data)
             self.ax2.set_ylim(o_min - 5, o_max + 5)  # Add 5 units padding
+        
+        if self.geiger_data:
+            g_min, g_max = min(self.geiger_data), max(self.geiger_data)
+            self.ax3.set_ylim(g_min - 5, g_max + 5)
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-        plt.pause(0.001)
 
+        self.fig2.canvas.draw()
+        self.fig2.canvas.flush_events()
+        plt.pause(0.001)
 
         
     def destroy_node(self):

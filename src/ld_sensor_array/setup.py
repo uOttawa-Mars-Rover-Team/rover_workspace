@@ -22,7 +22,7 @@ setup(
             "sensor_array_interface = ld_sensor_array.sensor_array_interface:main",
             "sensor_array_viewer = ld_sensor_array.sensor_array_viewer:main",
             "geiger_publisher = ld_sensor_array.geiger_publisher:main",
-            
+            "geiger_viewer = ld_sensor_array.geiger_viewer:main",
         ],
     },
 )

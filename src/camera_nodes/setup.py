@@ -47,6 +47,7 @@ setup(
             "controls = camera_nodes.camera_control_app:main",
             "publisher = camera_nodes.publisher:main",
             "qos_relay = camera_nodes.qos_relay:main",
+            "rotation_control = camera_nodes.rotation_control:main",
         ],
     },
 )

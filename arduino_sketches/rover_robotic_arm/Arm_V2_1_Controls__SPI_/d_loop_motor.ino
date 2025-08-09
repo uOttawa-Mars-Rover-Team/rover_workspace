@@ -30,19 +30,17 @@
         if (motor[i].desiredPos < 0.0){
           fwd = true;
 
-          if (i == TW && motor[i].currentPos <= motor[i].MAX_NEG_POSITION){
+          if (i == TW && motor[TW].currentPos <= motor[TW].MAX_NEG_POSITION){
             fwd = false;
-          } else if (i == WP && motor[i].currentPos >= motor[i].MAX_POS_POSITION){
+          } else if (i == WP && motor[WP].currentPos >= motor[WP].MAX_POS_POSITION){
             fwd = false;
           }
         } else if (motor[i].desiredPos > 0.0){
           bwd = true;
 
-          if (i == TW && motor[i].currentPos >= motor[i].MAX_POS_POSITION){
+          if (i == TW && motor[TW].currentPos >= motor[TW].MAX_POS_POSITION){
             bwd = false;
-          } else if (i == WP && motor[i].currentPos <= motor[i].MAX_NEG_POSITION){
-            bwd = false;
-          }
+          } 
         }
         
         if (fwd) {          

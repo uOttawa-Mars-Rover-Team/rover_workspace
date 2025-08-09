@@ -46,7 +46,14 @@ class Joy_IK_Controller(Node):
         self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) # pub rate in Hz
         self.deadband = self.get_param("deadband", rclpy.Parameter.Type.DOUBLE, 0.40) # spacemouse deadband
         self.mode = self.get_param("mode", rclpy.Parameter.Type.STRING, "I") # ik or manual mode, default I for ik
+        self.dirWP = self.get_param("dirWP", rclpy.Parameter.Type.INTEGER, 1)
+        self.dirWR = self.get_param("dirWR", rclpy.Parameter.Type.INTEGER, 1)
+        self.dirTW = self.get_param("dirTW", rclpy.Parameter.Type.INTEGER, 1)
+        self.dirL1 = self.get_param("dirL1", rclpy.Parameter.Type.INTEGER, 1)
+        self.dirL2 = self.get_param("dirL2", rclpy.Parameter.Type.INTEGER, 1)
 
+
+        
         # All about the publishing loop
         self.run = True  # threads will stop running if false
         self.tp_executor = ThreadPoolExecutor(max_workers=3)
@@ -182,33 +189,15 @@ class Joy_IK_Controller(Node):
                 else:
                     self.curr_cmd = "S;"
 
-                    if self.curr_axes[0]:
-                        self.curr_cmd += str(round(self.curr_axes[0]*self.max_vel, 2))
-                    else:
-                        self.curr_cmd += "0.0"
+                    self.curr_cmd += str(round(self.curr_axes[0]*self.dirTW, 2))
                     self.curr_cmd += ";"
-                    if self.curr_axes[1]:
-                        self.curr_cmd += str(round(self.curr_axes[1]*self.max_vel, 2))
-                    else:
-                        self.curr_cmd += "0.0"
+                    self.curr_cmd += str(round(self.curr_axes[1]*self.dirL1, 2))
                     self.curr_cmd += ";"
-
-                    if self.curr_axes[2]:
-                        self.curr_cmd += str(round(self.curr_axes[2]*self.max_vel, 2))
-                    else:
-                        self.curr_cmd += "0.0"
+                    self.curr_cmd += str(round(self.curr_axes[2]*self.dirL2, 2))
                     self.curr_cmd += ";"
-
-                    if self.curr_axes[3]:
-                        self.curr_cmd += str(round(self.curr_axes[3]*self.max_vel, 2))
-                    else:
-                        self.curr_cmd += "0.0"
+                    self.curr_cmd += str(round(self.curr_axes[3]*self.dirWP, 2))
                     self.curr_cmd += ";"
-
-                    if self.curr_axes[4]:
-                        self.curr_cmd += str(round(self.curr_axes[4]*self.max_vel, 2))
-                    else:
-                        self.curr_cmd += "0.0"
+                    self.curr_cmd += str(round(self.curr_axes[4]*self.dirWR, 2))
                     self.curr_cmd += ";"
 
                     if len(message.buttons) == 2: # spacemouse

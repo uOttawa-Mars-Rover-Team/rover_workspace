@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="uorover_ik_urdf">
+
+  <link name="base_footprint">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 0.001" rpy="0 0 0" />
+    <parent link="base_footprint"/>
+    <child link="L2" />
+  </joint>
+
+  <link name="L2">
+    <inertial>
+      <origin xyz="0.0 0 0.0957" rpy="0 0 0" />
+      <mass value="1.1861" />
+      <inertia ixx="0.0014" ixy="0.0" ixz="0.0" iyy="0.0015" iyz="0.0" izz="0.0019" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.06" rpy="0 0 0" />
+      <geometry>
+        <box size="0.12 0.12 0.12"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.753 0.753 0.753 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.12 0.04 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="L3">
+    <inertial>
+      <origin xyz="0.2517 0.00315 0.00045" rpy="0 0 0" />
+      <mass value="1.055" />
+      <inertia ixx="0.0006" ixy="0.0" ixz="0.0" iyy="0.0200" iyz="0.0" izz="0.0199" />
+    </inertial>
+    <visual>
+      <origin xyz="0.26 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size=".53 0.08 0.08"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.753 0.753 0.753 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.26 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.53 0.08 0.08"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="q2" type="revolute">
+    <origin xyz="0.00686 0 0.111" rpy="1.5708 3.0 1.6" />
+    <parent link="L2" />
+    <child link="L3" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.584" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="L4">
+    <inertial>
+      <origin xyz="0.0725 0 0.00966" rpy="0 0 0" />
+      <mass value="1.699" />
+      <inertia ixx="0.0011" ixy="0.0" ixz="0.0" iyy="0.0081" iyz="0.0" izz="0.0075" />
+    </inertial>
+    <visual>
+      <origin xyz="0.08 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.3 0.08 0.08"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.753 0.753 0.753 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.08 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.3 0.08 0.08"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="q3" type="revolute">
+    <origin xyz="0.5 0 -0.0000984" rpy="0 0 2.4" />
+    <parent link="L3" />
+    <child link="L4" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="1.767" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="L5">
+    <inertial>
+      <origin xyz="0.0778 0.0091 0.0000192" rpy="0 0 0" />
+      <mass value="0.765" />
+      <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0004" iyz="0.0" izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0.06 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.16 0.06 0.06"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.753 0.753 0.753 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.sk=[False, True, Tru06 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.16 0.06 0.06"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="q4" type="revolute">
+    <origin xyz="0.25 0 0.00014" rpy="0 0 0" />
+    <parent link="L4" />
+    <child link="L5" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-1.578" upper="1.578" effort="0" velocity="0"/>
+  </joint>
+
+
+</robot>

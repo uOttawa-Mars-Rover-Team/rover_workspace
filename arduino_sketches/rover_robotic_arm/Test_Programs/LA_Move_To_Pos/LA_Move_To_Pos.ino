@@ -1,67 +1,121 @@
-// Absolute Encoder helper functions below
+/* Include the SPI library for the arduino boards */
+#include <SPI.h>
+#include <JrkG2.h>
 
-// For a motor with id i, update its associated position by converting SPI enc. data to radians
-void updatePositionAndVelocity(int i, unsigned long encoder_t) {
-    //set attemps counter at 0 so we can try again if we get bad position    
-    attempts = 0;
+/* Serial rates for UART */
+#define BAUDRATE        1000000
 
-    //this function gets the encoder position and returns it as a uint16_t
-    //send the function either res12 or res14 for your encoders resolution
-    encoderPosition = getPositionSPI(motor[i].ENC_PIN, RES12); 
+// SPI commands */
+#define AMT22_NOP       0x00
+#define AMT22_RESET     0x60
+#define AMT22_ZERO      0x70
 
-    //if the position returned was 0xFFFF we know that there was an error calculating the checksum
-    //make 3 attempts for position. we will pre-increment attempts because we'll use the number later and want an accurate count
-    while (encoderPosition == 0xFFFF && ++attempts < 3)
-    {
-      encoderPosition = getPositionSPI(motor[i].ENC_PIN, RES12); //try again
-    }
+// Define special ascii characters
+#define NEWLINE         0x0A
+#define TAB             0x09
 
-    if (encoderPosition == 0xFFFF) //position is bad, let the user know how many times we tried
-    {
-      //Update status of encoder to bad
-      if (motor[i].enc_status == 1) {
-        motor[i].enc_status = 0;
-      }
-      
-      //Serial.print("Encoder 0 error. Attempts: ");
-      //Serial.print(attempts, DEC); //print out the number in decimal format. attempts - 1 is used since we post incremented the loop
-      //Serial.write(NEWLINE);
-    }
-    else //position was good
-    {
-      //Update that the encoder is good
-      if (motor[i].enc_status == 0) {
-        motor[i].enc_status = 1;
-      }
+// We will use these define macros so we can write code once compatible with 12 or 14 bit encoders
+#define RES12           12
 
-      //Huge jump in enc position => one full turn
-      //Difference is positive, so add 1 turn; eg 360 -> 0 so 360 diff > 0
-      if (motor[i].enc_count - encoderPosition >= 2000) {
-        motor[i].enc_turns++;
-      } else if (motor[i].enc_count - encoderPosition < -2000) {
-        motor[i].enc_turns--;
-      }
-      motor[i].velocity  = (encoderPosition-motor[i].enc_count)*1000000*(millis()-encoder_t);
-      motor[i].enc_count = encoderPosition;
-     
-      //Serial.print("Encoder 0: ");
-      //Serial.print(encoderPosition, DEC); //print the position in decimal format
-      //Serial.write(NEWLINE);
-    }
+// SPI pins
+#define ENC_0           68 //L1
+//#define ENC_0           69 //L2
+#define SPI_MOSI        51
+#define SPI_MISO        50
+#define SPI_SCLK        52
+
+float goalPosition = 0.0;
+
+// Linear actuator setup
+JrkG2I2C LA1(11);
+//JrkG2I2C LA2(12);
+
+void setup() 
+{
+  //Set the modes for the SPI IO
+  pinMode(SPI_SCLK, OUTPUT);
+  pinMode(SPI_MOSI, OUTPUT);
+  pinMode(SPI_MISO, INPUT);
+  pinMode(ENC_0, OUTPUT);
+  
+  //Initialize the UART serial connection for debugging
+  Serial.begin(BAUDRATE);
+
+  //Get the CS line high which is the default inactive state
+  digitalWrite(ENC_0, HIGH);
+  //digitalWrite(69, HIGH);
+
+  //set the clockrate. Uno clock rate is 16Mhz, divider of 32 gives 500 kHz.
+  //500 kHz is a good speed for our test environment
+  SPI.setClockDivider(SPI_CLOCK_DIV128);   // 4 MHz
+  
+  //start SPI bus
+  SPI.begin();
+
+  setZeroSPI(ENC_0); //sets starting position as 0 degrees
+
+  //start I2C bus
+  Wire.begin();
 }
 
+void loop() 
+{
+  //create a 16 bit variable to hold the encoders position
+  uint16_t encoderPosition;
+  float encoderPositionDegrees;
+  int attempts = 0;
 
-//Example code below (not our code)
+  //example string containing position to move the motor to:
+  //100.0 move to 100 degrees
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n'); //read the input until newline
+    input.trim(); //remove any leading or trailing whitespace
+    goalPosition = input.toFloat(); //convert the string to a float
+  }
 
-/*
- * This function gets the absolute position from the AMT22 encoder using the SPI bus. The AMT22 position includes 2 checkbits to use
- * for position verification. Both 12-bit and 14-bit encoders transfer position via two bytes, giving 16-bits regardless of resolution.
- * For 12-bit encoders the position is left-shifted two bits, leaving the right two bits as zeros. This gives the impression that the encoder
- * is actually sending 14-bits, when it is actually sending 12-bit values, where every number is multiplied by 4. 
- * This function takes the pin number of the desired device as an input
- * This funciton expects res12 or res14 to properly format position responses.
- * Error values are returned as 0xFFFF
- */
+  //this function gets the encoder position and returns it as a uint16_t
+  //send the function either res12 or res14 for your encoders resolution
+  encoderPosition = getPositionSPI(ENC_0, RES12); 
+
+  //if the position returned was 0xFFFF we know that there was an error calculating the checksum
+  //make 3 attempts for position. we will pre-increment attempts because we'll use the number later and want an accurate count
+  while (encoderPosition == 0xFFFF && ++attempts < 3)
+  {
+    encoderPosition = getPositionSPI(ENC_0, RES12); //try again
+  }
+
+  if (encoderPosition == 0xFFFF) //position is bad, let the user know how many times we tried
+  {
+    Serial.println("Encoder error");
+  }
+  else //position was good, print to serial stream
+  {
+    encoderPositionDegrees = 360*float(encoderPosition)/4096;
+    
+    if (encoderPositionDegrees >= 180.0){
+      encoderPositionDegrees -=360.0; 
+    }
+    
+    float error = goalPosition - encoderPositionDegrees; //calculate the error from the goal position
+    
+    if (abs(error) < 0.5){ //0.5 degree tolerance for position
+      LA1.stopMotor();
+      //LA2.stopMotor();
+    } else if (error < 0){ //goal position lower than current position --> retract
+      //LA1.setTarget(2048-600);
+      LA1.setTarget(2048+600);
+
+    } else { //goal position higher than current position --> extend
+      //LA1.setTarget(2048+600);
+      LA1.setTarget(2048-600);
+    }
+
+    Serial.print("Position: ");
+    Serial.print(encoderPositionDegrees, DEC); //print the position in decimal format
+    Serial.write(NEWLINE);
+  }
+}
+
 uint16_t getPositionSPI(uint8_t encoder, uint8_t resolution)
 {
   uint16_t currentPosition;       //16-bit response from encoder
@@ -152,23 +206,4 @@ void setZeroSPI(uint8_t encoder)
   
   spiWriteRead(AMT22_ZERO, encoder, true);
   delay(250); //250 second delay to allow the encoder to reset
-}
-
-/*
- * The AMT22 bus allows for extended commands. The first byte is 0x00 like a normal position transfer, but the 
- * second byte is the command.  
- * This function takes the pin number of the desired device as an input
- */
-void resetAMT22(uint8_t encoder)
-{
-  spiWriteRead(AMT22_NOP, encoder, false);
-
-  //this is the time required between bytes as specified in the datasheet.
-  //We will implement that time delay here, however the arduino is not the fastest device so the delay
-  //is likely inherantly there already
-  delayMicroseconds(3); 
-  
-  spiWriteRead(AMT22_RESET, encoder, true);
-  
-  delay(250); //250 second delay to allow the encoder to start back up
 }

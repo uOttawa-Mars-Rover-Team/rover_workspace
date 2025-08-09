@@ -1,57 +1,37 @@
 
 //Everything to do with serial comms is here (read and writing)
 void loop(){
-  //We check if a command has been given and then interpret it
-
- 
-  if (Serial.available()) {
     
-    //use memset to 'empty' input buffer; may not be necessary,
-    //memset(input, 0, sizeof(input));
+  if (Serial.available()) {
 
-    //but ensures that input is in a well-defined state
-
-    //characters from the serial input are read into the input array
-    //readBytesUntil returns the number of characters read to the size variable
-
-    // char head = Serial.read();
-    // // Serial.print("Head: ");
-    // // Serial.println(head);
-    // if(head == '!'){
-    //   input[size] = '\0';
-    //   commandFlag = true;
-    //   Serial.print("Recieved input: ");
-    //   Serial.println(input);
-    //   // Serial.print("Recieved Size: ");
-    //   // Serial.println(size);
-    // }
-    // else if(size < INPUT_SIZE - 1 ){
-    //   //Serial.println("Trigger ye?");
-    //   input[size++] = (char)head;
-    //   // size++;
-    //   input[size] = '\0'; // Null-terminate for printing
-
-    // }
-    // else{
-    //   //size = 0;
-    // }
-    byte size = Serial.readBytesUntil('!', input, INPUT_SIZE);
-
-
-    //Add the final 0 to end the C string
-   
-
-    // wristPitch.run();
-    // wristRoll.run();
-    // endEffector.run();
-    // tower.run();
+    // read serial line character by character on each loop (i.e. one character per loop)
+    char head = Serial.read();
+    // Serial.print("Head: ");
+    // Serial.println(head);
+    if(head == '!'){
+      input[size] = '\0';
+      commandFlag = true;
+      //Serial.print("Recieved input: ");
+      //Serial.println(input);
+      // Serial.print("Recieved Size: ");
+      // Serial.println(size);
+    } else if (head == '\n'){
+      // do nothing, make sure this not added to the string
+    } else if(size < INPUT_SIZE - 1 ){
+      //Serial.println("Trigger ye?");
+      input[size++] = (char)head;
+    }
+    else{
+      //size = 0;
+    }
+    // byte size = Serial.readBytesUntil('!', input, INPUT_SIZE);
 
     //Typical command example:
-    //Manual: "M;1024;-1024;0;0;0;0;!"
-    //IK: "I;1.57;2.0;3.0;0.5;-1024;-1024;!"
+    //Manual: "S;1024;-1024;0;0;0;0;!"
+    //IK: "S;TW Position;SL Position;EL Position;RL Velocity;EE Velocity;" --> Degrees precise to two decimal points
 
-    // if (commandFlag){
-
+    if (commandFlag){
+      
       tmp = strtok(input, ";");
 
       if (equalsStr(tmp, "M")) {
@@ -143,12 +123,6 @@ void loop(){
       } else if (equalsStr(tmp, "stepper_safety")) {
         stepper_safety_en = not stepper_safety_en;
 
-      } else if (equalsStr(tmp, "laser")) {
-        if (digitalRead(LASER_PIN))
-          digitalWrite(LASER_PIN, LOW);
-        else
-          digitalWrite(LASER_PIN, HIGH);
-
       } else if (equalsStr(tmp, "stop")) {
         emergency_stop_en = not emergency_stop_en;
 
@@ -157,6 +131,19 @@ void loop(){
           verbose = false;
         else
           verbose = true;
+      }else if (equalsStr(tmp, "svu")){
+        svDown = false;
+        svMoving = true;
+        svUp = true;
+        Serial.println("Servo moving up");
+      }else if (equalsStr(tmp, "svd")){
+        svUp = false;
+        svMoving = true;
+        svDown = true;
+        Serial.println("Servo moving down");
+      }else if (equalsStr(tmp, "svs")){
+        svMoving = false;
+        Serial.println("Servo stopped moving");
       }else if (equalsStr(tmp, "roll")) {
         motor[WR].desiredPos = 0.4;
 
@@ -179,24 +166,11 @@ void loop(){
         wrist_angle_abs = not wrist_angle_abs;
 
       }
-      
-      //LED related stuff
-      else if (equalsStr(tmp, "test_laser")) {
-        digitalWrite(LASER_PIN, LOW);
-        delay(100);
-        digitalWrite(LASER_PIN, HIGH);
-        Serial.println("Turning laser on and off!");
-      } else {
-        Serial.println("Invalid command received!");
-      }
 
-    //   commandFlag = false;
-    //   size = 0;
-
-    // }
-
-    
-
+      commandFlag = false;
+      size = 0;
+    }
+  
   }//end of serial available
 
   //Every dashb_delay ms, publish stuff
@@ -221,32 +195,8 @@ void loop(){
     Serial.print(";");
     Serial.print(digitalRead(motor[EE].BOOT_PIN));
     Serial.print(";");
-    Serial.print(digitalRead(LASER_PIN));
-    Serial.print(";");
     Serial.print(emergency_stop_en);
     Serial.print(";!");
-
-    /*debugging, uncomment later
-    //Publishing/printing desired pos below
-    Serial.println();
-    Serial.print("d;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].desiredPos);
-      Serial.print(";");
-    }
-    Serial.print("!");
-    */  
-   
-    /*
-    //Publishing/printing velocities
-    Serial.println();
-    Serial.print("v;");
-    for (int i = TW ; i < LAST ; i++) {
-      Serial.print(motor[i].velocity);
-      Serial.print(";");
-    }
-    Serial.print("!");
-    */
 
     //update timer until enc_delay is over
     dashb_t = millis();

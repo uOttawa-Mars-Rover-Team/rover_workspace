@@ -7,12 +7,14 @@
 #include <AccelStepper.h>
 #include <JrkG2.h>
 #include <SPI.h>
-#include <TimerOne.h>
+#include <TimerThree.h>
+#include <Servo.h>
+
 
 ////// Object Declaration //////
 
 //We declare the steppers1
-AccelStepper tower        (AccelStepper::DRIVER, 0,  1);  //step, direction
+AccelStepper tower        (AccelStepper::DRIVER, 55,  54);  //step, direction
 AccelStepper wristPitch   (AccelStepper::DRIVER, 4,   5);
 AccelStepper wristRoll    (AccelStepper::DRIVER, 8,   9); 
 AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
@@ -20,6 +22,7 @@ AccelStepper endEffector  (AccelStepper::DRIVER, 12,  13);
 //We set up the multistepper
 //MultiStepper wristEE;
 
+Servo cameraServo;
 //We declare objects for the linear actuator drivers
 JrkG2I2C LA1(11);
 JrkG2I2C LA2(12);
@@ -27,7 +30,7 @@ JrkG2I2C LA2(12);
 ////// Constant/Variable Declaration //////
 
 // Serial rates for UART
-#define BAUDRATE        1000000
+#define BAUDRATE        9600
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -46,17 +49,26 @@ JrkG2I2C LA2(12);
 #define SPI_MISO        50
 #define SPI_SCLK        52
 
+#define SERVO_PIN 6
+
+//#define verbose true
+
 //create a 16 bit variable to hold the encoders position
 int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
+
+int servoPos = 90;
+int stepSize = 1;
 
 bool verbose = false;
 bool emergency_stop_en = false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
 bool commandFlag = false;
-
+bool svMoving = false;  
+bool svUp = false;
+bool svDown = false;
 
 //Stop variables for steppers & limit switch purposes
 int EEStopClose   = 0;
@@ -68,6 +80,7 @@ int wristStopDown = 0;
 long enc_delay   = 50;  //how often to update encoder data
 long motor_delay = 25; //how often to move motors
 long dashb_delay = 100;//how often to publish via serial encoder data, etc...
+long servo_delay = 100;
 //long fault_delay = 100;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates
@@ -75,6 +88,7 @@ unsigned long encoder_t  = millis();//timer for encoder updates
 unsigned long motor_t    = millis();//timer for encoder updates
 unsigned long dashb_t    = millis();//timer for sending data to dashboard
 unsigned long fault_t    = millis();//timer for sending fault data
+unsigned long camservo_t    = millis();//timer for servo movement (camera)
 
 //Received serial command variables
 const int INPUT_SIZE = 130;
@@ -93,58 +107,42 @@ enum M_ID {
     LAST//not a motor
 };
 
-const char* motor_names[] = {"TW", "L1", "L2","WP", "WR", "EE"};
-
 //Define what variables to use for our motor
 struct Motor {
-  int           direction;
-  int           speed;//motor move speedd
-  float         velocity;//calculated speed w/ encoders
-  long          acceleration;
-  int           enc_status;   
-  int           enc_turns;    
-  long          enc_count;   
-  float         currentPos;    
-  float         desiredPos;
-  int           sign;
-  unsigned long dirChange;    //time since dir has changed
-  unsigned long trig_delay;   //for mainly la encoder
-  long          MAX_RANGE;    //max range allowed by motor/workspace
-  int           ENC_PIN;      //enable pin for encoder, active low 
-  int           BOOT_PIN;     //used to reboot the stepper drivers
-  int           FAULT_PIN;    //to manage faults for all drivers
-  int           MAX_SPEED;    //to manage faults for all drivers
+  int            direction;
+  int            speed; //motor move speed
+  float          velocity; //calculated speed w/ encoders
+  long           acceleration;
+  int            enc_status;   
+  int            enc_turns;    
+  long           enc_count;   
+  volatile float currentPos;    
+  float          desiredPos;
+  int            sign;
+  unsigned long  dirChange;    //time since dir has changed
+  unsigned long  trig_delay;   //for mainly la encoder
+  long           MAX_RANGE;    //max range allowed by motor/workspace
+  int            ENC_PIN;      //enable pin for encoder, active low 
+  int            BOOT_PIN;     //used to reboot the stepper drivers
+  int            FAULT_PIN;    //to manage faults for all drivers
+  int            MAX_SPEED;    //to manage faults for all drivers
+  float          MAX_POS_POSITION; //Maximum forward position the motor can approach
+  float          MAX_NEG_POSITION; //Maximum backward position the motor can approach
 };
 
 //Create the motor objects
-//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, 56,      16,     17,      1000};
-Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   -1,      63,     -1,      58,      600};    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      64,     -1,      59,      600};
-Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 57,      3,       2,      1000};
-Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,   -1, millis(),   millis(),   1000000, -1,      7,       6,      1000};
-Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      11,     10,      1000};
+//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign    dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED    MAX_POS_POSITION    MAX_NEG_POSTION
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, 66,      16,     17,      1000,         90.00,               -90.00    };
+Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   -1,      68,     -1,      58,      600,             -1,                   -1    };    
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   -1,      69,     -1,      59,      600,             -1,                   -1    };
+Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, 67,      3,       2,      1000,         95.00,               -60.00    };
+Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, -1,      7,       6,      1000,            -1,                   -1    };
+Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, -1,      11,     10,      1000,            -1,                   -1    };
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 
-//WP MAX IS 91/92
-
 //Pack into an array for iterability
 Motor motor[] = {tw, l1, l2, wp, wr, ee};
-
-//Define what variables to use for our LED
-// struct LED {
-//   int           R_PIN;    //red
-//   int           G_PIN;    //green
-//   int           B_PIN;    //blue
-// };
-
-//Create the LED object(s)
-//         r_pin   g_pin   b_pin  
-//LED led = {58,      59,      60};
-
-//Laser 
-int LASER_PIN = 29;
 
 byte size = 0;
 
@@ -164,6 +162,8 @@ void setup() {
   
   //start SPI bus
   SPI.begin();
+
+  cameraServo.attach(SERVO_PIN);
 
   //we configure the default speed for each stepper
   //TODO: verify each of these speeds in a separate test and then modify these values
@@ -188,17 +188,6 @@ void setup() {
   pinMode(motor[WP].ENC_PIN, OUTPUT);
   digitalWrite(motor[WP].ENC_PIN, HIGH);
 
-  // //Set the LED pins to output
-  // pinMode(led.R_PIN, OUTPUT);
-  // pinMode(led.G_PIN, OUTPUT);
-  // pinMode(led.B_PIN, OUTPUT);
-  // //Set the LED off
-  // writeLED(255,255,255);
-
-  //Turn laser on
-  pinMode(LASER_PIN, OUTPUT);
-  digitalWrite(LASER_PIN, LOW);
-
   //Set high to dip switch pins
   pinMode(motor[TW].BOOT_PIN, OUTPUT);
   digitalWrite(motor[TW].BOOT_PIN, HIGH);
@@ -210,6 +199,6 @@ void setup() {
   digitalWrite(motor[EE].BOOT_PIN, HIGH);
 
   // Isr timer for the run() function
-  Timer1.initialize(300); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
-  Timer1.attachInterrupt(timerIsr);
+  Timer3.initialize(400); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
+  Timer3.attachInterrupt(timerIsr);
 }//end of setup()

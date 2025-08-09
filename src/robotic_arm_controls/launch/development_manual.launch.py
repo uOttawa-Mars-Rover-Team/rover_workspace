@@ -41,7 +41,9 @@ def generate_launch_description():
             parameters=[
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
-                {'mode': "M"}
+                {'mode': "M"},
+                {'dirTW': -1},
+                {'dirL2': -1}
             ],
             output="screen",
             )
@@ -53,7 +55,7 @@ def generate_launch_description():
             parameters=[
                 {'timeout_delay': 0.1},
                 {'serial_dev': "/dev/ttyACM0"},
-                {'baudrate': 1000000},
+                {'baudrate': 9600},
                 {'read_enable' : True}
             ],
             output="screen",

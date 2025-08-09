@@ -73,7 +73,7 @@
 #define RES12           12
 
 // SPI pins
-#define ENC_0           56
+#define ENC_0           68
 #define SPI_MOSI        51
 #define SPI_MISO        50
 #define SPI_SCLK        52

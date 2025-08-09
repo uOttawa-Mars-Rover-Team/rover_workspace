@@ -1,9 +1,7 @@
 
 //Everything to do with serial comms is here (read and writing)
 void loop(){
-  //We check if a command has been given and then interpret it
-
- 
+    
   if (Serial.available()) {
 
     // read serial line character by character on each loop (i.e. one character per loop)
@@ -125,12 +123,6 @@ void loop(){
       } else if (equalsStr(tmp, "stepper_safety")) {
         stepper_safety_en = not stepper_safety_en;
 
-      } else if (equalsStr(tmp, "laser")) {
-        if (digitalRead(LASER_PIN))
-          digitalWrite(LASER_PIN, LOW);
-        else
-          digitalWrite(LASER_PIN, HIGH);
-
       } else if (equalsStr(tmp, "stop")) {
         emergency_stop_en = not emergency_stop_en;
 
@@ -174,16 +166,6 @@ void loop(){
         wrist_angle_abs = not wrist_angle_abs;
 
       }
-      
-      //LED related stuff
-      else if (equalsStr(tmp, "test_laser")) {
-        digitalWrite(LASER_PIN, LOW);
-        delay(100);
-        digitalWrite(LASER_PIN, HIGH);
-        Serial.println("Turning laser on and off!");
-      } else {
-        Serial.println("Invalid command received!");
-      }
 
       commandFlag = false;
       size = 0;
@@ -212,8 +194,6 @@ void loop(){
     Serial.print(digitalRead(motor[WR].BOOT_PIN));
     Serial.print(";");
     Serial.print(digitalRead(motor[EE].BOOT_PIN));
-    Serial.print(";");
-    Serial.print(digitalRead(LASER_PIN));
     Serial.print(";");
     Serial.print(emergency_stop_en);
     Serial.print(";!");

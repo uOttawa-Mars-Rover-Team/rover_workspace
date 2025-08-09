@@ -60,7 +60,10 @@ class Joy_IK_Controller(Node):
 
         # Pubs, subs and their variables
         self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel", self.keyb_cb, 20)
+        self.keyb_vel_sub = self.create_subscription(Float32, "/keyboard/arm_vel_tw", self.keyb_tw_cb, 20)
+
         self.max_vel = 1.0 # set to max speed by default 
+        self.max_vel_tw = 1.0
 
         self.servo_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 20)
         self.twist_stamped_msg = TwistStamped()
@@ -248,7 +251,7 @@ class Joy_IK_Controller(Node):
     """
     def arrayRoundToMaxVelocity(self):
 
-        for i in range(len(self.curr_axes)):
+        for i in range(1, len(self.curr_axes)):
             if (self.curr_axes[i] > self.deadband):
                 self.curr_axes[i] = self.max_vel
             elif (self.curr_axes[i] < -self.deadband):
@@ -256,12 +259,23 @@ class Joy_IK_Controller(Node):
             else:
                 self.curr_axes[i] = 0.0
 
+        if (self.curr_axes[0] > self.deadband):
+            self.curr_axes[0] = self.max_vel_tw
+        elif (self.curr_axes[0] < -self.deadband):
+            self.curr_axes[0] = -self.max_vel_tw
+        else:
+            self.curr_axes[0] = 0.0
+    
+
     """
     Gets a velocity from the publisher on the keyboard node
     Updates what the max velocity will be when publishing delta twist cmds
     """
     def keyb_cb(self, message: Float32) -> None:
         self.max_vel = round(message.data, 1)
+
+    def keyb_tw_cb(self, message: Float32) -> None:
+        self.max_vel_tw = round(message.data, 1)    
 
     """
     Helper function to compare two float arrays

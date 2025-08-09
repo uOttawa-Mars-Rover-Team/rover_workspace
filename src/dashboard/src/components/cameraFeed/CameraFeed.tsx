@@ -38,6 +38,7 @@ interface CameraFeedProps {
   title: string;
   messageType: string;
   singleCamera?: false | boolean;
+  cameraModifiers: string;
 }
 
 enum CameraState {
@@ -60,6 +61,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
   title,
   messageType,
   singleCamera,
+  cameraModifiers,
 }) => {
   const [edit, setEdit] = useState(false);
   const [cameraState, setCameraState] = useState<CameraState>(
@@ -73,13 +75,25 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
   const [cameraRefresh, setCameraRefresh] = useState(true);
   const navigate = useNavigate();
 
+  //video feed const
+  const videoParams =
+    "/image_raw&default_transport=compressed&qos_profile=sensor_data";
+
   // Function to download current image displayed in feed. Image is saved in default browser download folder.
   const onDownload = () => {
     const d = new Date();
     const formattedDate = `${d.getFullYear()}-${
       d.getMonth() + 1
     }-${d.getDay()} ${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
-    fetch(image)
+    //fetch(image)
+    //fetch("http://localhost:8080/snapshot?topic=/usb_cam/image_raw")
+    fetch(
+      topicName +
+        "snapshot?topic=/" +
+        messageType +
+        videoParams +
+        cameraModifiers
+    )
       .then((response) => response.blob())
       .then((blob) => {
         const url = URL.createObjectURL(new Blob([blob]));
@@ -94,8 +108,24 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
   };
 
   useEffect(() => {
+    console.log("in useEffect");
+    //setImage("http://localhost:8080/stream?topic=/usb_cam/image_raw");
+    //console.log(topicName + "stream?topic=" + messageType);
+    console.log(image);
+
+    setImage(
+      topicName +
+        "stream?topic=/" +
+        messageType +
+        "" +
+        videoParams +
+        cameraModifiers
+    );
+
     if (rosClient && cameraRefresh) {
-      setCameraState(CameraState.Connecting);
+      setCameraState(CameraState.Connected);
+
+      //setCameraState(CameraState.Connecting);
       const topic = new ROSLIB.Topic({
         ros: rosClient!,
         name: topicName,
@@ -106,7 +136,17 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
         setCameraState(CameraState.Connected);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        setImage("data:image/jpg;base64," + message.data);
+        //setImage("data:image/jpg;base64," + message.data);
+        //setImage("http://localhost:8080/stream?topic=/usb_cam/image_raw");
+        //console.log(topicName + "stream?topic=" + messageType);
+        // setImage(
+        //   topicName +
+        //     "stream?topic=/" +
+        //     messageType +
+        //     videoParams +
+        //     cameraModifiers
+        // );
+        //setImage(topicName);
       });
 
       return () => {
@@ -114,19 +154,37 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
         topic.unsubscribe();
       };
     }
-  }, [topicName, messageType, rosClient, cameraRefresh]);
+    //setImage("http://localhost:8080/stream?topic=/usb_cam/image_raw");
+  }, [topicName, messageType, rosClient, cameraRefresh, cameraModifiers]);
 
   const itemsNest: CollapseProps["items"] = [
+    // {
+    //   key: "1",
+    //   label: "ROS Details",
+    //   children: (
+    //     <Descriptions bordered size="small" layout="vertical" column={1}>
+    //       <Descriptions.Item label={<b>ROS Topic Name</b>}>
+    //         <CopiableTag name={topicName} />
+    //       </Descriptions.Item>
+    //       <Descriptions.Item label={<b>ROS Message Type</b>}>
+    //         <CopiableTag name={messageType} />
+    //       </Descriptions.Item>
+    //     </Descriptions>
+    //   ),
+    // },
     {
       key: "1",
-      label: "ROS Details",
+      label: "Camera Details",
       children: (
         <Descriptions bordered size="small" layout="vertical" column={1}>
-          <Descriptions.Item label={<b>ROS Topic Name</b>}>
+          <Descriptions.Item label={<b>Camera Server URL</b>}>
             <CopiableTag name={topicName} />
           </Descriptions.Item>
-          <Descriptions.Item label={<b>ROS Message Type</b>}>
+          <Descriptions.Item label={<b>Camera Topic</b>}>
             <CopiableTag name={messageType} />
+          </Descriptions.Item>
+          <Descriptions.Item label={<b>Camera Modifiers</b>}>
+            <CopiableTag name={cameraModifiers} />
           </Descriptions.Item>
         </Descriptions>
       ),
@@ -141,21 +199,27 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
           <b>Editing Camera Feed</b>
           <Form
             layout="vertical"
-            onFinish={({ title, topicName, messageType }) => {
-              editCameraFeed({ title, topicName, messageType }, arrayIndex);
+            onFinish={({ title, topicName, messageType, cameraModifiers }) => {
+              editCameraFeed(
+                { title, topicName, messageType, cameraModifiers },
+                arrayIndex
+              );
               setEdit(false);
             }}
-            initialValues={{ title, topicName, messageType }}
+            initialValues={{ title, topicName, messageType, cameraModifiers }}
             style={{ marginTop: 12 }}
             onClick={(e) => e.stopPropagation()}
           >
             <Form.Item label="Camera Title" name="title">
               <Input />
             </Form.Item>
-            <Form.Item label="ROS Topic Name" name="topicName">
+            <Form.Item label="Video Server URL" name="topicName">
               <Input />
             </Form.Item>
-            <Form.Item label="ROS Message Type" name="messageType">
+            <Form.Item label="Camera Topic" name="messageType">
+              <Input />
+            </Form.Item>
+            <Form.Item label="Camera Modifiers" name="cameraModifiers">
               <Input />
             </Form.Item>
 
@@ -193,6 +257,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
           <a
             onClick={(e) => {
               e.stopPropagation();
+              console.log("PictureOutlined");
             }}
             style={{ marginRight: 12 }}
           >
@@ -202,6 +267,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
           <a
             onClick={(e) => {
               e.stopPropagation();
+              console.log("Camera");
               onDownload();
             }}
             style={{ marginRight: 12 }}
@@ -212,6 +278,7 @@ const CameraFeed: React.FC<CameraFeedProps> = ({
           <a
             onClick={(e) => {
               e.stopPropagation();
+              console.log("Video Camera");
             }}
             style={{ marginRight: 12 }}
           >

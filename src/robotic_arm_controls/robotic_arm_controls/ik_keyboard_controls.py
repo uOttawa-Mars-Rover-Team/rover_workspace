@@ -13,6 +13,7 @@ from std_srvs.srv import Trigger
 
 T = TypeVar("T")
 
+
 class KeyboardListener(Node):
     def __init__(self):
         super().__init__('keyboard_listener')
@@ -34,6 +35,7 @@ class KeyboardListener(Node):
         self.gpio_cmd = ArmGpio()
         self.arm_cmd = String()
 
+        self.servo_cmd_sent = False #For servo cmds when holding down key 
         # ROS2 service client
         self.client = self.create_client(Trigger, 'servo_node/start_servo')
 
@@ -63,14 +65,13 @@ class KeyboardListener(Node):
             ',': lambda: self.adjust_velocity(-0.1),                                        # Decrement velocity by 1
             '!': lambda: self.toggle_gpio('stepper1_en', 'TW', 'stepper1'),                 # Toggle stepper motors
             '@': lambda: self.toggle_gpio('stepper2_en', 'WP', 'stepper2'),
-            '#``': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     
+            '#': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     
             '$': lambda: self.toggle_gpio('stepper4_en', 'EE', 'stepper4'),     
             'V': self.toggle_verbose,                                             # Toggle verbose mode
             '1': lambda: self.toggle_gpio('emergency_stop_en', 'Stop', 'stop'),             # Toggle emergency stop
-            'O': lambda: self.send_camera_servo_cmd('svu', 'Shoulder camera servo: up'),    # Move servo up
-            'P': lambda: self.send_camera_servo_cmd('svd', 'Shoulder camera servo: down'),  # Move servo down
-            'l': lambda: self.send_camera_servo_cmd('svs', 'Shoulder camera servo: down'),  # Move servo down
-            '0': lambda: self.send_camera_servo_cmd('set0', 'Set encoders to 0'),           # Move servo down
+            'O': lambda: self.send_servo_command('svu', 'Shoulder camera servo: up'),    # Move servo up
+            'P': lambda: self.send_servo_command('svd', 'Shoulder camera servo: down'),  # Move servo down
+            '0': lambda: self.send_command('set0', 'Set encoders to 0'),           # Move servo down
 
         }
 
@@ -88,8 +89,9 @@ class KeyboardListener(Node):
         except AttributeError:
             key_str = str(key)
 
-        if key_str in ['o', 'l']:
-            self.send_arm_cmd("svs", "Stop shoulder camera servo")
+        if key_str in ['O', 'P']:
+            self.servo_cmd_sent = False;
+            self.send_command("svs", "Stop shoulder camera servo")
     
 
     """
@@ -145,11 +147,15 @@ class KeyboardListener(Node):
     """
     Sends a command to control shoulder camera servo mount
     """
-    def send_camera_servo_cmd(self, data: str, label: str):
+    def send_command(self, data: str, label: str):  
         self.arm_cmd.data = f"{data};!"
         self.get_logger().info(label)
         self.cmd_pub.publish(self.arm_cmd)
 
+    def send_servo_command(self, data: str, label: str):
+        if(not self.servo_cmd_sent):
+            self.send_command(data, label)
+            self.servo_cmd_sent = True
 
     def callback(self, future):
         try:

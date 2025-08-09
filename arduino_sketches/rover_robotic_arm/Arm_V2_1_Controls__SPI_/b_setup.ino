@@ -30,7 +30,7 @@ JrkG2I2C LA2(12);
 ////// Constant/Variable Declaration //////
 
 // Serial rates for UART
-#define BAUDRATE        1000000
+#define BAUDRATE        9600
 
 // SPI commands */
 #define AMT22_NOP       0x00
@@ -59,9 +59,9 @@ int encoderPosition;
 uint8_t attempts;
 
 int servoPos = 90;
-int stepSize = 5;
+int stepSize = 1;
 
-bool verbose = true;
+bool verbose = false;
 bool emergency_stop_en = false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
@@ -199,6 +199,6 @@ void setup() {
   digitalWrite(motor[EE].BOOT_PIN, HIGH);
 
   // Isr timer for the run() function
-  Timer3.initialize(1200); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
+  Timer3.initialize(400); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
   Timer3.attachInterrupt(timerIsr);
 }//end of setup()

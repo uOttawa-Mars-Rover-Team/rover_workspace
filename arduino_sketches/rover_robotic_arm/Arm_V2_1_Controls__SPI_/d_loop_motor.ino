@@ -101,21 +101,29 @@
     LA2.stopMotor();
   }
 
-  if(millis-camservo_t >= servo_delay){
+   // Non-blocking servo movement
+  if (svMoving && (millis() - camservo_t >= servo_delay)) {
     camservo_t = millis();
-    if (svMoving && svDown) {
-
-      servoPos -= stepSize;
-      if (servoPos < 0) svMoving = false; 
-      cameraServo.write(servoPos);
-      delay(200);  // Adjust speed as needed
-    } else if (svMoving && svUp) {
+    if (svUp) {
       servoPos += stepSize;
-      if (servoPos > 180) svMoving = false;  // Wrap around
+      if (servoPos >= 180) {
+        servoPos = 180;
+        svMoving = false;
+        svUp = false;
+        Serial.println("Reached max position, stopped");
+      }
       cameraServo.write(servoPos);
-      delay(200);  // Adjust speed as needed
     }
-
+    else if (svDown) {
+      servoPos -= stepSize;
+      if (servoPos <= 0) {
+        servoPos = 0;
+        svMoving = false;
+        svDown = false;
+        Serial.println("Reached min position, stopped");
+      }
+      cameraServo.write(servoPos);
+    }
   }
 
   

@@ -59,10 +59,9 @@ int encoderPosition;
 uint8_t attempts;
 
 int servoPos = 90;
-int stepSize = 5;
+int stepSize = 1;
 
-bool verbose = true;
-
+bool verbose = false;
 bool emergency_stop_en = false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;

@@ -24,15 +24,36 @@
     
     if (equalsStr(mode,"M")) {
       for (int i = TW ; i < LAST ; i++) {
-        if (motor[i].desiredPos < 0.0) {
+        bool fwd = false;
+        bool bwd = false;
+        
+        if (motor[i].desiredPos < 0.0){
+          fwd = true;
+
+          if (i == TW && motor[TW].currentPos <= motor[TW].MAX_NEG_POSITION){
+            fwd = false;
+          } else if (i == WP && motor[WP].currentPos >= motor[WP].MAX_POS_POSITION){
+            fwd = false;
+          }
+        } else if (motor[i].desiredPos > 0.0){
+          bwd = true;
+
+          if (i == TW && motor[TW].currentPos >= motor[TW].MAX_POS_POSITION){
+            bwd = false;
+          } //else if (i == WP && motor[WP].currentPos <= motor[WP].MAX_NEG_POSITION){
+            //bwd = false;
+          //}
+        }
+        
+        if (fwd) {          
           motor[i].direction = -1;
           moveMotors(i, -1);
         }
-        else if (motor[i].desiredPos > 0.0) {
+        else if (bwd) {
           motor[i].direction = 1;
           moveMotors(i, 1);
         }
-        else if (floatsEqual(motor[i].desiredPos, 0.0, 0.02)) {
+        else {
           motor[i].direction = 0;
           moveMotors(i, 0);
         }
@@ -52,6 +73,8 @@
       //Move last 2 remaining motors by speed
       for (int i = WR ; i < LAST ; i++) {
         //move towards negative direction
+        /*
+        //move towards negative direction
         if (motor[i].desiredPos < 0.0 and not motor[i].direction) {
           motor[i].direction = -1;
           moveMotors(i, -1);
@@ -65,7 +88,7 @@
         else if (floatsEqual(motor[i].desiredPos, 0.0, 2) and motor[i].direction) {
           motor[i].direction = 0;
           moveMotors(i, 0);
-        }
+        }*/
       }
     }//end of IK mode
     
@@ -76,6 +99,31 @@
   if (emergency_stop_en) {
     LA1.stopMotor();
     LA2.stopMotor();
+  }
+
+   // Non-blocking servo movement
+  if (svMoving && (millis() - camservo_t >= servo_delay)) {
+    camservo_t = millis();
+    if (svUp) {
+      servoPos += stepSize;
+      if (servoPos >= 180) {
+        servoPos = 180;
+        svMoving = false;
+        svUp = false;
+        Serial.println("Reached max position, stopped");
+      }
+      cameraServo.write(servoPos);
+    }
+    else if (svDown) {
+      servoPos -= stepSize;
+      if (servoPos <= 0) {
+        servoPos = 0;
+        svMoving = false;
+        svDown = false;
+        Serial.println("Reached min position, stopped");
+      }
+      cameraServo.write(servoPos);
+    }
   }
 
   
@@ -211,22 +259,22 @@ int calculateNextSpeed(int i) {
   } else {
     switch (i) {
       case TW:
-        nextSpeed = 200;
+        nextSpeed = 1000;
         break;
       case L1:
-        nextSpeed = 300;
+        nextSpeed = 600;
         break;
       case L2:
-        nextSpeed = 300;
+        nextSpeed = 600;
         break;
       case WP:
-        nextSpeed = 300;
+        nextSpeed = 1000;
         break;
       case WR:
-        nextSpeed = 300;
+        nextSpeed = 1000;
         break;
       case EE:
-        nextSpeed = 300;
+        nextSpeed = 1000;
         break;
       default:
         nextSpeed = 0;
@@ -236,39 +284,15 @@ int calculateNextSpeed(int i) {
   }
 
   return nextSpeed;
-
-  /*
-  double r_steepness = 8;//acceleration
-  double y_intercept = 0.015;
-  double t_delta = (double)(millis()-startTime motor)/1000;//time since motor started moving
-  double f_t = (2/3.1415926536)*atan(r_steepness*t_delta);
-
-  //Counts remaining til desired count
-  double countsR = (double)abs(motor[i].desired-motor[i].current);
-  double k_adjust = 1.0322580645156 - 1/((countsR/20)+1);
-  double s_final = (speedMax-s_base)*k_adjust*f_t + speedMin;
-
-  return (int) s_final;
-  */
-
 }//end of calculateNextSpeed
 
 void timerIsr() {
-    // The run function moves the steppers one step if the target position is not reached (set by the move function)
-    // Needs to be called consistently to avoid vibrations at a very high frequency
-    static int interruptCount = 0;
-    interruptCount ++;
+  sei(); //enable global interrupts for servo pwm generation,
 
-    // To avoid vibrations, the tower zstepper needs to be ran more often than the other steppers
-    
-    if (interruptCount >= 4){
-          wristPitch.run();
-          wristRoll.run();
-          endEffector.run();
-          tower.run();
-
-          
-          interruptCount = 0;
-    }
-
+  // The run function moves the steppers one step if the target position is not reached (set by the move function)
+  // Needs to be called consistently to avoid vibrations at a very high frequency
+  wristRoll.run();
+  endEffector.run();
+  wristPitch.run();
+  tower.run();
 }

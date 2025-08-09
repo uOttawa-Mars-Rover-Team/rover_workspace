@@ -18,11 +18,11 @@ def generate_launch_description():
             parameters=[
                 {'timeout_delay': 0.1},
                 {'serial_dev': "/dev/ttyACM0"},
-                {'baudrate': 115200}
+                {'baudrate': 1000000},
+                {'read_enable' : True}
             ],
             output="screen",
             )
-
     return launch.LaunchDescription(
             [
                 m_router

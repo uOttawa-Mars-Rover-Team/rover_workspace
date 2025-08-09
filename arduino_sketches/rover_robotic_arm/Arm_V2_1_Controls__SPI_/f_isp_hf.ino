@@ -23,9 +23,9 @@ void updatePositionAndVelocity(int i, unsigned long encoder_t) {
         motor[i].enc_status = 0;
       }
       
-      //Serial.print("Encoder 0 error. Attempts: ");
-      //Serial.print(attempts, DEC); //print out the number in decimal format. attempts - 1 is used since we post incremented the loop
-      //Serial.write(NEWLINE);
+      // Serial.print("Encoder 0 error. Attempts: ");
+      // Serial.print(attempts, DEC); //print out the number in decimal format. attempts - 1 is used since we post incremented the loop
+      // Serial.write(NEWLINE);
     }
     else //position was good
     {

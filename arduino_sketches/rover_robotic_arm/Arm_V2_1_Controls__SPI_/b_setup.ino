@@ -61,7 +61,7 @@ uint8_t attempts;
 int servoPos = 90;
 int stepSize = 5;
 
-bool verbose = false;
+bool verbose = true;
 bool emergency_stop_en = false;
 bool wrist_angle_abs = false;
 bool stepper_safety_en = false;
@@ -82,7 +82,7 @@ int wristStopDown = 0;
 long enc_delay   = 50;  //how often to update encoder data
 long motor_delay = 25; //how often to move motors
 long dashb_delay = 100;//how often to publish via serial encoder data, etc...
-long servo_delay = 500;
+long servo_delay = 100;
 //long fault_delay = 100;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates

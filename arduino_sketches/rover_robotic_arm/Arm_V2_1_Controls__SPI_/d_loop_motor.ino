@@ -287,6 +287,8 @@ int calculateNextSpeed(int i) {
 }//end of calculateNextSpeed
 
 void timerIsr() {
+  sei(); //enable global interrupts for servo pwm generation,
+
   // The run function moves the steppers one step if the target position is not reached (set by the move function)
   // Needs to be called consistently to avoid vibrations at a very high frequency
   wristRoll.run();

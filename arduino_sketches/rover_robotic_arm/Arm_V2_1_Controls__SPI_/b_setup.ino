@@ -7,7 +7,7 @@
 #include <AccelStepper.h>
 #include <JrkG2.h>
 #include <SPI.h>
-#include <TimerOne.h>
+#include <TimerThree.h>
 #include <Servo.h>
 
 
@@ -131,13 +131,13 @@ struct Motor {
 };
 
 //Create the motor objects
-//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign  dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED    MAX_POS_POSITION    MAX_NEG_POSTION
-Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 66,      16,     17,      1000,         90.00,               -90.00    };
-Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      68,     -1,      58,      600,             -1,                   -1    };    
-Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   -1,      69,     -1,      59,      600,             -1,                   -1    };
-Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, 67,      3,       2,      1000,         95.00,               -57.00    };
-Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      7,       6,      1000,            -1,                   -1    };
-Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1, millis(),   millis(),   1000000, -1,      11,     10,      1000,            -1,                   -1    };
+//         dir  speed  vel   accel   enc_status  enc_turns  enc_count   curr    des   sign    dir_c      t_delay     MAX_R    ENC    BOOT_P   FAULT_P  MAX_SPEED    MAX_POS_POSITION    MAX_NEG_POSTION
+Motor tw = {0,    0,    0,   5000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, 66,      16,     17,      1000,         90.00,               -90.00    };
+Motor l1 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   -1,      68,     -1,      58,      600,             -1,                   -1    };    
+Motor l2 = {0,    0,    0,     -1,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   -1,      69,     -1,      59,      600,             -1,                   -1    };
+Motor wp = {0,    0,    0,  10000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, 67,      3,       2,      1000,         95.00,               -60.00    };
+Motor wr = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, -1,      7,       6,      1000,            -1,                   -1    };
+Motor ee = {0,    0,    0,  20000,     0,         0,          0,        0.0,    0.0,    1,   millis(),   millis(),   1000000, -1,      11,     10,      1000,            -1,                   -1    };
 //Note: added extra 1 zeroes for pitch and roll max ranges
 // l1 encoder pin is for the shoulder encoder and l2 encoder pin is for the elbow encoder
 
@@ -199,6 +199,6 @@ void setup() {
   digitalWrite(motor[EE].BOOT_PIN, HIGH);
 
   // Isr timer for the run() function
-  Timer1.initialize(1200); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
-  Timer1.attachInterrupt(timerIsr);
+  Timer3.initialize(1200); // Every 250us. This has been tested and is the minimum frequency that works without vibrations.
+  Timer3.attachInterrupt(timerIsr);
 }//end of setup()

@@ -61,15 +61,17 @@ class KeyboardListener(Node):
             's': self.send_request,                                                         # Call service
             '.': lambda: self.adjust_velocity(0.1),                                         # Increment velocity by 1
             ',': lambda: self.adjust_velocity(-0.1),                                        # Decrement velocity by 1
-            'z': lambda: self.toggle_gpio('stepper1_en', 'TW', 'stepper1'),                 # Toggle stepper motors
-            'x': lambda: self.toggle_gpio('stepper2_en', 'WP', 'stepper2'),
-            'n': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     
-            'm': lambda: self.toggle_gpio('stepper4_en', 'EE', 'stepper4'),     
-            'v': self.toggle_verbose,                                             # Toggle verbose mode
-            '4': lambda: self.toggle_gpio('laser_en', 'Laser', 'laser'),                    # Toggle laser
+            '!': lambda: self.toggle_gpio('stepper1_en', 'TW', 'stepper1'),                 # Toggle stepper motors
+            '@': lambda: self.toggle_gpio('stepper2_en', 'WP', 'stepper2'),
+            '#``': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     
+            '$': lambda: self.toggle_gpio('stepper4_en', 'EE', 'stepper4'),     
+            'V': self.toggle_verbose,                                             # Toggle verbose mode
             '1': lambda: self.toggle_gpio('emergency_stop_en', 'Stop', 'stop'),             # Toggle emergency stop
-            'o': lambda: self.send_camera_servo_cmd('svu', 'Shoulder camera servo: up'),    # Move servo up
-            'l': lambda: self.send_camera_servo_cmd('svd', 'Shoulder camera servo: down'),  # Move servo down
+            'O': lambda: self.send_camera_servo_cmd('svu', 'Shoulder camera servo: up'),    # Move servo up
+            'P': lambda: self.send_camera_servo_cmd('svd', 'Shoulder camera servo: down'),  # Move servo down
+            'l': lambda: self.send_camera_servo_cmd('svs', 'Shoulder camera servo: down'),  # Move servo down
+            '0': lambda: self.send_camera_servo_cmd('set0', 'Set encoders to 0'),           # Move servo down
+
         }
 
         action = key_actions.get(key_str)

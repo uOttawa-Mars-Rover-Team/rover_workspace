@@ -22,6 +22,8 @@ class KeyboardListener(Node):
         
          # ROS2 publishers
         self.joy_vel_pub = self.create_publisher(Float32, '/keyboard/arm_vel', 10)
+        self.joy_vel_tw_pub = self.create_publisher(Float32, '/keyboard/arm_vel_tw', 10)
+
         self.gpio_pub = self.create_publisher(ArmGpio, '/peripheral_controller/peripheral_enables', 10) # for IK
         self.cmd_pub = self.create_publisher(String, '/arm_cmd', 10) # for M
 
@@ -63,6 +65,8 @@ class KeyboardListener(Node):
             's': self.send_request,                                                         # Call service
             '.': lambda: self.adjust_velocity(0.1),                                         # Increment velocity by 1
             ',': lambda: self.adjust_velocity(-0.1),                                        # Decrement velocity by 1
+            '{': lambda: self.adjust_tw_vel(0.1),                                         # Increment velocity by 1
+            '}': lambda: self.adjust_tw_vel(-0.1),                                        # Decrement velocity by 1
             '!': lambda: self.toggle_gpio('stepper1_en', 'TW', 'stepper1'),                 # Toggle stepper motors
             '@': lambda: self.toggle_gpio('stepper2_en', 'WP', 'stepper2'),
             '#': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     
@@ -138,10 +142,17 @@ class KeyboardListener(Node):
     """
     def adjust_velocity(self, delta):
         new_vel = round(self.vel.data + delta, 1)
-        if 0.1 <= new_vel <= 1.0:
+        if 0.1 <= new_vel < 1.0:
             self.vel.data = new_vel
             self.joy_vel_pub.publish(self.vel)
             self.get_logger().info(f'Max vel: {str(self.vel.data)}')
+
+    def adjust_tw_vel(self, delta):
+        new_tw_vel = round(self.vel.data + delta, 1)
+        if 0.1 <= new_tw_vel < 1.0:
+            self.vel.data = new_tw_vel
+            self.joy_vel_tw_pub.publish(self.vel)
+            self.get_logger().info(f'Max tw vel: {str(self.vel.data)}')   
 
 
     """

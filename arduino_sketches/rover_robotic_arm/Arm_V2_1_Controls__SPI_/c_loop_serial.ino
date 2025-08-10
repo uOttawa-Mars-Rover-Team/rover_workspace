@@ -131,16 +131,16 @@ void loop(){
           verbose = false;
         else
           verbose = true;
-      }else if (equalsStr(tmp, "svu")){
+      }else if (equalsStr(tmp, "svd")){
         svDown = false;
         svMoving = true;
         svUp = true;
-        Serial.println("Servo moving up");
-      }else if (equalsStr(tmp, "svd")){
+        Serial.println("Servo moving down");
+      }else if (equalsStr(tmp, "svu")){
         svUp = false;
         svMoving = true;
         svDown = true;
-        Serial.println("Servo moving down");
+        Serial.println("Servo moving up");
       }else if (equalsStr(tmp, "svs")){
         svMoving = false;
         Serial.println("Servo stopped moving");

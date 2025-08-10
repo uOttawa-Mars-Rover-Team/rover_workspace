@@ -58,7 +58,7 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-int servoPos = 90;
+int servoPos = 1000;
 int stepSize = 1;
 
 bool verbose = false;
@@ -80,7 +80,7 @@ int wristStopDown = 0;
 long enc_delay   = 50;  //how often to update encoder data
 long motor_delay = 25; //how often to move motors
 long dashb_delay = 100;//how often to publish via serial encoder data, etc...
-long servo_delay = 100;
+long servo_delay = 60;
 //long fault_delay = 100;//how often to check for faults on all drivers
 
 //Timer for encoder & dashboard updates

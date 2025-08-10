@@ -120,6 +120,7 @@
         svDown = false;
         Serial.println("Reached min position, stopped");
       }
+      //cameraServo.writeMicroseconds(servoPos);
       cameraServo.write(servoPos);
     }
   }

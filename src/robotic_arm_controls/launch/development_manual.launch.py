@@ -42,7 +42,7 @@ def generate_launch_description():
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
                 {'mode': "M"},
-                {'dirTW': -1},
+                {'dirTW': 1},
                 {'dirL2': -1}
             ],
             output="screen",

@@ -40,9 +40,7 @@
 
           if (i == TW && motor[TW].currentPos >= motor[TW].MAX_POS_POSITION){
             bwd = false;
-          } //else if (i == WP && motor[WP].currentPos <= motor[WP].MAX_NEG_POSITION){
-            //bwd = false;
-          //}
+          } 
         }
         
         if (fwd) {          

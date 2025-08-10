@@ -65,8 +65,8 @@ class KeyboardListener(Node):
             's': self.send_request,                                                         # Call service
             '.': lambda: self.adjust_velocity(0.1),                                         # Increment velocity by 1
             ',': lambda: self.adjust_velocity(-0.1),                                        # Decrement velocity by 1
-            '{': lambda: self.adjust_tw_vel(0.1),                                         # Increment velocity by 1
-            '}': lambda: self.adjust_tw_vel(-0.1),                                        # Decrement velocity by 1
+            '}': lambda: self.adjust_tw_vel(0.1),                                         # Increment velocity by 1
+            '{': lambda: self.adjust_tw_vel(-0.1),                                        # Decrement velocity by 1
             '!': lambda: self.toggle_gpio('stepper1_en', 'TW', 'stepper1'),                 # Toggle stepper motors
             '@': lambda: self.toggle_gpio('stepper2_en', 'WP', 'stepper2'),
             '#': lambda: self.toggle_gpio('stepper3_en', 'WR', 'stepper3'),     

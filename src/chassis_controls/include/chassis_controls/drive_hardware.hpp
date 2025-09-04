@@ -76,7 +76,7 @@ namespace chassis_controls
     // Manually create a logger and a clock to log with rate limiting
     rclcpp::Logger logger_ = rclcpp::get_logger("DriveSystem");
     rclcpp::Clock clock_ = rclcpp::Clock{};
-    static constexpr unsigned int log_period_ms_ = 1000;
+    static constexpr unsigned int log_period_ms_ = 1000000;
   }; // class DriveSystem
 
 } // namespace chassis_controls

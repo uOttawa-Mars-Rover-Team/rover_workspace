@@ -20,9 +20,9 @@ class MockMapPublisher(Node):
         self.publisher = self.create_publisher(OccupancyGrid, "/map", qos_profile)
 
         # Mock map dimensions (e.g., 10x10 grid)
-        self.width = 20 * 40
-        self.height = 20 * 40
-        self.resolution = 0.05  # in meters per cell
+        self.width = 10 * 80
+        self.height = self.width
+        self.resolution = 0.1  # in meters per cell
 
         # Create an empty map (100 cells)
         self.map_data = np.zeros(self.width * self.height, dtype=int)

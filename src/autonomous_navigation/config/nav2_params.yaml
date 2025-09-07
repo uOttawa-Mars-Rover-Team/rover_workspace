@@ -45,6 +45,7 @@ bt_navigator:
     global_frame: map
     robot_base_frame: base_link
     odom_topic: /odometry/global
+    default_nav_to_pose_bt_xml: "/home/roverpc/rover_workspace/src/autonomous_navigation/config/follow_tag.xml"
     bt_loop_duration: 40
     default_server_timeout: 30000
     wait_for_service_timeout: 30000
@@ -112,9 +113,9 @@ controller_server:
     controller_frequency: 10.0
 
     # ─── tightened “robot is moving” thresholds ────────────────────────────────
-    min_x_velocity_threshold: 0.01      # ↑ 0.001 → 0.01
+    min_x_velocity_threshold: 0.01 # ↑ 0.001 → 0.01
     min_y_velocity_threshold: 0.5
-    min_theta_velocity_threshold: 0.1   # ↑ 0.001 → 0.1
+    min_theta_velocity_threshold: 0.1 # ↑ 0.001 → 0.1
 
     failure_tolerance: 0.3
     progress_checker_plugin: "progress_checker"
@@ -142,23 +143,23 @@ controller_server:
       min_vel_y: 0.0
       max_vel_x: 0.26
       max_vel_y: 0.0
-      max_vel_theta: 2.0          # ↑ 1.0 → 2.0
+      max_vel_theta: 2.0 # ↑ 1.0 → 2.0
       min_speed_xy: 0.0
       max_speed_xy: 0.26
-      min_speed_theta: 0.4        # ↑ 0.0 → 0.4
+      min_speed_theta: 0.4 # ↑ 0.0 → 0.4
       acc_lim_x: 2.5
       acc_lim_y: 0.0
-      acc_lim_theta: 4.0          # ↑ 3.2 → 4.0
+      acc_lim_theta: 4.0 # ↑ 3.2 → 4.0
       decel_lim_x: -2.5
       decel_lim_y: 0.0
-      decel_lim_theta: -4.0       # ↑ -3.2 → -4.0
+      decel_lim_theta: -4.0 # ↑ -3.2 → -4.0
 
       # ------- trajectory sampling ------------------------
       vx_samples: 20
       vy_samples: 5
-      vtheta_samples: 40          # ↑ 20 → 40
-      sim_time: 1.0               # ↓ 1.7 → 1.0
-      linear_granularity: 0.025   # ↓ 0.05 → 0.025
+      vtheta_samples: 40 # ↑ 20 → 40
+      sim_time: 1.0 # ↓ 1.7 → 1.0
+      linear_granularity: 0.025 # ↓ 0.05 → 0.025
       angular_granularity: 0.0125 # ↓ 0.025 → 0.0125
       transform_tolerance: 0.2
 
@@ -180,19 +181,19 @@ controller_server:
           "GoalDist",
         ]
 
-      BaseObstacle.scale: 0.5       # ↑ 0.02 → 0.5
+      BaseObstacle.scale: 0.5 # ↑ 0.02 → 0.5
       BaseObstacle.cost_threshold: 250
 
-      PathAlign.scale: 18.0         # ↓ 32.0 → 18.0
+      PathAlign.scale: 18.0 # ↓ 32.0 → 18.0
       PathAlign.forward_point_distance: 0.1
 
-      GoalAlign.scale: 12.0         # ↓ 24.0 → 12.0
+      GoalAlign.scale: 12.0 # ↓ 24.0 → 12.0
       GoalAlign.forward_point_distance: 0.1
 
-      PathDist.scale: 18.0          # ↓ 32.0 → 18.0
-      GoalDist.scale: 12.0          # ↓ 24.0 → 12.0
+      PathDist.scale: 18.0 # ↓ 32.0 → 18.0
+      GoalDist.scale: 12.0 # ↓ 24.0 → 12.0
 
-      RotateToGoal.scale: 24.0      # ↓ 32.0 → 24.0
+      RotateToGoal.scale: 24.0 # ↓ 32.0 → 24.0
       RotateToGoal.slowing_factor: 5.0
       RotateToGoal.lookahead_time: -1.0
 
@@ -208,12 +209,12 @@ local_costmap:
       width: 30
       height: 30
       resolution: 0.05
-      robot_radius: 0.8
+      robot_radius: 0.83
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0   # ↑ 3.0 → 4.0
-        inflation_radius: 1.0      # ↑ 0.55 → 1.0
+        cost_scaling_factor: 4.0 # ↑ 3.0 → 4.0
+        inflation_radius: 0.91 # ↑ 0.55 → 1.0
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -250,7 +251,7 @@ global_costmap:
       rolling_window: true
       width: 100
       height: 100
-      robot_radius: 0.8
+      robot_radius: 0.83
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -273,8 +274,8 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0   # ↑ 3.0 → 4.0
-        inflation_radius: 1.0      # ↑ 0.55 → 1.0
+        cost_scaling_factor: 4.0 # ↑ 3.0 → 4.0
+        inflation_radius: 0.91 # ↑ 0.55 → 1.0
       always_send_full_costmap: True
 
 map_server:

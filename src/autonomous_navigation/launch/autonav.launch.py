@@ -109,7 +109,7 @@ def generate_launch_description():
             #
             nav2_launch_file,
             #
-            rviz_cmd,
+            # rviz_cmd,
             #
             drive_system,
             localization_system,

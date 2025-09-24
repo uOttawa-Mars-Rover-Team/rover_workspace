@@ -45,42 +45,41 @@ set_target_properties(phoenix_cci PROPERTIES
 
 # --- drive_test executable ---
 add_executable(drive_test src/drive_test.cpp)
-# --- NEW: Add include directories for the executable's dependencies ---
 target_include_directories(
     drive_test
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${rclcpp_INCLUDE_DIRS}
-    ${general_interfaces_INCLUDE_DIRS}
-    ${geometry_msgs_INCLUDE_DIRS}
+)
+# Use ament_target_dependencies for ROS2 packages
+ament_target_dependencies(drive_test
+  rclcpp
+  general_interfaces
+  geometry_msgs
 )
 target_link_libraries(
     drive_test
-    PRIVATE # Use PRIVATE for executables
     phoenix_core
     phoenix_tools
     phoenix_cci
-    ${rclcpp_LIBRARIES}
-    ${general_interfaces_LIBRARIES}
-    ${geometry_msgs_LIBRARIES}
 )
 
 
 # --- chassis_controls library ---
 add_library(${PROJECT_NAME} SHARED src/drive_hardware.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
-# --- MODIFIED: Add dependency include directories to the library ---
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    # Add dependency includes here. PUBLIC is correct because your public
-    # header drive_hardware.hpp includes them.
-    ${rclcpp_INCLUDE_DIRS}
-    ${pluginlib_INCLUDE_DIRS}
-    ${rclcpp_lifecycle_INCLUDE_DIRS}
-    ${hardware_interface_INCLUDE_DIRS}
+)
+# Use ament_target_dependencies for ROS2 packages
+ament_target_dependencies(${PROJECT_NAME}
+    PUBLIC
+    hardware_interface
+    pluginlib
+    rclcpp
+    rclcpp_lifecycle
 )
 target_link_libraries(
     ${PROJECT_NAME}
@@ -88,10 +87,6 @@ target_link_libraries(
     phoenix_core
     phoenix_tools
     phoenix_cci
-    ${rclcpp_LIBRARIES}
-    ${pluginlib_LIBRARIES}
-    ${rclcpp_lifecycle_LIBRARIES}
-    ${hardware_interface_LIBRARIES}
 )
 pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 

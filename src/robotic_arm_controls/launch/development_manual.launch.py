@@ -16,10 +16,21 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'dev': '/dev/input/arm_logitech'}
+                {'device_id': 0}
             ],
             remappings=[
-                ("/joy", "/joy/arm_cmd"),
+                ("/joy", "/joy/arm_cmd_logitech"),
+                ],
+            output="screen",
+            )
+    spacemouse_joy = launch_ros.actions.Node( 
+            package="joy",
+            executable="joy_node",
+            parameters=[
+                {'device_id':  1}
+            ],
+            remappings=[
+                ("/joy", "/joy/arm_cmd_spacemouse"),
                 ],
             output="screen",
             )
@@ -42,7 +53,7 @@ def generate_launch_description():
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
                 {'mode': "M"},
-                {'dirTW': 1},
+                {'dirTW': -1},
                 {'dirL2': -1}
             ],
             output="screen",
@@ -64,6 +75,7 @@ def generate_launch_description():
     return launch.LaunchDescription(
             [
                 logitech_joy,
+                spacemouse_joy,
                 #m_toggler,
                 ik_keyboard_controls,
                 ik_joy_controls,

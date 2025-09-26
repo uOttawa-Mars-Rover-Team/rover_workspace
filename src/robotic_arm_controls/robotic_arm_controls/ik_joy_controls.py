@@ -71,14 +71,16 @@ class Joy_IK_Controller(Node):
 
         self.vel_control_pub = self.create_publisher(GripperControl, '/gripper_control/gripper_velocities', 20)
         self.vel_control_msg = GripperControl()
-
         self.cmd_pub = self.create_publisher(String, '/arm_cmd', 20)
+
+        self.joy_sub_logitech = self.create_subscription(Joy, "/joy/arm_cmd_logitech", self.joy_cb_logitech, 20)
+        self.joy_sub_spacemouse = self.create_subscription(Joy, "/joy/arm_cmd_spacemouse", self.joy_cb_spacemouse, 20)
+
 
         self.command = String()
         self.curr_cmd = ""
         self.prev_cmd = "!"
 
-        self.joy_sub = self.create_subscription(Joy, "/joy/arm_cmd", self.joy_cb, 20)
 
         # Joystick/Spacemouse-related below
         self.STOP_AXES = [0.0,0.0,0.0,0.0,0.0,0.0] # default of what stop is for axes
@@ -112,33 +114,63 @@ class Joy_IK_Controller(Node):
 
     # Callback this time around just changes self.twist_stamped_msg
     # so that self.pub_loop can publish at a constant self.pub_rate
-    def joy_cb(self, message: Joy) -> None:
 
+
+
+    def joy_cb_logitech(self, message: Joy) -> None:
         btn_sum = 0
         btns_zero = True
 
-        # Determines if we have the spacemouse or logitech connected
-        if (len(message.buttons) == 2): # spacemouse
-            for i in range(6):
-                self.curr_axes[i] = message.axes[self.sm_axes[i]]
-            for i in range(2):
-                btn_sum += message.buttons[i]
-                self.curr_btns_sm[i] = message.buttons[self.sm_btns[i]]
-            if btn_sum != 0:
-                btns_zero = False
 
-        elif (len(message.buttons) == 12): # more than 2 btns -> must be logitech controller
-            for i in range(6):
-                self.curr_axes[i] = message.axes[self.lt_axes[i]]
+        if (len(message.buttons) == 12): # more than 2 btns -> must be logitech controller
+            # for i in range(6)
+            #     self.curr_axes[i] = message.axes[self.lt_axes[i]]
             for i in range(12):
                 btn_sum += message.buttons[i]
                 self.curr_btns_lt[i] = message.buttons[self.lt_btns[i]]
             if btn_sum != 0:
                 btns_zero = False
+
+            self.curr_axes[2] = message.axes[self.lt_axes[3]]
+            self.curr_axes[1] = message.axes[self.lt_axes[2]]
+            self.curr_axes[0] = message.axes[self.lt_axes[0]]
+            self.joy_parser(message)
+
+
+            #self.get_logger().info("We got logitech")   
+        elif (len(message.buttons) == 2):
+            self.get_logger().info("Spacemouse wired to logitech port")
+            
+        else:
+            self.get_logger().info("Wrong controller or spacemouse")   
+
+
+    def joy_cb_spacemouse(self, message: Joy) -> None:
+        if (len(message.buttons) == 2): # spacemouse
+            # for i in range(6):
+            #     self.curr_axes[i] = message.axes[self.sm_axes[i]]
+            # for i in range(2):
+            #     btn_sum += message.buttons[i]
+            #     self.curr_btns_sm[i] = message.buttons[self.sm_btns[i]]
+            # if btn_sum != 0:
+            #     btns_zero = False
+
+            self.curr_axes[3] = message.axes[3]
+            self.curr_axes[4] = message.axes[4]
+            self.joy_parser(message)
+
+
+            #self.get_logger().info("We got space mouse")
+        elif (len(message.buttons) == 12):
+            self.get_logger().info("Logitech wired to spacemouse port")
+
         else:
             self.get_logger().info("Wrong controller brotha")
 
-        # Compares to prev array of cmds, runs only if it's different
+    def joy_parser(self, message: Joy) -> None:
+
+
+    
         if not self.floatArrayEqual(self.curr_axes, self.prev_axes) or not btns_zero:
             self.prev_axes = self.curr_axes
 
@@ -203,21 +235,22 @@ class Joy_IK_Controller(Node):
                     self.curr_cmd += str(round(self.curr_axes[4]*self.dirWR, 2))
                     self.curr_cmd += ";"
 
-                    if len(message.buttons) == 2: # spacemouse
+                    # if len(message.buttons) == 2: # spacemouse
                         
-                        if self.curr_btns_sm[0]:
-                            self.curr_cmd += str(round(self.max_vel, 2))
-                        elif self.curr_btns_sm[1]:
-                            self.curr_cmd += str(-round(self.max_vel, 2))
-                        else:
-                            self.curr_cmd += "0.0"
-                    elif len(message.buttons) == 12: # logitech
-                        if self.curr_btns_lt[0]:
-                            self.curr_cmd += str(round(self.max_vel, 2))
-                        elif self.curr_btns_lt[1]:
-                            self.curr_cmd += str(-round(self.max_vel, 2))
-                        else:
-                            self.curr_cmd += "0.0"
+                    #     if self.curr_btns_sm[0]:
+                    #         self.curr_cmd += str(round(self.max_vel, 2))
+                    #     elif self.curr_btns_sm[1]:
+                    #         self.curr_cmd += str(-round(self.max_vel, 2))
+                    #     else:
+                    #         self.curr_cmd += "0.0"
+                            
+                    # elif len(message.buttons) == 12: # logitech
+                    if self.curr_btns_lt[0]:
+                        self.curr_cmd += str(round(self.max_vel, 2))
+                    elif self.curr_btns_lt[1]:
+                        self.curr_cmd += str(-round(self.max_vel, 2))
+                    else:
+                        self.curr_cmd += "0.0"
                     self.curr_cmd += ";!"
 
                     if self.curr_cmd != self.prev_cmd:

@@ -16,6 +16,7 @@ try:
     from rclpy.executors import SingleThreadedExecutor
     from rclpy.qos import qos_profile_sensor_data
     from sensor_msgs.msg import Image
+
     ROS_AVAILABLE = True
 except Exception:
     ROS_AVAILABLE = False
@@ -60,15 +61,11 @@ def launch_camera(symlink_name: str) -> subprocess.Popen:
     )
 
 
-def stop_process_tree(proc: subprocess.Popen, sig=signal.SIGINT, timeout=5):
+def stop_process_tree(proc: subprocess.Popen, timeout=5):
     try:
-
-        os.killpg(proc.pid, sig)
-    except ProcessLookupError:
-        return
-    try:
+        os.killpg(proc.pid, signal.SIGINT)
         proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except (ProcessLookupError, subprocess.TimeoutExpired):
         try:
             os.killpg(proc.pid, signal.SIGTERM)
             proc.wait(timeout=timeout)
@@ -77,9 +74,10 @@ def stop_process_tree(proc: subprocess.Popen, sig=signal.SIGINT, timeout=5):
 
 
 class RosImageMonitor:
-    def __init__(self, camera_names: List[str], topic_suffixes: Optional[List[str]] = None):
+    def __init__(
+        self, camera_names: List[str], topic_suffixes: Optional[List[str]] = None
+    ):
         self.camera_names = camera_names
-        # Try common suffixes; adjust if your pipeline uses different topics
         self.topic_suffixes = topic_suffixes or ["image_raw", "image"]
         self._lock = threading.Lock()
         self._last_frame: Dict[str, float] = {}
@@ -92,27 +90,39 @@ class RosImageMonitor:
 
     def start(self):
         if not self.enabled:
-            print("ROS 2 (rclpy) not available; health checks will only report process status.")
+            print("ROS 2 not available; health checks will only report process status.")
             return
         rclpy.init(args=None)
         self._node = Node("camera_health_monitor")
         self._executor = SingleThreadedExecutor()
 
-        def make_cb(cname: str):
-            def _cb(msg: Image):
-                with self._lock:
-                    self._last_frame[cname] = time.monotonic()
-                    w = int(getattr(msg, "width", 0) or 0)
-                    h = int(getattr(msg, "height", 0) or 0)
-                    if w > 0 and h > 0:
-                        self._resolutions[cname] = (w, h)
-            return _cb
+        for camera_name in self.camera_names:
+
+            def make_callback(name):
+                def callback(msg: Image):
+                    with self._lock:
+                        self._last_frame[name] = time.monotonic()
+                        if hasattr(msg, "width") and hasattr(msg, "height"):
+                            self._resolutions[name] = (msg.width, msg.height)
+
+                return callback
+
+            callback = make_callback(camera_name)
+            topic = f"/{camera_name}/image_raw"
+            self._node.create_subscription(
+                Image, topic, callback, qos_profile=qos_profile_sensor_data
+            )
 
         for cname in self.camera_names:
             for suffix in self.topic_suffixes:
                 topic = f"/{cname}/{suffix}"
                 try:
-                    self._node.create_subscription(Image, topic, make_cb(cname), qos_profile=qos_profile_sensor_data)
+                    self._node.create_subscription(
+                        Image,
+                        topic,
+                        make_cb(cname),
+                        qos_profile=qos_profile_sensor_data,
+                    )
                 except Exception:
                     pass
 
@@ -143,15 +153,12 @@ class RosImageMonitor:
         if not self.enabled:
             return
         try:
-            if self._executor and self._node:
+            if self._executor:
                 self._executor.remove_node(self._node)
             if self._node:
                 self._node.destroy_node()
-        except Exception:
-            pass
-        try:
             rclpy.shutdown()
-        except Exception:
+        except:
             pass
 
 
@@ -163,26 +170,28 @@ class CamProc:
     proc: subprocess.Popen
 
 
-def health_check(cam_procs: List[CamProc], monitor: Optional[RosImageMonitor], fresh_threshold: float = 10.0):
-    ts = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{ts}] Camera health:")
+def health_check(cam_procs: List[CamProc], monitor: RosImageMonitor):
+    """Check and report camera health status."""
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] Camera health:")
+
     for cp in cam_procs:
-        alive = cp.proc.poll() is None
-        status = "DOWN"
-        res_text = "unknown"
-
-        if alive:
-            fresh = False
-            if monitor and monitor.enabled:
-                age = monitor.get_last_frame_age(cp.camera_name)
-                if age is not None and age <= fresh_threshold:
-                    fresh = True
+        # Check if process is running
+        if cp.proc.poll() is not None:
+            status = "DEAD"
+            resolution = "unknown"
+        else:
+            # Check frame freshness
+            frame_age = monitor.get_last_frame_age(cp.camera_name)
+            if frame_age is not None and frame_age < 5.0:  # 5 second threshold
+                status = "OK"
                 res = monitor.get_resolution(cp.camera_name)
-                if res:
-                    res_text = f"{res[0]}x{res[1]}"
-            status = "OK" if fresh else "RUNNING (no recent frames)"
+                resolution = f"{res[0]}x{res[1]}" if res else "unknown"
+            else:
+                status = "NO_FRAMES"
+                resolution = "unknown"
 
-        print(f"  - {cp.camera_name}: {status}, resolution={res_text}")
+        print(f"  - {cp.camera_name}: {status}, resolution={resolution}")
 
 
 def main():
@@ -210,7 +219,7 @@ def main():
 
     try:
         while True:
-            time.sleep(30)
+            time.sleep(10)
             health_check(cam_procs, monitor)
     except KeyboardInterrupt:
         print("Stopping camera processes...")

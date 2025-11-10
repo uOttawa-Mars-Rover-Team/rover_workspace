@@ -175,3 +175,13 @@ hardware_interface::return_type V3ArmHardware::write(
 }
 
 }  // namespace v3_arm_controls
+
+// ---------------------------------------------------------------------------
+// Plugin registration
+// ---------------------------------------------------------------------------
+// This macro registers the V3ArmHardware class with pluginlib so that
+// ros2_control's controller_manager can dynamically load it at runtime.
+//
+// The first argument is the fully qualified class name in your namespace,
+// and the second argument is the base class type it implements.
+PLUGINLIB_EXPORT_CLASS(v3_arm_controls::V3ArmHardware, hardware_interface::SystemInterface)

@@ -6,28 +6,24 @@ import time
 import threading
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
-BY_ID_DIR = Path("/dev/v4l/by-id")
+# change after ben asks me to
+HEALTH_CHECK_INTERVAL = 10
+MAX_RESTART_ATTEMPTS = 3
+FRAME_TIMEOUT = 5.0
+HOTPLUG_CHECK_INTERVAL = 5
 
-try:
-    import rclpy
-    from rclpy.node import Node
-    from rclpy.executors import SingleThreadedExecutor
-    from rclpy.qos import qos_profile_sensor_data
-    from sensor_msgs.msg import Image
+#BY_ID_DIR = Path("/dev/v4l/by-id")
+BY_ID_DIR = Path("")  
 
-    ROS_AVAILABLE = True
-except Exception:
-    ROS_AVAILABLE = False
-    rclpy = None
-    Node = None
-    SingleThreadedExecutor = None
-    Image = None
-    qos_profile_sensor_data = None
+import rclpy
+from rclpy.node import Node
+from rclpy.executors import SingleThreadedExecutor
+from rclpy.qos import qos_profile_sensor_data
+from sensor_msgs.msg import Image
 
 
-def get_connected_cameras() -> List[str]:
+def get_connected_cameras():
     if not BY_ID_DIR.exists():
         print(f"{BY_ID_DIR} does not exist")
         return []
@@ -47,25 +43,24 @@ def sanitize_name_for_ros(name: str) -> str:
 def launch_camera(symlink_name: str) -> subprocess.Popen:
     camera_name = sanitize_name_for_ros(symlink_name)
     cmd = [
-        "ros2",
-        "launch",
-        "camera_nodes",
-        "ffmpeg.launch.py",
+        "ros2", "launch", "camera_nodes", "ffmpeg.launch.py",
         f"video_device:=/dev/v4l/by-id/{symlink_name}",
         f"camera_name:={camera_name}",
     ]
-    print(f"Launching: {cmd}")
-
-    return subprocess.Popen(
-        cmd, preexec_fn=os.setsid, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
+    print(f"Launching: {camera_name}")
+    # Put each launch in its own process group so we can stop the whole tree
+    return subprocess.Popen(cmd, preexec_fn=os.setsid, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def stop_process_tree(proc: subprocess.Popen, timeout=5):
+def stop_process_tree(proc: subprocess.Popen, sig=signal.SIGINT, timeout=5):
     try:
-        os.killpg(proc.pid, signal.SIGINT)
+        # send signal to the whole process group
+        os.killpg(proc.pid, sig)
+    except ProcessLookupError:
+        return
+    try:
         proc.wait(timeout=timeout)
-    except (ProcessLookupError, subprocess.TimeoutExpired):
+    except subprocess.TimeoutExpired:
         try:
             os.killpg(proc.pid, signal.SIGTERM)
             proc.wait(timeout=timeout)
@@ -73,160 +68,238 @@ def stop_process_tree(proc: subprocess.Popen, timeout=5):
             proc.kill()
 
 
-class RosImageMonitor:
-    def __init__(
-        self, camera_names: List[str], topic_suffixes: Optional[List[str]] = None
-    ):
-        self.camera_names = camera_names
-        self.topic_suffixes = topic_suffixes or ["image_raw", "image"]
-        self._lock = threading.Lock()
-        self._last_frame: Dict[str, float] = {}
-        self._resolutions: Dict[str, Tuple[int, int]] = {}
-        self.enabled = ROS_AVAILABLE
-
-        self._node = None
-        self._executor = None
-        self._thread = None
-
-    def start(self):
-        if not self.enabled:
-            print("ROS 2 not available; health checks will only report process status.")
-            return
-        rclpy.init(args=None)
-        self._node = Node("camera_health_monitor")
-        self._executor = SingleThreadedExecutor()
-
-        for camera_name in self.camera_names:
-
-            def make_callback(name):
-                def callback(msg: Image):
-                    with self._lock:
-                        self._last_frame[name] = time.monotonic()
-                        if hasattr(msg, "width") and hasattr(msg, "height"):
-                            self._resolutions[name] = (msg.width, msg.height)
-
-                return callback
-
-            callback = make_callback(camera_name)
-            topic = f"/{camera_name}/image_raw"
-            self._node.create_subscription(
-                Image, topic, callback, qos_profile=qos_profile_sensor_data
-            )
-
-        for cname in self.camera_names:
-            for suffix in self.topic_suffixes:
-                topic = f"/{cname}/{suffix}"
-                try:
-                    self._node.create_subscription(
-                        Image,
-                        topic,
-                        make_cb(cname),
-                        qos_profile=qos_profile_sensor_data,
-                    )
-                except Exception:
-                    pass
-
-        self._executor.add_node(self._node)
-
-        def spin():
-            try:
-                while rclpy.ok():
-                    self._executor.spin_once(timeout_sec=0.1)
-            except Exception:
-                pass
-
-        self._thread = threading.Thread(target=spin, daemon=True)
-        self._thread.start()
-
-    def get_last_frame_age(self, camera_name: str) -> Optional[float]:
-        with self._lock:
-            t = self._last_frame.get(camera_name)
-        if t is None:
-            return None
-        return time.monotonic() - t
-
-    def get_resolution(self, camera_name: str) -> Optional[Tuple[int, int]]:
-        with self._lock:
-            return self._resolutions.get(camera_name)
-
-    def shutdown(self):
-        if not self.enabled:
-            return
-        try:
-            if self._executor:
-                self._executor.remove_node(self._node)
-            if self._node:
-                self._node.destroy_node()
-            rclpy.shutdown()
-        except:
-            pass
-
-
-@dataclass
-class CamProc:
+@dataclass    #dont have to make a class with init and stuff like that cuz im lazy  cuz its only initalization
+class CameraInfo:
     symlink_name: str
     camera_name: str
-    device_path: str
     proc: subprocess.Popen
+    restart_count: int = 0
+    startup_time: float = 0
 
 
-def health_check(cam_procs: List[CamProc], monitor: RosImageMonitor):
-    """Check and report camera health status."""
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] Camera health:")
+class ImageMonitor: #cant use @dataclass cuz of it being complicated and its my first time using @dataclass
+    def __init__(self):
+        self.last_frames = {}
+        self.resolutions = {}
+        self.subscriptions = {}
+        self.lock = threading.Lock()
+        self.node = None
+        self.running = False
 
-    for cp in cam_procs:
-        # Check if process is running
-        if cp.proc.poll() is not None:
-            status = "DEAD"
-            resolution = "unknown"
-        else:
-            # Check frame freshness
-            frame_age = monitor.get_last_frame_age(cp.camera_name)
-            if frame_age is not None and frame_age < 5.0:  # 5 second threshold
-                status = "OK"
-                res = monitor.get_resolution(cp.camera_name)
-                resolution = f"{res[0]}x{res[1]}" if res else "unknown"
-            else:
-                status = "NO_FRAMES"
-                resolution = "unknown"
+    def start(self):
+        if self.running:
+            return
+        
+        rclpy.init(args=None)
+        self.node = Node("camera_health_monitor")
+        executor = SingleThreadedExecutor()
+        executor.add_node(self.node)
+        self.running = True
 
-        print(f"  - {cp.camera_name}: {status}, resolution={resolution}")
+        def ros_spin():
+            while self.running and rclpy.ok():
+                executor.spin_once(timeout_sec=0.1)
+
+        # keep the thread running not killing it like the other code 
+        threading.Thread(target=ros_spin, daemon=True).start()
+
+    def add_camera(self, camera_name: str):
+        with self.lock:
+            if camera_name in self.subscriptions:
+                return
+
+        def make_callback(name):
+            def on_image(msg: Image):
+                with self.lock:
+                    self.last_frames[name] = time.monotonic()
+                    self.resolutions[name] = (msg.width, msg.height)
+            return on_image
+
+        topic = f"/{camera_name}/image_raw"
+        sub = self.node.create_subscription(Image, topic, make_callback(camera_name), qos_profile=qos_profile_sensor_data)
+        
+        with self.lock:
+            self.subscriptions[camera_name] = sub
+
+    def remove_camera(self, camera_name: str): #removes camera when wanted (can be called in future if needed)
+        with self.lock:
+            if camera_name in self.subscriptions:
+                self.node.destroy_subscription(self.subscriptions[camera_name])
+                del self.subscriptions[camera_name]
+            if camera_name in self.last_frames:
+                del self.last_frames[camera_name]
+            if camera_name in self.resolutions:
+                del self.resolutions[camera_name]
+
+    def get_frame_age(self, camera_name: str): #needed for figure out if camera freezes or dies
+        with self.lock:
+            if camera_name not in self.last_frames:
+                return None
+            return time.monotonic() - self.last_frames[camera_name]
+
+    def get_resolution(self, camera_name: str):
+        with self.lock:
+            return self.resolutions.get(camera_name)
+
+    def shutdown(self): #kills when wanted 
+        self.running = False
+        if self.node:
+            self.node.destroy_node()
+        rclpy.shutdown()
+
+
+class CameraManager: #manages cameras and their processes
+    def __init__(self, monitor):
+        self.monitor = monitor
+        self.cameras = {}
+        self.lock = threading.Lock()
+        self.running = False
+
+    def add_camera(self, symlink_name):
+        with self.lock:
+            if symlink_name in self.cameras:
+                return
+            
+            camera_name = sanitize_name_for_ros(symlink_name)
+            proc = launch_camera(symlink_name)
+            
+            cam = CameraInfo(
+                symlink_name=symlink_name,
+                camera_name=camera_name,
+                proc=proc,
+                startup_time=time.monotonic()
+            )
+            
+            self.cameras[symlink_name] = cam
+            self.monitor.add_camera(camera_name)
+
+    def remove_camera(self, symlink_name): #removes camera when unplugged
+        with self.lock:
+            if symlink_name not in self.cameras:
+                return
+            
+            cam = self.cameras[symlink_name]
+            stop_process_tree(cam.proc)
+            self.monitor.remove_camera(cam.camera_name)
+            del self.cameras[symlink_name]
+
+    def restart_camera(self, symlink_name): #restarts camera when needed
+        with self.lock:
+            if symlink_name not in self.cameras:
+                return
+            
+            cam = self.cameras[symlink_name]
+            
+            # Stop trying after max attempts
+            if cam.restart_count >= MAX_RESTART_ATTEMPTS:
+                print(f"{cam.camera_name} max restarts, lol the camera is dead (surya did it)")
+                return
+            
+            print(f"Restarting {cam.camera_name}")
+            stop_process_tree(cam.proc)
+            
+            cam.proc = launch_camera(symlink_name)
+            cam.restart_count += 1
+            cam.startup_time = time.monotonic()
+
+    def check_hotplug(self):
+        # Check for new or removed cameras
+        current_cameras = set(get_connected_cameras())
+        
+        with self.lock:
+            existing_cameras = set(self.cameras.keys())
+        
+        # Add new cameras
+        for symlink in current_cameras - existing_cameras:
+            print(f"New camera detected: {symlink}")
+            self.add_camera(symlink)
+        
+        # Remove unplugged cameras
+        for symlink in existing_cameras - current_cameras:
+            print(f"Camera disconnected: {symlink}")
+            self.remove_camera(symlink)
+
+    def health_check(self):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Camera health:")
+        
+        with self.lock:
+            if not self.cameras:
+                print("  No cameras")
+                return
+            
+            for symlink, cam in list(self.cameras.items()):
+                # Check if process is alive
+                if cam.proc.poll() is not None:
+                    print(f"  - {cam.camera_name}: DEAD")
+                    self.restart_camera(symlink)
+                    continue
+                
+                # Give camera time to start up
+                if time.monotonic() - cam.startup_time < 3:
+                    print(f"  - {cam.camera_name}: STARTING")
+                    continue
+                
+                # Check if getting frames
+                frame_age = self.monitor.get_frame_age(cam.camera_name)
+                resolution = self.monitor.get_resolution(cam.camera_name)
+                
+                if frame_age is not None and frame_age < FRAME_TIMEOUT:
+                    res_str = f"{resolution[0]}x{resolution[1]}" if resolution else "unknown"
+                    print(f"  - {cam.camera_name}: Working, resolution={res_str}, age={frame_age:.1f}s, restarts(attempted)={cam.restart_count}")
+                else:
+                    print(f"  - {cam.camera_name}: nothing to view (no video frames)")
+                    self.restart_camera(symlink)
+
+    def start(self):
+        if self.running:
+            return
+        
+        self.running = True
+        
+        # Add cameras that are already connected
+        for symlink in get_connected_cameras():
+            self.add_camera(symlink)
+        
+        # Start health check loop
+        def health_loop():
+            while self.running:
+                self.health_check()
+                time.sleep(HEALTH_CHECK_INTERVAL)
+        
+        def hotplug_loop():
+            while self.running:
+                time.sleep(HOTPLUG_CHECK_INTERVAL)
+                self.check_hotplug()
+        
+        threading.Thread(target=health_loop, daemon=True).start()
+        threading.Thread(target=hotplug_loop, daemon=True).start()
+
+    def stop(self):
+        self.running = False
+        with self.lock:
+            for symlink in list(self.cameras.keys()):
+                self.remove_camera(symlink)
 
 
 def main():
-    cam_symlinks = get_connected_cameras()
-    if not cam_symlinks:
-        print("No cameras found.")
-        return
-
-    cam_procs: List[CamProc] = []
-    for symlink in cam_symlinks:
-        p = launch_camera(symlink)
-        cam_name = sanitize_name_for_ros(symlink)
-        cam_procs.append(
-            CamProc(
-                symlink_name=symlink,
-                camera_name=cam_name,
-                device_path=str(BY_ID_DIR / symlink),
-                proc=p,
-            )
-        )
-
-    # Start ROS monitor
-    monitor = RosImageMonitor([cp.camera_name for cp in cam_procs])
+    # Start the ROS monitor (runs in background thread)
+    monitor = ImageMonitor()
     monitor.start()
-
+    
+    # Start camera manager
+    manager = CameraManager(monitor)
+    manager.start()
+    
     try:
+        # Run until interrupted
         while True:
-            time.sleep(10)
-            health_check(cam_procs, monitor)
+            time.sleep(1)
     except KeyboardInterrupt:
-        print("Stopping camera processes...")
+        print("\nStopping camera processes")
     finally:
+        manager.stop()
         monitor.shutdown()
-        for cp in cam_procs:
-            stop_process_tree(cp.proc)
 
 
 if __name__ == "__main__":

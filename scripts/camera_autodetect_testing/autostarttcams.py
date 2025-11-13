@@ -51,24 +51,26 @@ def launch_camera(symlink_name: str) -> subprocess.Popen:
     return subprocess.Popen(cmd, preexec_fn=os.setsid, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def stop_process_tree(proc: subprocess.Popen, sig=signal.SIGINT, timeout=5):
-    if proc.poll() is not None:  # Already dead
+def stop_process_tree(proc: subprocess.Popen, timeout=2):
+    # Check if already dead
+    if proc.poll() is not None:
         return
     
     try:
         pgid = os.getpgid(proc.pid)
-        os.killpg(pgid, sig)
-    except (ProcessLookupError, PermissionError):
+    except ProcessLookupError:
         return
     
+    # Use SIGKILL (force) - this WILL work or else ill be very sad
     try:
-        proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        try:
-            os.killpg(pgid, signal.SIGKILL)  # Use SIGKILL as last resort
-            proc.wait(timeout=2)
-        except Exception:
-            pass
+        print(f"Force killing process group {pgid}")
+        os.killpg(pgid, signal.SIGKILL)
+        proc.wait(timeout=1)  # SIGKILL is instant
+    except ProcessLookupError:
+        pass  # Already dead
+    except Exception as e:
+        print(f"Failed to kill process: IDK WHY BRO I HATE CODING")
+
 
 @dataclass    #dont have to make a class with init and stuff like that cuz im lazy  cuz its only initalization
 class CameraInfo:

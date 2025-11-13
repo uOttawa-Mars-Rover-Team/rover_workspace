@@ -13,8 +13,7 @@ MAX_RESTART_ATTEMPTS = 3
 FRAME_TIMEOUT = 5.0
 HOTPLUG_CHECK_INTERVAL = 5
 
-#BY_ID_DIR = Path("/dev/v4l/by-id")
-BY_ID_DIR = Path("")  
+BY_ID_DIR = Path("/dev/v4l/by-id") 
 
 import rclpy
 from rclpy.node import Node
@@ -53,20 +52,23 @@ def launch_camera(symlink_name: str) -> subprocess.Popen:
 
 
 def stop_process_tree(proc: subprocess.Popen, sig=signal.SIGINT, timeout=5):
-    try:
-        # send signal to the whole process group
-        os.killpg(proc.pid, sig)
-    except ProcessLookupError:
+    if proc.poll() is not None:  # Already dead
         return
+    
+    try:
+        pgid = os.getpgid(proc.pid)
+        os.killpg(pgid, sig)
+    except (ProcessLookupError, PermissionError):
+        return
+    
     try:
         proc.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
         try:
-            os.killpg(proc.pid, signal.SIGTERM)
-            proc.wait(timeout=timeout)
+            os.killpg(pgid, signal.SIGKILL)  # Use SIGKILL as last resort
+            proc.wait(timeout=2)
         except Exception:
-            proc.kill()
-
+            pass
 
 @dataclass    #dont have to make a class with init and stuff like that cuz im lazy  cuz its only initalization
 class CameraInfo:
@@ -152,7 +154,7 @@ class CameraManager: #manages cameras and their processes
     def __init__(self, monitor):
         self.monitor = monitor
         self.cameras = {}
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.running = False
 
     def add_camera(self, symlink_name):
@@ -182,6 +184,7 @@ class CameraManager: #manages cameras and their processes
             stop_process_tree(cam.proc)
             self.monitor.remove_camera(cam.camera_name)
             del self.cameras[symlink_name]
+
 
     def restart_camera(self, symlink_name): #restarts camera when needed
         with self.lock:

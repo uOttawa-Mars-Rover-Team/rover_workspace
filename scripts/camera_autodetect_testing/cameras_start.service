@@ -1,22 +1,21 @@
 [Unit]
-Description= Autstart Cams Script runs on rover startup
-After=network.target
-StartLimitIntervalSec=0
-
+Description=Autostart Cams Script runs on rover startup
+ 
 [Service]
 Type=simple
-Restart=always
-RestartSec=1
 User=roverpc
-ExecStart= python3 gpiotest/mann-autostarttcams.py
-
+Group=roverpc
+TimeoutStopSec=1
+WorkingDirectory=/home/roverpc/gpiotest
+ExecStart=/bin/bash -c 'source /opt/ros/humble/setup.bash && source /home/roverpc/rover_workspace/install/setup.bash && python3 /home/roverpc/gpiotest/mann-autostartcams.py'
+ 
 [Install]
 WantedBy=multi-user.target
-
-
+ 
+ 
 #create a flask server service when flask is implemented 
 #add this after flask server is up and running
-
+ 
 #After=flask_server_startup.service
-
-# this waits for flask server to become up and running on bootup  
+ 
+# this waits for flask server to become up and running on bootup 

@@ -1,0 +1,22 @@
+[Unit]
+Description= Autstart Cams Script runs on rover startup
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=roverpc
+ExecStart= python3 gpiotest/mann-autostarttcams.py
+
+[Install]
+WantedBy=multi-user.target
+
+
+#create a flask server service when flask is implemented 
+#add this after flask server is up and running
+
+#After=flask_server_startup.service
+
+# this waits for flask server to become up and running on bootup  

@@ -7,7 +7,7 @@
                     <plugin>mock_components/GenericSystem</plugin>
                 </xacro:if>
                 <xacro:unless value="${use_gazebo}">
-                    <plugin>chassis_controls/DriveSystem</plugin>
+                    <plugin>chassis_controls/DriveSystemV3</plugin>
                     <param name="FL_id">${FL_id}</param>
                     <param name="FR_id">${FR_id}</param>
                     <param name="RR_id">${RR_id}</param>
@@ -26,6 +26,12 @@
                     <param name="Kd_RL">${Kd_RL}</param>
                     <param name="wheel_diameter">${wheel_diameter}</param>
                     <param name="wheel_encoder_counts_per_revolution">${wheel_encoder_counts_per_revolution}</param>
+                    <param name="state_prefix">/moteus</param>
+                    <param name="state_suffix">/state</param>
+                    <param name="cmd_prefix">/moteus</param>
+                    <param name="cmd_suffix">/command</param>
+                    <param name="units">rad</param> 
+                    <param name="state_timeout_sec">0.5</param>
                 </xacro:unless>
             </hardware>
 

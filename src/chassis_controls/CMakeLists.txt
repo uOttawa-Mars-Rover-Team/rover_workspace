@@ -16,6 +16,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(xacro REQUIRED)
+find_package(moteus_msgs REQUIRED)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l") # 32 bit Arm Linux
   set(PHOENIX_LIBS_DIR ${CMAKE_SOURCE_DIR}/lib/arm32)
@@ -88,6 +89,30 @@ target_link_libraries(
     phoenix_tools
     phoenix_cci
 )
+
+# --- chassis_controls_v3 library (topic-based / CAN router) ---
+add_library(chassis_controls_v3 SHARED
+  src/drive_hardware_v3.cpp
+)
+
+target_compile_features(chassis_controls_v3 PUBLIC c_std_99 cxx_std_17)
+
+target_include_directories(
+  chassis_controls_v3
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(chassis_controls_v3
+  PUBLIC
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+  moteus_msgs
+)
+
 pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 
 # --- Installs are correct ---
@@ -117,7 +142,7 @@ install(
 )
 
 install(
-    TARGETS chassis_controls
+    TARGETS chassis_controls chassis_controls_v3
     EXPORT chassis_controls
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
@@ -151,5 +176,6 @@ ament_export_dependencies(
     hardware_interface
     rclcpp_lifecycle
     xacro
+    moteus_msgs
 )
 ament_package()

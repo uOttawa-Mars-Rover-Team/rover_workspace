@@ -18,6 +18,7 @@
 	<depend>rclcpp_lifecycle</depend>
 	<depend>ros2_control</depend>
 	<depend>diff_drive_controller</depend>
+	<depend>moteus_msgs</depend>
 
 	<exec_depend>joint_state_broadcaster</exec_depend>
 	<exec_depend>rviz2</exec_depend>

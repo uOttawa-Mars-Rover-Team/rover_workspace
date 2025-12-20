@@ -7,3 +7,13 @@
     </description>
   </class>
 </library>
+
+<library path="chassis_controls_v3">
+  <class name="chassis_controls/DriveSystemV3"
+         type="chassis_controls::DriveSystemV3"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Drive hardware plugin for uORover V3 (topic-based via CAN router).
+    </description>
+  </class>
+</library>

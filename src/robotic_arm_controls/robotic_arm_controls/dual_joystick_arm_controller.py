@@ -21,6 +21,9 @@ class DualJoystickArmController(Node):
         self.joy_data_2 = None
         self.controller_1_type = None
         self.controller_2_type = None
+        
+        self.controller_1_mapping = None
+        self.controller_2_mapping = None
 
         self.joy_sub_1 = self.create_subscription(Joy, '/joy/controller_1', self.joy_callback_1, 20)
 
@@ -33,6 +36,8 @@ class DualJoystickArmController(Node):
         self.gripper_pub = self.create_publisher(GripperControl, '/gripper_control/gripper_velocities', 10)
         self.get_logger().info("Dual Joystick Arm Controller Node Initialized")
 
+        self.trajectory_duration = self.get_param("trajectory_duration", rclpy.Parameter.Type.DOUBLE, 0.1)
+
     def joy_callback_1(self, msg: Joy):
 
         if self.controller_1_type is None:
@@ -44,6 +49,7 @@ class DualJoystickArmController(Node):
                 self.get_logger().error("Unknown controller type for controller 1")
                 return
             
+            self.controller_1_mapping = self.get_axis_mapping(controller_num=1)
         self.joy_data_1 = msg
         self.publish_trajectory_command()
 
@@ -63,7 +69,7 @@ class DualJoystickArmController(Node):
             else:
                 self.get_logger().error("Unknown controller type for controller 2")
                 return
-        
+            self.controller_2_mapping = self.get_axis_mapping(controller_num=2)
         self.joy_data_2 = msg
 
         self.publish_gripper_command()
@@ -95,12 +101,11 @@ class DualJoystickArmController(Node):
 
         trajectory = JointTrajectory()
         trajectory.joint_names = ['q1', 'q2', 'q3', 'q4']
-        trajectory.headers.stamp = self.get_clock().now().to_msg()
+        trajectory.header.stamp = self.get_clock().now().to_msg()
 
         point = JointTrajectoryPoint()
         point.positions = target_positions
-        point.time_from_start = Duration(sec=int(dt), nanosec=int(self.trajectory_duration * 1e9))
-
+        point.time_from_start = Duration(sec=0, nanosec=int(self.trajectory_duration * 1e9))
         trajectory.points = [point]
         self.joint_state_pub.publish(trajectory)
 
@@ -173,40 +178,36 @@ class DualJoystickArmController(Node):
         return joy_msg.buttons[button_idx] == 1
     
     def get_axis_mapping(self, controller_num):
-        if controller_num ==1:
+        # Return cached mapping if available
+        if controller_num == 1 and self.controller_1_mapping is not None:
+            return self.controller_1_mapping
+        elif controller_num == 2 and self.controller_2_mapping is not None:
+            return self.controller_2_mapping
+        
+        if controller_num == 1:
             controller_type = self.controller_1_type
         else:
             controller_type = self.controller_2_type
         if controller_type is None:
             return {}
-        
-        prefix = f'controller_types.{controller_type}.'
 
+        prefix = f'controller_types.{controller_type}.'
         mapping = {}
 
+        # Map q1, q2, ... q6 for velocity control
         for i in range(1, 7):
-            mapping[f'q{i}_axis']= self.get_param(
-                f'{prefix}q{i}_axis', rclpy.Parameter.Type.INTEGER, -1
-            )
-            mapping[f'q{i}_scale']= self.get_param(
-                f'{prefix}q{i}_scale', rclpy.Parameter.Type.DOUBLE, 1.0
-            )
-            mapping[f'q{i}_invert']= self.get_param(
-                f'{prefix}q{i}_invert', rclpy.Parameter.Type.BOOL, False
-            )
-        
-        mapping['roll_cw_button'] = self.get_param(
-            f'{prefix}roll_cw_button', rclpy.Parameter.Type.INTEGER, -1
-        )
-        mapping['roll_ccw_button'] = self.get_param(
-            f'{prefix}roll_ccw_button', rclpy.Parameter.Type.INTEGER, -1
-        )
-        mapping['gripper_open_button'] = self.get_param(
-            f'{prefix}gripper_open_button', rclpy.Parameter.Type.INTEGER, -1
-        )
-        mapping['gripper_close_button'] = self.get_param(
-            f'{prefix}gripper_close_button', rclpy.Parameter.Type.INTEGER, -1
-        )   
+            axis = self.get_param(f'{prefix}q{i}_axis', rclpy.Parameter.Type.INTEGER, -1)
+            scale = self.get_param(f'{prefix}q{i}_scale', rclpy.Parameter.Type.DOUBLE, 1.0)
+            invert = self.get_param(f'{prefix}q{i}_invert', rclpy.Parameter.Type.BOOL, False)
+            mapping[f'q{i}'] = axis
+            mapping[f'q{i}_scale'] = scale
+            mapping[f'q{i}_inverse'] = invert
+
+        # Button mappings
+        mapping['roll_cw_button'] = self.get_param(f'{prefix}roll_cw_button', rclpy.Parameter.Type.INTEGER, -1)
+        mapping['roll_ccw_button'] = self.get_param(f'{prefix}roll_ccw_button', rclpy.Parameter.Type.INTEGER, -1)
+        mapping['gripper_open_button'] = self.get_param(f'{prefix}gripper_open_button', rclpy.Parameter.Type.INTEGER, -1)
+        mapping['gripper_close_button'] = self.get_param(f'{prefix}gripper_close_button', rclpy.Parameter.Type.INTEGER, -1)
 
         return mapping
 

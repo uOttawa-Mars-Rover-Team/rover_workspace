@@ -12,16 +12,17 @@ def generate_launch_description():
     )
 
     joy_node = Node(
-        package='joy',
-        executable='joy_node',
-        name='joy_node_controller_1',
-        parameters=[{
-            'dev': '/dev/input/js0',
-            'autorepeat_rate': 50.0,
-        }],
-        remappings=[('/joy', '/joy/controller_1')],
-        output='screen'
-    )
+    package='joy',
+    executable='joy_node',
+    name='joy_node_controller_1',
+    parameters=[{
+        'dev': '/dev/input/by-id/usb-Microsoft_Xbox_Controller-event-joystick',
+        'autorepeat_rate': 50.0,
+        'deadzone': 0.15
+    }],
+    remappings=[('/joy', '/joy/controller_1')],
+    output='screen'
+)
 
     controller_node = Node(
         package='robotic_arm_controls',

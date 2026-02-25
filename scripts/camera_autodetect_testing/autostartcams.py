@@ -1,311 +1,122 @@
+
+# --- HOW TO VIEW STREAMS ---
+#
+# 1. VIEW ON LAPTOP (Low Latency for Radio):
+#    ffplay -fflags nobuffer -flags low_delay -framedrop -rtsp_transport udp rtsp://<JETSON_IP>:8554/FrontCam
+#
+# 2. VIEW ON JETSON (Local Debugging):
+#    gst-launch-1.0 rtspsrc location=rtsp://127.0.0.1:8554/FrontCam latency=0 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! autovideosink
+#
+
+import sys
 import os
-import re
-import signal
-import subprocess
 import time
+import gi
 import threading
 from pathlib import Path
-from dataclasses import dataclass
 
-# change after ben asks me to
-HEALTH_CHECK_INTERVAL = 10
-MAX_RESTART_ATTEMPTS = 3
-FRAME_TIMEOUT = 5.0
-HOTPLUG_CHECK_INTERVAL = 5
+gi.require_version('Gst', '1.0')
+gi.require_version('GstRtspServer', '1.0')
+from gi.repository import Gst, GstRtspServer, GLib
 
-BY_ID_DIR = Path("/dev/v4l/by-id") 
+RTSP_PORT = "8554"
+CHECK_INTERVAL_MS = 5000 
+BY_ID_DIR = Path("/dev/v4l/by-id")
 
-import rclpy
-from rclpy.node import Node
-from rclpy.executors import SingleThreadedExecutor
-from rclpy.qos import qos_profile_sensor_data
-from sensor_msgs.msg import Image
+BITRATE_KBIT = 600
+FRAMERATE = "15/1"
+MTU_SIZE = 1400
 
+CAMERA_NAMES = {
+    "usb-Logitech_Webcam_C920_HD_Pro_ABCD123-video-index0": "FrontCam",
+    "usb-046d_0825_2F209020-video-index0": "ArmCam",
+}
 
-def get_connected_cameras():
-    if not BY_ID_DIR.exists():
-        print(f"{BY_ID_DIR} does not exist")
-        return []
-    # pick one node per physical camera
-    return sorted(p.name for p in BY_ID_DIR.glob("*-video-index0"))
+Gst.init(None)
 
+def sanitize_name(name):
+    return name.replace("usb-", "").replace("-video-index0", "").replace("_", "")
 
-def sanitize_name_for_ros(name: str) -> str:
-    # Keep alnum and underscores; replace others with underscores
-    s = re.sub(r"[^A-Za-z0-9_]", "_", name)
-    # Ensure it starts with a letter
-    if not re.match(r"^[A-Za-z]", s):
-        s = f"cam_{s}"
-    return s
-
-
-def launch_camera(symlink_name: str) -> subprocess.Popen:
-    camera_name = sanitize_name_for_ros(symlink_name)
-    cmd = [
-        "ros2", "launch", "camera_nodes", "ffmpeg.launch.py",
-        f"video_device:=/dev/v4l/by-id/{symlink_name}",
-        f"camera_name:={camera_name}",
-    ]
-    print(f"Launching: {camera_name}")
-    # Put each launch in its own process group so we can stop the whole tree
-    return subprocess.Popen(cmd, preexec_fn=os.setsid, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-
-def stop_process_tree(proc: subprocess.Popen, timeout=2):
-    # Check if already dead
-    if proc.poll() is not None:
-        return
-    
-    try:
-        pgid = os.getpgid(proc.pid)
-    except ProcessLookupError:
-        return
-    
-    # Use SIGKILL (force) - this WILL work or else ill be very sad
-    try:
-        print(f"Force killing process group {pgid}")
-        os.killpg(pgid, signal.SIGKILL)
-        proc.wait(timeout=1)  # SIGKILL is instant
-    except ProcessLookupError:
-        pass  # Already dead
-    except Exception as e:
-        print(f"Failed to kill process: IDK WHY BRO I HATE CODING")
-
-
-@dataclass    #dont have to make a class with init and stuff like that cuz im lazy  cuz its only initalization
-class CameraInfo:
-    symlink_name: str
-    camera_name: str
-    proc: subprocess.Popen
-    restart_count: int = 0
-    startup_time: float = 0
-
-
-class ImageMonitor: #cant use @dataclass cuz of it being complicated and its my first time using @dataclass
+class RTSPManager:
     def __init__(self):
-        self.last_frames = {}
-        self.resolutions = {}
-        self.subscriptions = {}
         self.lock = threading.Lock()
-        self.node = None
-        self.running = False
-
-    def start(self):
-        if self.running:
-            return
+        self.loop = GLib.MainLoop()
         
-        rclpy.init(args=None)
-        self.node = Node("camera_health_monitor")
-        executor = SingleThreadedExecutor()
-        executor.add_node(self.node)
-        self.running = True
-
-        def ros_spin():
-            while self.running and rclpy.ok():
-                executor.spin_once(timeout_sec=0.1)
-
-        # keep the thread running not killing it like the other code 
-        threading.Thread(target=ros_spin, daemon=True).start()
-
-    def add_camera(self, camera_name: str):
-        with self.lock:
-            if camera_name in self.subscriptions:
-                return
-
-        def make_callback(name):
-            def on_image(msg: Image):
-                with self.lock:
-                    self.last_frames[name] = time.monotonic()
-                    self.resolutions[name] = (msg.width, msg.height)
-            return on_image
-
-        topic = f"/{camera_name}/image_raw"
-        sub = self.node.create_subscription(Image, topic, make_callback(camera_name), qos_profile=qos_profile_sensor_data)
+        self.server = GstRtspServer.RTSPServer()
+        self.server.set_service(RTSP_PORT)
+        self.mounts = self.server.get_mount_points()
         
-        with self.lock:
-            self.subscriptions[camera_name] = sub
+        self.cameras = {} 
+        
+        GLib.timeout_add(CHECK_INTERVAL_MS, self.check_hotplug)
 
-    def remove_camera(self, camera_name: str): #removes camera when wanted (can be called in future if needed)
-        with self.lock:
-            if camera_name in self.subscriptions:
-                self.node.destroy_subscription(self.subscriptions[camera_name])
-                del self.subscriptions[camera_name]
-            if camera_name in self.last_frames:
-                del self.last_frames[camera_name]
-            if camera_name in self.resolutions:
-                del self.resolutions[camera_name]
+    def create_factory(self, device_path):
+        pipeline = (
+            f"( v4l2src device={device_path} ! "
+            f"video/x-raw,width=640,height=480,framerate={FRAMERATE} ! "
+            f"videoconvert ! "
+            f"x264enc tune=zerolatency speed-preset=ultrafast "
+            f"bitrate={BITRATE_KBIT} vbv-maxrate={BITRATE_KBIT} vbv-bufsize={BITRATE_KBIT//2} "
+            f"intra-refresh=true sliced-threads=true key-int-max=30 ! "
+            f"video/x-h264, profile=baseline ! "
+            f"h264parse ! "
+            f"rtph264pay name=pay0 pt=96 config-interval=-1 mtu={MTU_SIZE} )"
+        )
 
-    def get_frame_age(self, camera_name: str): #needed for figure out if camera freezes or dies
-        with self.lock:
-            if camera_name not in self.last_frames:
-                return None
-            return time.monotonic() - self.last_frames[camera_name]
+        factory = GstRtspServer.RTSPMediaFactory()
+        factory.set_launch(pipeline)
+        factory.set_shared(True)
+        factory.set_latency(0)
+        factory.set_suspend_mode(GstRtspServer.RTSPSuspendMode.NONE)
+        return factory
 
-    def get_resolution(self, camera_name: str):
-        with self.lock:
-            return self.resolutions.get(camera_name)
+    def add_camera(self, device_path):
+        filename = Path(device_path).name
+        name = CAMERA_NAMES.get(filename, sanitize_name(filename))
+        mount_path = f"/{name}"
 
-    def shutdown(self): #kills when wanted 
-        self.running = False
-        if self.node:
-            self.node.destroy_node()
-        rclpy.shutdown()
+        if mount_path in self.cameras: return
 
+        print(f"Adding Stream: rtsp://<IP>:{RTSP_PORT}{mount_path}")
+        factory = self.create_factory(device_path)
+        self.mounts.add_factory(mount_path, factory)
+        
+        self.cameras[mount_path] = {
+            "device": device_path,
+            "camera_name": name,
+            "startup_time": time.monotonic()
+        }
 
-class CameraManager: #manages cameras and their processes
-    def __init__(self, monitor):
-        self.monitor = monitor
-        self.cameras = {}
-        self.lock = threading.RLock()
-        self.running = False
-
-    def add_camera(self, symlink_name):
-        with self.lock:
-            if symlink_name in self.cameras:
-                return
-            
-            camera_name = sanitize_name_for_ros(symlink_name)
-            proc = launch_camera(symlink_name)
-            
-            cam = CameraInfo(
-                symlink_name=symlink_name,
-                camera_name=camera_name,
-                proc=proc,
-                startup_time=time.monotonic()
-            )
-            
-            self.cameras[symlink_name] = cam
-            self.monitor.add_camera(camera_name)
-
-    def remove_camera(self, symlink_name): #removes camera when unplugged
-        with self.lock:
-            if symlink_name not in self.cameras:
-                return
-            
-            cam = self.cameras[symlink_name]
-            stop_process_tree(cam.proc)
-            self.monitor.remove_camera(cam.camera_name)
-            del self.cameras[symlink_name]
-
-
-    def restart_camera(self, symlink_name): #restarts camera when needed
-        with self.lock:
-            if symlink_name not in self.cameras:
-                return
-            
-            cam = self.cameras[symlink_name]
-            
-            # Stop trying after max attempts
-            if cam.restart_count >= MAX_RESTART_ATTEMPTS:
-                print(f"{cam.camera_name} max restarts, lol the camera is dead (surya did it)")
-                return
-            
-            print(f"Restarting {cam.camera_name}")
-            stop_process_tree(cam.proc)
-            
-            cam.proc = launch_camera(symlink_name)
-            cam.restart_count += 1
-            cam.startup_time = time.monotonic()
+    def remove_camera(self, mount_path):
+        if mount_path in self.cameras:
+            print(f"Removing Stream: {mount_path}")
+            self.mounts.remove_factory(mount_path)
+            del self.cameras[mount_path]
 
     def check_hotplug(self):
-        # Check for new or removed cameras
-        current_cameras = set(get_connected_cameras())
+        if not BY_ID_DIR.exists(): 
+            return True
         
-        with self.lock:
-            existing_cameras = set(self.cameras.keys())
-        
-        # Add new cameras
-        for symlink in current_cameras - existing_cameras:
-            print(f"New camera detected: {symlink}")
-            self.add_camera(symlink)
-        
-        # Remove unplugged cameras
-        for symlink in existing_cameras - current_cameras:
-            print(f"Camera disconnected: {symlink}")
-            self.remove_camera(symlink)
+        current_devs = sorted([str(f) for f in BY_ID_DIR.iterdir() if "index0" in f.name])
+        active_devs = {d["device"] for d in self.cameras.values()}
 
-    def health_check(self):
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] Camera health:")
-        
-        with self.lock:
-            if not self.cameras:
-                print("  No cameras")
-                return
+        for dev in set(current_devs) - active_devs:
+            self.add_camera(dev)
             
-            for symlink, cam in list(self.cameras.items()):
-                # Check if process is alive
-                if cam.proc.poll() is not None:
-                    print(f"  - {cam.camera_name}: DEAD")
-                    self.restart_camera(symlink)
-                    continue
-                
-                # Give camera time to start up
-                if time.monotonic() - cam.startup_time < 3:
-                    print(f"  - {cam.camera_name}: STARTING")
-                    continue
-                
-                # Check if getting frames
-                frame_age = self.monitor.get_frame_age(cam.camera_name)
-                resolution = self.monitor.get_resolution(cam.camera_name)
-                
-                if frame_age is not None and frame_age < FRAME_TIMEOUT:
-                    res_str = f"{resolution[0]}x{resolution[1]}" if resolution else "unknown"
-                    print(f"  - {cam.camera_name}: Working, resolution={res_str}, age={frame_age:.1f}s, restarts(attempted)={cam.restart_count}")
-                else:
-                    print(f"  - {cam.camera_name}: nothing to view (no video frames)")
-                    self.restart_camera(symlink)
+        to_remove = [m for m, d in self.cameras.items() if d["device"] not in current_devs]
+        for m in to_remove:
+            self.remove_camera(m)
+            
+        return True 
 
     def start(self):
-        if self.running:
-            return
-        
-        self.running = True
-        
-        # Add cameras that are already connected
-        for symlink in get_connected_cameras():
-            self.add_camera(symlink)
-        
-        # Start health check loop
-        def health_loop():
-            while self.running:
-                self.health_check()
-                time.sleep(HEALTH_CHECK_INTERVAL)
-        
-        def hotplug_loop():
-            while self.running:
-                time.sleep(HOTPLUG_CHECK_INTERVAL)
-                self.check_hotplug()
-        
-        threading.Thread(target=health_loop, daemon=True).start()
-        threading.Thread(target=hotplug_loop, daemon=True).start()
-
-    def stop(self):
-        self.running = False
-        with self.lock:
-            for symlink in list(self.cameras.keys()):
-                self.remove_camera(symlink)
-
-
-def main():
-    # Start the ROS monitor (runs in background thread)
-    monitor = ImageMonitor()
-    monitor.start()
-    
-    # Start camera manager
-    manager = CameraManager(monitor)
-    manager.start()
-    
-    try:
-        # Run until interrupted
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nStopping camera processes")
-    finally:
-        manager.stop()
-        monitor.shutdown()
-
+        print(f"RTSP Server Started on Port: {RTSP_PORT}")
+        self.check_hotplug() 
+        try:
+            self.loop.run()
+        except KeyboardInterrupt:
+            self.loop.quit()
 
 if __name__ == "__main__":
-    main()
+    mgr = RTSPManager()
+    mgr.start()

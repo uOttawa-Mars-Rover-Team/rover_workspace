@@ -14,6 +14,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import SetParameter
 
 
 def generate_launch_description():
@@ -64,11 +65,11 @@ def generate_launch_description():
         output="screen",
     )
     robot_localization_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_path, "gps_navsat.launch.py")),
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, "launch", "gps_navsat.launch.py")),
         launch_arguments={"use_sim_time": LaunchConfiguration("use_sim_time")}.items(),
     )
     navigation2_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_path, "navigation.launch.py")),
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, "launch", "navigation.launch.py")),
         launch_arguments={
             "use_sim_time": LaunchConfiguration("use_sim_time"),
             "params_file": configured_params,
@@ -87,6 +88,10 @@ def generate_launch_description():
     return LaunchDescription(
         [
             use_sim_time_arg,
+            SetParameter(
+                name="use_sim_time",
+                value=LaunchConfiguration("use_sim_time")
+            ),
             rviz_config_arg,
             navigation2_cmd,
             rviz_cmd,

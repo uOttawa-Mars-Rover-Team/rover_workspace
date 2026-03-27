@@ -14,6 +14,7 @@
 // );
 
 static uint8_t direction = 1;
+static float cmdSpeed = 2500;
 static unsigned long t0 = millis();
 
 StepperMotor stepMotor1("Motor1", 4,  5, 3, 2,  5000, 1000000, 3000.0);
@@ -25,15 +26,18 @@ void setup() {
 }
 
 void loop() {
-  
 
   if (millis() - t0 < 2000){
-    stepMotor1.moveMotor(direction);
+    stepMotor1.moveMotor(cmdSpeed);
   }
   else{
     stepMotor1.moveMotor(0);
-    delay(500);
+    delay(1000);
     direction *=-1;
     t0 = millis();
+
+    if (cmdSpeed < 3000) {
+      cmdSpeed = (cmdSpeed)*-1;
+    }
   }
 }

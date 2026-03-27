@@ -26,7 +26,7 @@ public:
     void init();
     void enable();
     void disable();
-    bool moveMotor(int8_t value);
+    bool moveMotor(float value);
     void stop();
     bool run();
 };

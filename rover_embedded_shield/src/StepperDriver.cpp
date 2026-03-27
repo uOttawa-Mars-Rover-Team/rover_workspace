@@ -45,32 +45,57 @@ void StepperMotor::disable() {
     Serial.println(" disabled");
 }
 
-bool StepperMotor::moveMotor(int8_t value) {
-    if (value < -1 || value > 1) {
-        Serial.println("ERROR: value must be -1, 0, or 1");
+// bool StepperMotor::moveMotor(int8_t value) {
+//     if (value < -1 || value > 1) {
+//         Serial.println("ERROR: value must be -1, 0, or 1");
+//         return false;
+//     }
+
+//     if (!enabled) {
+//         Serial.println("ERROR: motor is disabled");
+//         return false;
+//     }
+
+//     driver.setMaxSpeed(speed);
+
+//     if (value == 1) {
+//         driver.move(maxRange);   // Forward
+//     }
+//     else if (value == -1) {
+//         driver.move(-maxRange);  // Reverse
+//     }
+//     else {
+//         driver.stop();           // Stop
+//     }
+
+//     driver.run();                // <-- this is the “fix” / coupling
+//     return true;
+// }
+
+bool StepperMotor::moveMotor(float velocity) {
+    if (fabs(velocity) > speed) {  // 'speed' is your configured max allowed
+        Serial.println("ERROR: velocity exceeds max speed");
         return false;
     }
-
     if (!enabled) {
         Serial.println("ERROR: motor is disabled");
         return false;
     }
 
-    driver.setMaxSpeed(speed);
+    driver.setMaxSpeed(fabs(velocity));
 
-    if (value == 1) {
-        driver.move(maxRange);   // Forward
-    }
-    else if (value == -1) {
-        driver.move(-maxRange);  // Reverse
-    }
-    else {
-        driver.stop();           // Stop
+    if (velocity > 0) {
+        driver.move(maxRange);      // "continuous" forward (large target)
+    } else if (velocity < 0) {
+        driver.move(-maxRange);     // "continuous" reverse
+    } else {
+        driver.stop();              // decelerate to stop (needs repeated calls)
     }
 
-    driver.run();                // <-- this is the “fix” / coupling
+    driver.run();                   // coupled run like the sample project
     return true;
 }
+
 
 // Stop motor
 void StepperMotor::stop() {

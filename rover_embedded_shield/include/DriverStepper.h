@@ -1,10 +1,10 @@
-#ifndef STEPPERMOTOR_H
-#define STEPPERMOTOR_H
+#ifndef DRIVERSTEPPER_H
+#define DRIVERSTEPPER_H
 
 #include <Arduino.h>
 #include <AccelStepper.h>
 
-class StepperMotor {
+class DriverStepper {
 public:
     // Attributes
     const char* name;
@@ -19,7 +19,7 @@ public:
     AccelStepper driver;
 
     // Constructor
-    StepperMotor(const char* n, uint8_t step, uint8_t dir, uint8_t boot,
+    DriverStepper(const char* n, uint8_t step, uint8_t dir, uint8_t boot,
                  uint8_t fault, int32_t accel, int32_t range, float spd);
 
     // Methods

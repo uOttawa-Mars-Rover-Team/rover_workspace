@@ -1,7 +1,7 @@
 #include "DriverStepper.h"
 
 // Constructor
-StepperMotor::StepperMotor(const char* n, uint8_t step, uint8_t dir, uint8_t boot,
+DriverStepper::DriverStepper(const char* n, uint8_t step, uint8_t dir, uint8_t boot,
                            uint8_t fault, int32_t accel, int32_t range, float spd)
     : driver(AccelStepper::DRIVER, step, dir)
 {
@@ -17,7 +17,7 @@ StepperMotor::StepperMotor(const char* n, uint8_t step, uint8_t dir, uint8_t boo
 }
 
 // Initialize hardware
-void StepperMotor::init() {
+void DriverStepper::init() {
     pinMode(bootPin, OUTPUT);
     digitalWrite(bootPin, HIGH);
     pinMode(faultPin, INPUT_PULLUP);
@@ -29,7 +29,7 @@ void StepperMotor::init() {
 }
 
 // Enable motor
-void StepperMotor::enable() {
+void DriverStepper::enable() {
     digitalWrite(bootPin, HIGH);
     enabled = true;
     Serial.print(name);
@@ -37,7 +37,7 @@ void StepperMotor::enable() {
 }
 
 // Disable motor
-void StepperMotor::disable() {
+void DriverStepper::disable() {
     stop();
     digitalWrite(bootPin, LOW);
     enabled = false;
@@ -72,7 +72,7 @@ void StepperMotor::disable() {
 //     return true;
 // }
 
-bool StepperMotor::moveMotor(float velocity) {
+bool DriverStepper::moveMotor(float velocity) {
     if (fabs(velocity) > speed) {  // 'speed' is your configured max allowed
         Serial.println("ERROR: velocity exceeds max speed");
         return false;
@@ -98,11 +98,11 @@ bool StepperMotor::moveMotor(float velocity) {
 
 
 // Stop motor
-void StepperMotor::stop() {
+void DriverStepper::stop() {
     driver.stop();
 }
 
 // Must call frequently - non-blocking
-bool StepperMotor::run() {
+bool DriverStepper::run() {
     return driver.run();
 }

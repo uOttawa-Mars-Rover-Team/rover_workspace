@@ -1,4 +1,4 @@
-#include "StepperMotor.h"
+#include "DriverStepper.h"
 
 // Variable names: stepMotor1, stepMotor2, ...
 

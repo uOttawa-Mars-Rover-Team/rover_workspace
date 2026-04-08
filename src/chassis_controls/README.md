@@ -9,7 +9,7 @@ The main launch files to run are:
 - `rover.launch.py`
   - Runs the ROS2 Control drive system, which interacts with our Talon SRX Motor controllers.
   - After launching `rover.launch.py`, run either the joystick or keyboard controls to drive the rover
-    - For keyboard controls, run `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/cmd_vel_keyboard`
+    - For keyboard controls, run `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/cmd_vel_teleop`
     - For joystick controls, connnect a joystick (the joystick should show up under `/dev/input` in Linux), ideally the Logitech F710, to drive the rover. The joystick has a "dead man's switch" which must be pressed to actually command the rover. When using the F710, the dead man's switch is `LB` and commands are sent with the left joystick.
 
 ## Node Graph

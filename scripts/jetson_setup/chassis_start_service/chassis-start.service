@@ -1,0 +1,11 @@
+[Unit]
+Description=Starts the drive system
+After=can-start.service
+
+[Service]
+User=roverpc
+Group=roverpc
+ExecStart=/usr/local/bin/chassis-start.sh
+
+[Install]
+WantedBy=multi-user.target

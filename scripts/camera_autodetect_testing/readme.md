@@ -69,6 +69,6 @@ ros2 run rqt_image_view rqt_image_view
 ---
 
 ## Notes
-- Replace `<IP>` with your device's IP address
-- Replace `<CamName>` with your camera's name
+- Replace `<IP>` with your jetsons's IP address
+- Replace `<CamName>` with desired camera's name
 - Replace `<pid>` with the actual process ID from the `ps` command

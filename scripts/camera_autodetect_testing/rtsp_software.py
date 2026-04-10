@@ -1,6 +1,6 @@
 
 # --- HOW TO VIEW STREAMS ---
-#
+# 
 # 1. VIEW ON LAPTOP (Low Latency for Radio):
 #    ffplay -fflags nobuffer -flags low_delay -framedrop -rtsp_transport udp rtsp://<JETSON_IP>:8554/FrontCam
 #

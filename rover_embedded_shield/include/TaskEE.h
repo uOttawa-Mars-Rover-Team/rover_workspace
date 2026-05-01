@@ -2,7 +2,7 @@
 #define TASKEE_H
 
 #include <Arduino.h>
-#include <AccelStepper.h>
+// #include <AccelStepper.h>
 #include <DriverStepper.h>
 
 class TaskEE : public DriverStepper {
@@ -14,6 +14,7 @@ public:
     // Methods
     bool open(float velocity);
     bool close(float velocity);
+    bool stop();
 };
 
 #endif

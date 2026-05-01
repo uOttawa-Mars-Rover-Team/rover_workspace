@@ -24,3 +24,8 @@ bool TaskEE::close(float velocity) {
     }
     return moveMotor(-velocity);  // reverse
 }
+
+bool TaskEE::stop() {
+    Serial.println("CLOSING EE.");
+    return moveMotor(0);
+}

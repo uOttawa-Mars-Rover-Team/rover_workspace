@@ -1,21 +1,9 @@
 #include "TaskJointCtrl.h"
 
-// Constructor: Initializes the 5 joint drivers with pins from your verified reference
-// TaskJointCtrl::TaskJointCtrl() 
-    // : tw("Tower",   55, 54, 16, 17,  5000, 1000000, 1000.0),
-//       wp("Pitch",    4,  5,  3,  2, 10000, 1000000, 1000.0),
-    //   wr("Roll",     8,  9,  7,  6, 20000, 1000000, 1000.0),
-//       ee("EE",      12, 13, 11, 10, 20000, 1000000, 2500.0)
-// {
-// }
-
 TaskJointCtrl::TaskJointCtrl() 
     : tw("Tower",   55, 54, 16, 17,  5000, 1000000, 1000.0),
-
-      wp("Pitch",   8,  9, 16, 62, 20000, 1000000, WP_BASE_SPEED),
-      wr("Roll",   10, 11,  5, 55, 20000, 1000000, WR_BASE_SPEED),
-    //   wp("Pitch",    4,  5,  3,  2, 10000, 1000000, 1000.0),
-    //   wr("Roll",     8,  9,  7,  6, 20000, 1000000, 1000.0),      
+      wp("Pitch",    4,  5,  3,  2, 10000, 1000000, 2500.0),
+      wr("Roll",     8,  9,  7,  6, 20000, 1000000, 2500.0),      
       ee("EE",     12, 13, 11, 10, 20000, 1000000, 2500.0) // Kept the "Working" EE pins
 {
 }

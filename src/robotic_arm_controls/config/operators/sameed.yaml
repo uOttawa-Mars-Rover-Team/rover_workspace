@@ -1,0 +1,77 @@
+# =============================================================================
+# sameed.yaml
+# controller_1 = Logitech Extreme 3D Pro  (device_id: 0 — replace with
+#                                          dev_path once confirmed on Sameed's
+#                                          machine via ls /dev/input/by-id/)
+# controller_2 = 3Dconnexion SpaceMouse   (by-id path)
+#
+# Axis bindings derived from original joy_ik_controls hardcoded mappings:
+#   Extreme 3D Pro:  lt_axes = [2, 0, 1, 5, 4, 3]  (indices 5,4 out of range)
+#   SpaceMouse M:    sm_axes = [5, 1, 2, 3, 4, 0]
+# =============================================================================
+/**:
+  ros__parameters:
+
+    # -- Core ------------------------------------------------------------------
+    control_mode:        "dual"
+    control_rate:        20.0
+    deadzone:            0.40
+    max_joint_velocity:  1.0
+    trajectory_duration: 0.1
+
+    # -- Operator directional preferences --------------------------------------
+    # Carried over from ik_joy_controls launch config (mode M):
+    #   curr_axes[0] * dirTW → q1 (twist)
+    #   curr_axes[1] * dirL1 → q2
+    #   curr_axes[2] * dirL2 → q3
+    #   curr_axes[3] * dirWP → q4 (wrist pitch)
+    #   curr_axes[4] * dirWR → q5 (roll)
+    dirTW: -1
+    dirWP: 1
+    dirWR: 1
+    dirL1: 1
+    dirL2: -1
+
+    # -- Controller 1: Logitech Extreme 3D Pro ---------------------------------
+    # lt_axes = [2, 0, 1, 5, 4, 3]:
+    #   curr_axes[0] ← axes[2] = rz  → q1 (twist),   inverted via dirTW:-1
+    #   curr_axes[1] ← axes[0] = x   → q2
+    #   curr_axes[2] ← axes[1] = y   → q3,            inverted via dirL2:-1
+    #   curr_axes[3] ← axes[5] = OOB → q4 always 0   (only 4 axes on device)
+    #   curr_axes[4] ← axes[4] = OOB → q5 always 0   (only 4 axes on device)
+    #   curr_axes[5] ← axes[3] = throttle             (unused joint slot)
+    #   buttons[0] = trigger → gripper open
+    #   buttons[1] = thumb   → gripper close
+    controller_1.topic:     "/joy/sameed/controller_1"
+    controller_1.category:  "specialty"
+    controller_1.device:    "extreme3d_pro"
+    controller_1.dev_path:  "usb-Logitech_Extreme_3D_pro_00000000002A-event-joystick"
+
+    controller_1.bindings.q1.axis:   "rz"
+    controller_1.bindings.q1.scale:  1.0
+    controller_1.bindings.q1.invert: true
+
+    controller_1.bindings.q2.axis:   "x"
+    controller_1.bindings.q2.scale:  1.0
+    controller_1.bindings.q2.invert: false
+
+    controller_1.bindings.q3.axis:   "y"
+    controller_1.bindings.q3.scale:  1.0
+    controller_1.bindings.q3.invert: true
+
+    # # q4 and q5 have no valid axis on the Extreme 3D Pro (lt_axes indices
+    # # 5 and 4 are out of range for a 4-axis device) — bound to throttle as
+    # # a placeholder so the registry doesn't fall back to button mode.
+    # # Both will read 0 at runtime until a 6-axis controller is used.
+    # controller_1.bindings.q4.axis:   "z"
+    # controller_1.bindings.q4.scale:  1.0
+    # controller_1.bindings.q4.invert: false
+
+    controller_1.bindings.gripper_open_button:  "trigger"
+    controller_1.bindings.gripper_close_button: "thumb"
+    controller_2.topic:    "/joy/sameed/controller_2"
+    controller_2.category: "specialty"
+    controller_2.device:   "spacemouse"
+    controller_2.dev_path: "usb-3Dconnexion_SpaceMouse_Wireless-event-joystick"
+
+    controller_2.bindings.q1.axis:   "rz"

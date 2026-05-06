@@ -35,6 +35,11 @@ setup(
             os.path.join("share", package_name, "config"),
             glob(os.path.join("config", "*.yaml")),
         ),
+        # Operator configs
+        (
+            os.path.join("share", package_name, "config", "operators"),
+            glob(os.path.join("config", "operators", "*.yaml")),
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -51,6 +56,7 @@ setup(
             "m_router = robotic_arm_controls.m_router:main",
             "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
             "dual_joystick_arm_controller = robotic_arm_controls.dual_joystick_arm_controller:main",
+            "arm_controller_node = robotic_arm_controls.arm_controller:main",
         ],
     },
 )

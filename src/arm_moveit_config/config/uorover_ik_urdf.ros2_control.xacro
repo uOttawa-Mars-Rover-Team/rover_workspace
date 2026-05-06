@@ -5,8 +5,8 @@
 
         <ros2_control name="${name}" type="system">
             <hardware>
-                <!--<plugin>mock_components/GenericSystem</plugin>-->
-                <plugin>arm_controls/ArmSystem</plugin>
+                <plugin>mock_components/GenericSystem</plugin>
+                <!-- <plugin>arm_controls/ArmSystem</plugin> -->
             </hardware>
 
             <!--Order of declarations for joints and interfaces has an impact on the hardware interface code so be careful!-->

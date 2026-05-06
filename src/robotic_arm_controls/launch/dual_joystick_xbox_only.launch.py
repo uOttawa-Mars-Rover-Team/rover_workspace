@@ -17,8 +17,8 @@ def generate_launch_description():
     name='joy_node_controller_1',
     parameters=[{
         'dev': '/dev/input/by-id/usb-Microsoft_Xbox_Controller-event-joystick',
-        'autorepeat_rate': 50.0,
-        'deadzone': 0.15
+        'autorepeat_rate': 20.0,
+        'deadzone': 0.4
     }],
     remappings=[('/joy', '/joy/controller_1')],
     output='screen'

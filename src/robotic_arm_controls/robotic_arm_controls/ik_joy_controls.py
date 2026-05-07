@@ -53,6 +53,8 @@ class Joy_IK_Controller(Node):
         self.dirL2 = self.get_param("dirL2", rclpy.Parameter.Type.INTEGER, 1)
 
         self.servo_cmd_sent = False
+        self.prev_svd_pressed = False
+        self.svd_pressed = False
 
         self.arm_cmd = String()   # or whatever type curr_cmd is
         
@@ -76,7 +78,7 @@ class Joy_IK_Controller(Node):
         self.cmd_pub = self.create_publisher(String, '/arm_cmd', 20)
 
         self.joy_sub_logitech = self.create_subscription(Joy, "/joy/arm_cmd_logitech", self.joy_cb_logitech, 20)
-        self.joy_sub_spacemouse = self.create_subscription(Joy, "/joy/arm_cmd_spacemouse", self.joy_cb_spacemouse, 20)
+        self.joy_sub_xbox = self.create_subscription(Joy, "/joy/arm_cmd_xbox", self.joy_cb_xbox, 20)
 
 
         self.command = String()
@@ -92,13 +94,13 @@ class Joy_IK_Controller(Node):
         self.STOP_BTNS    = [0,0,0,0,0,0] # default of what stop is for buttons
         self.prev_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0] # previous array of joy btn values for logitech controller (int array)
         self.curr_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0] # current  array of joy btn values
-        self.prev_btns_sm = [0,0,0,0,0,0] # previous array of joy btn values; spacemouse(int array)
-        self.curr_btns_sm = [0,0,0,0,0,0] # current  array of joy btn values
+        self.prev_btns_xb = [0,0,0,0,0,0,0,0,0,0,0,0] # previous array of joy btn values; spacemouse(int array)
+        self.curr_btns_xb = [0,0,0,0,0,0,0,0,0,0,0,0] # current  array of joy btn values
         self.speed_axis = [0.0]
         # Permutations for the mapping for the spacemouse (sm)
         self.speed_raw = 0.0
-        self.sm_btns = [0, 1]
-        self.sm_axes = []
+        self.xb_btns = [0,1,2,3,4,5,6,7,8,9,10]
+        self.xb_axes = []
         if self.mode == "I":
             # mappings
             # 0 - fwd/bwd
@@ -107,9 +109,9 @@ class Joy_IK_Controller(Node):
             # 3 - twist around y
             # 4 - twist around z
             # 5 - up down z
-            self.sm_axes = [1, 0, 2, 5, 3, 4]
+            self.xb_axes = [1, 0, 2, 5, 3, 4]
         else:
-            self.sm_axes = [5, 1, 2, 3, 4, 0]
+            self.xb_axes = [0, 1, 2, 3, 4, 5]
 
         self.lt_btns = [0,1,2,3,4,5,6,7,8,9,10,11]
         self.lt_axes = [2, 0, 1, 5, 4, 3]
@@ -143,33 +145,33 @@ class Joy_IK_Controller(Node):
 
             #self.get_logger().info("We got logitech")   
         elif (len(message.buttons) == 11):
-            self.get_logger().info("Spacemouse wired to logitech port")
+            self.get_logger().info("Xbox wired to logitech port")
             
         else:
-            self.get_logger().info("Wrong controller or spacemouse")   
+            self.get_logger().info("Wrong controller gooba")   
 
 
-    def joy_cb_spacemouse(self, message: Joy) -> None:
+    def joy_cb_xbox(self, message: Joy) -> None:
         if (len(message.buttons) == 11): # spacemouse
             # for i in range(6):
             #     self.curr_axes[i] = message.axes[self.sm_axes[i]]
-            # for i in range(2):
-            #     btn_sum += message.buttons[i]
-            #     self.curr_btns_sm[i] = message.buttons[self.sm_btns[i]]
+            for i in range(11):
+                self.curr_btns_xb[i] = message.buttons[self.xb_btns[i]]
             # if btn_sum != 0:
             #     btns_zero = False
 
-            self.curr_axes[3] = message.axes[1]
-            self.curr_axes[4] = message.axes[0]
+            self.curr_axes[3] = message.axes[self.xb_axes[1]]
+            self.curr_axes[4] = message.axes[self.xb_axes[0]]
+            self.svd_pressed = message.axes[self.xb_axes[2]] < 0  # hard assign here
             self.joy_parser(message)
 
 
             #self.get_logger().info("We got space mouse")
         elif (len(message.buttons) == 12):
-            self.get_logger().info("Logitech wired to spacemouse port")
+            self.get_logger().info("Logitech wired to xbox port")
 
         else:
-            self.get_logger().info("Wrong controller brotha")
+            self.get_logger().info("Wrong controller gooba")
 
     def joy_parser(self, message: Joy) -> None:
 
@@ -238,9 +240,11 @@ class Joy_IK_Controller(Node):
                         speed_msg = String()
                     self.arrayRoundToMaxVelocity()
 
+                    prev_svd_pressed = self.prev_svd_pressed
+
                     if self.curr_btns_lt[4] and not self.prev_btns_lt[4]:  # button just pressed
                         new_tw_vel = round(self.max_vel_tw + 0.1, 1)
-                        if new_tw_vel <= 1.0:
+                        if new_tw_vel <= 1.0:                           
                             self.max_vel_tw = new_tw_vel
                             self.get_logger().info(f'Max tw vel: {self.max_vel_tw}')
                     elif self.curr_btns_lt[5] and not self.prev_btns_lt[5]:  # button just pressed
@@ -249,18 +253,23 @@ class Joy_IK_Controller(Node):
                             self.max_vel_tw = new_tw_vel
                             self.get_logger().info(f'Max tw vel: {self.max_vel_tw}')
                     
-                    if self.curr_btns_lt[2]:
+                    if self.curr_btns_xb[4]:
                         self.send_servo_command('svu', 'Shoulder camera servo: up')
-                    elif self.curr_btns_lt[3]:
+                    elif self.svd_pressed:
                         self.send_servo_command('svd', 'Shoulder camera servo: down')
                     else:
                         # Buttons were just released (or never held) — reset the latch
-                        if self.prev_btns_lt[2] or self.prev_btns_lt[3]:
+                        if prev_svd_pressed or self.prev_btns_xb[4]:
                             self.servo_cmd_sent = False
                             self.send_command("svs", "Stop shoulder camera servo")
+                    self.prev_svd_pressed = self.svd_pressed
 
+                    if self.curr_btns_xb[1]:
+                        self.get_logger().info(f'Pressed da button') #Michelle to help you
                     # Save state at the END of joy_parser (after all button reads)
                     self.prev_btns_lt = list(self.curr_btns_lt)
+                    self.prev_btns_xb = list(self.curr_btns_xb)
+
 
 
                     self.curr_cmd = "S;"

@@ -52,7 +52,9 @@ class Joy_IK_Controller(Node):
         self.dirL1 = self.get_param("dirL1", rclpy.Parameter.Type.INTEGER, 1)
         self.dirL2 = self.get_param("dirL2", rclpy.Parameter.Type.INTEGER, 1)
 
+        self.servo_cmd_sent = False
 
+        self.arm_cmd = String()   # or whatever type curr_cmd is
         
         # All about the publishing loop
         self.run = True  # threads will stop running if false
@@ -92,8 +94,9 @@ class Joy_IK_Controller(Node):
         self.curr_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0] # current  array of joy btn values
         self.prev_btns_sm = [0,0,0,0,0,0] # previous array of joy btn values; spacemouse(int array)
         self.curr_btns_sm = [0,0,0,0,0,0] # current  array of joy btn values
-        
+        self.speed_axis = [0.0]
         # Permutations for the mapping for the spacemouse (sm)
+        self.speed_raw = 0.0
         self.sm_btns = [0, 1]
         self.sm_axes = []
         if self.mode == "I":
@@ -134,11 +137,12 @@ class Joy_IK_Controller(Node):
             self.curr_axes[2] = message.axes[self.lt_axes[3]]
             self.curr_axes[1] = message.axes[self.lt_axes[2]]
             self.curr_axes[0] = message.axes[self.lt_axes[0]]
+            self.speed_raw = message.axes[self.lt_axes[5]]
             self.joy_parser(message)
 
 
             #self.get_logger().info("We got logitech")   
-        elif (len(message.buttons) == 2):
+        elif (len(message.buttons) == 11):
             self.get_logger().info("Spacemouse wired to logitech port")
             
         else:
@@ -146,7 +150,7 @@ class Joy_IK_Controller(Node):
 
 
     def joy_cb_spacemouse(self, message: Joy) -> None:
-        if (len(message.buttons) == 2): # spacemouse
+        if (len(message.buttons) == 11): # spacemouse
             # for i in range(6):
             #     self.curr_axes[i] = message.axes[self.sm_axes[i]]
             # for i in range(2):
@@ -155,8 +159,8 @@ class Joy_IK_Controller(Node):
             # if btn_sum != 0:
             #     btns_zero = False
 
-            self.curr_axes[3] = message.axes[3]
-            self.curr_axes[4] = message.axes[4]
+            self.curr_axes[3] = message.axes[1]
+            self.curr_axes[4] = message.axes[0]
             self.joy_parser(message)
 
 
@@ -222,6 +226,43 @@ class Joy_IK_Controller(Node):
                     self.tp_executor.submit(self.vel_control_cmd, self.vel_control_msg)
 
                 else:
+                    #self.get_logger().info(f"Max axis to: {speed_raw}")
+                    if (self.speed_raw) < 0:
+                        new_speed = (1 - round(abs(self.speed_raw), 3)) / 2
+                    else:
+                        new_speed = (1 + round(self.speed_raw, 3)) / 2
+
+                    # Only publish speed change if it actually changed
+                    if abs(new_speed - self.max_vel ) > 0.01:
+                        self.max_vel = new_speed
+                        speed_msg = String()
+                    self.arrayRoundToMaxVelocity()
+
+                    if self.curr_btns_lt[4] and not self.prev_btns_lt[4]:  # button just pressed
+                        new_tw_vel = round(self.max_vel_tw + 0.1, 1)
+                        if new_tw_vel <= 1.0:
+                            self.max_vel_tw = new_tw_vel
+                            self.get_logger().info(f'Max tw vel: {self.max_vel_tw}')
+                    elif self.curr_btns_lt[5] and not self.prev_btns_lt[5]:  # button just pressed
+                        new_tw_vel = round(self.max_vel_tw - 0.1, 1)
+                        if new_tw_vel >= 0.1:
+                            self.max_vel_tw = new_tw_vel
+                            self.get_logger().info(f'Max tw vel: {self.max_vel_tw}')
+                    
+                    if self.curr_btns_lt[2]:
+                        self.send_servo_command('svu', 'Shoulder camera servo: up')
+                    elif self.curr_btns_lt[3]:
+                        self.send_servo_command('svd', 'Shoulder camera servo: down')
+                    else:
+                        # Buttons were just released (or never held) — reset the latch
+                        if self.prev_btns_lt[2] or self.prev_btns_lt[3]:
+                            self.servo_cmd_sent = False
+                            self.send_command("svs", "Stop shoulder camera servo")
+
+                    # Save state at the END of joy_parser (after all button reads)
+                    self.prev_btns_lt = list(self.curr_btns_lt)
+
+
                     self.curr_cmd = "S;"
 
                     self.curr_cmd += str(round(self.curr_axes[0]*self.dirTW, 2))
@@ -246,9 +287,9 @@ class Joy_IK_Controller(Node):
                             
                     # elif len(message.buttons) == 12: # logitech
                     if self.curr_btns_lt[0]:
-                        self.curr_cmd += str(round(self.max_vel, 2))
-                    elif self.curr_btns_lt[1]:
                         self.curr_cmd += str(-round(self.max_vel, 2))
+                    elif self.curr_btns_lt[1]:
+                        self.curr_cmd += str(round(self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
                     self.curr_cmd += ";!"
@@ -264,6 +305,29 @@ class Joy_IK_Controller(Node):
     def servo_pub_cmd(self, servo_msg):
         self.servo_pub.publish(servo_msg)
 
+    def send_servo_command(self, data: str, label: str):
+        if(not self.servo_cmd_sent):
+            self.send_command(data, label)
+            self.servo_cmd_sent = True
+
+    def send_command(self, data: str, label: str):  
+        self.arm_cmd.data = f"{data};!"
+        self.get_logger().info(label)
+        self.cmd_pub.publish(self.arm_cmd)
+
+    def your_gamepad_poll_loop(self):  # wherever curr_btns_lt is updated
+        # After updating curr_btns_lt, check for releases on buttons 2 and 3
+        if self.prev_btns_lt:  # guard for first iteration
+            btn2_released = self.prev_btns_lt[2] and not self.curr_btns_lt[2]
+            btn3_released = self.prev_btns_lt[3] and not self.curr_btns_lt[3]
+
+            if btn2_released or btn3_released:
+                self.servo_cmd_sent = False
+                self.send_command("svs", "Stop shoulder camera servo")
+
+        # Save state for next iteration
+        self.prev_btns_lt = list(self.curr_btns_lt)
+    
     """
     Makes sure messages are always being published and at a specific rate
     """

@@ -1,0 +1,4 @@
+This directory is intended for project specific (private) libraries.
+The contents of this directory should not be installed with `pio lib install`.
+
+See https://docs.platformio.org/page/librarymanager/index.html

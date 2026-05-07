@@ -43,25 +43,28 @@ class KeyboardListener(Node):
         self.client = self.create_client(Trigger, 'servo_node/start_servo')
 
         # ------------------------------------------------------------------
-        # Xbox accessible controller skeleton
+        # Xbox accessible controller
         # ------------------------------------------------------------------
-        # The physical keyboard input above is being deprecated in favour of
-        # the 4-button accessible Xbox controller. For now BOTH input sources
-        # coexist so functionality is preserved; the stubs below are where
-        # the eventual Xbox -> action mappings will live.
+
+        # The physical keyboard input is being deprecated. The Xbox controller will be used instead. For now BOTH input sources oexist so functionality is preserved.
+
+        # Current mapping (per team lead):
+        #   btn1 -> toggle stepper 1 (TW)
+        #   btn2 -> toggle stepper 2 (WP)
+        #   btn3 -> toggle stepper 3 (WR)
+        #   btn4 -> toggle stepper 4 (EE)
         #
         # Joy buttons stream continuously while held (~50 Hz), so we track
         # the previous button state and only fire on edges:
-        #   - rising edge  (0 -> 1) => *_pressed  stub
-        #   - falling edge (1 -> 0) => *_released stub
+        #   - rising edge  (0 -> 1) => *_pressed  handler
+        #   - falling edge (1 -> 0) => *_released handler
         #
         # Press-and-release pattern reference (camera servo, currently O/P):
         #   on press   -> self.send_servo_command('svu', 'Shoulder camera servo: up')
         #                 (the servo_cmd_sent guard prevents repeat sends while held)
         #   on release -> self.servo_cmd_sent = False
         #                 self.send_command('svs', 'Stop shoulder camera servo')
-        # Single-shot actions (e.g. toggles, vel adjust) only need the
-        # *_pressed stub; leave *_released empty.
+        # Single-shot actions (e.g. toggles) only need the *_pressed handler.
         self.NUM_XBOX_BTNS = 4
         self.prev_xbox_btns = [0] * self.NUM_XBOX_BTNS
         self.xbox_sub = self.create_subscription(Joy, '/joy/xbox', self.on_xbox, 10)
@@ -153,41 +156,37 @@ class KeyboardListener(Node):
                 dispatch[i][1]()
             self.prev_xbox_btns[i] = curr
 
-    # ----- Xbox button stubs (TODO: wire to actions) -----
-    # See the comment block in __init__ for the press/release pattern.
-    # For single-shot actions only fill in *_pressed and leave *_released empty.
+    # ----- Xbox button handlers -----
+    # Mapping (per team lead): each button toggles a stepper.
+    #   btn1 -> stepper 1 (TW)
+    #   btn2 -> stepper 2 (WP)
+    #   btn3 -> stepper 3 (WR)
+    #   btn4 -> stepper 4 (EE)
+    # All four are single-press toggles, so the *_released handlers stay empty.
 
     def on_xbox_btn1_pressed(self):
-        self.get_logger().info('Xbox btn 1 pressed (unmapped)')
-        # TODO: map this button to an action
+        self.toggle_gpio('stepper1_en', 'TW', 'stepper1')
 
     def on_xbox_btn1_released(self):
         pass
-        # TODO: only needed for press-and-hold actions (e.g. camera servo stop)
 
     def on_xbox_btn2_pressed(self):
-        self.get_logger().info('Xbox btn 2 pressed (unmapped)')
-        # TODO: map this button to an action
+        self.toggle_gpio('stepper2_en', 'WP', 'stepper2')
 
     def on_xbox_btn2_released(self):
         pass
-        # TODO: only needed for press-and-hold actions
 
     def on_xbox_btn3_pressed(self):
-        self.get_logger().info('Xbox btn 3 pressed (unmapped)')
-        # TODO: map this button to an action
+        self.toggle_gpio('stepper3_en', 'WR', 'stepper3')
 
     def on_xbox_btn3_released(self):
         pass
-        # TODO: only needed for press-and-hold actions
 
     def on_xbox_btn4_pressed(self):
-        self.get_logger().info('Xbox btn 4 pressed (unmapped)')
-        # TODO: map this button to an action
+        self.toggle_gpio('stepper4_en', 'EE', 'stepper4')
 
     def on_xbox_btn4_released(self):
         pass
-        # TODO: only needed for press-and-hold actions
 
 
     """

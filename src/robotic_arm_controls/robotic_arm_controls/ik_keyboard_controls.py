@@ -8,6 +8,7 @@ from rclpy.parameter import Parameter
 from std_msgs.msg import String
 from pynput import keyboard
 from std_msgs.msg import Float32
+from sensor_msgs.msg import Joy
 from general_interfaces.msg import ArmGpio
 from std_srvs.srv import Trigger
 
@@ -40,6 +41,30 @@ class KeyboardListener(Node):
         self.servo_cmd_sent = False #For servo cmds when holding down key 
         # ROS2 service client
         self.client = self.create_client(Trigger, 'servo_node/start_servo')
+
+        # ------------------------------------------------------------------
+        # Xbox accessible controller skeleton
+        # ------------------------------------------------------------------
+        # The physical keyboard input above is being deprecated in favour of
+        # the 4-button accessible Xbox controller. For now BOTH input sources
+        # coexist so functionality is preserved; the stubs below are where
+        # the eventual Xbox -> action mappings will live.
+        #
+        # Joy buttons stream continuously while held (~50 Hz), so we track
+        # the previous button state and only fire on edges:
+        #   - rising edge  (0 -> 1) => *_pressed  stub
+        #   - falling edge (1 -> 0) => *_released stub
+        #
+        # Press-and-release pattern reference (camera servo, currently O/P):
+        #   on press   -> self.send_servo_command('svu', 'Shoulder camera servo: up')
+        #                 (the servo_cmd_sent guard prevents repeat sends while held)
+        #   on release -> self.servo_cmd_sent = False
+        #                 self.send_command('svs', 'Stop shoulder camera servo')
+        # Single-shot actions (e.g. toggles, vel adjust) only need the
+        # *_pressed stub; leave *_released empty.
+        self.NUM_XBOX_BTNS = 4
+        self.prev_xbox_btns = [0] * self.NUM_XBOX_BTNS
+        self.xbox_sub = self.create_subscription(Joy, '/joy/xbox', self.on_xbox, 10)
 
         # This delay ensures that the joy node has been instantiated before this message has been published
         # which solves the problem of the joy node and keyboard initial velocity being different
@@ -97,6 +122,73 @@ class KeyboardListener(Node):
             self.servo_cmd_sent = False;
             self.send_command("svs", "Stop shoulder camera servo")
     
+
+    """
+    Xbox controller callback. Detects rising/falling edges on the 4
+    buttons and dispatches to the per-button stubs below. Joystick axes
+    are intentionally ignored (this is the accessible controller's
+    4-button + joystick layout; the joystick is not used here).
+    """
+    def on_xbox(self, message: Joy) -> None:
+        if len(message.buttons) < self.NUM_XBOX_BTNS:
+            self.get_logger().warn(
+                f'Xbox Joy message has only {len(message.buttons)} buttons, '
+                f'expected at least {self.NUM_XBOX_BTNS}'
+            )
+            return
+
+        dispatch = [
+            (self.on_xbox_btn1_pressed, self.on_xbox_btn1_released),
+            (self.on_xbox_btn2_pressed, self.on_xbox_btn2_released),
+            (self.on_xbox_btn3_pressed, self.on_xbox_btn3_released),
+            (self.on_xbox_btn4_pressed, self.on_xbox_btn4_released),
+        ]
+
+        for i in range(self.NUM_XBOX_BTNS):
+            curr = message.buttons[i]
+            prev = self.prev_xbox_btns[i]
+            if curr and not prev:
+                dispatch[i][0]()
+            elif prev and not curr:
+                dispatch[i][1]()
+            self.prev_xbox_btns[i] = curr
+
+    # ----- Xbox button stubs (TODO: wire to actions) -----
+    # See the comment block in __init__ for the press/release pattern.
+    # For single-shot actions only fill in *_pressed and leave *_released empty.
+
+    def on_xbox_btn1_pressed(self):
+        self.get_logger().info('Xbox btn 1 pressed (unmapped)')
+        # TODO: map this button to an action
+
+    def on_xbox_btn1_released(self):
+        pass
+        # TODO: only needed for press-and-hold actions (e.g. camera servo stop)
+
+    def on_xbox_btn2_pressed(self):
+        self.get_logger().info('Xbox btn 2 pressed (unmapped)')
+        # TODO: map this button to an action
+
+    def on_xbox_btn2_released(self):
+        pass
+        # TODO: only needed for press-and-hold actions
+
+    def on_xbox_btn3_pressed(self):
+        self.get_logger().info('Xbox btn 3 pressed (unmapped)')
+        # TODO: map this button to an action
+
+    def on_xbox_btn3_released(self):
+        pass
+        # TODO: only needed for press-and-hold actions
+
+    def on_xbox_btn4_pressed(self):
+        self.get_logger().info('Xbox btn 4 pressed (unmapped)')
+        # TODO: map this button to an action
+
+    def on_xbox_btn4_released(self):
+        pass
+        # TODO: only needed for press-and-hold actions
+
 
     """
     Toggles a GPIO field and publishes either command or GPIO message depending on mode

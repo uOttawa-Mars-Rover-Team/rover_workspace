@@ -23,7 +23,23 @@ def generate_launch_description():
                 ],
             output="screen",
             )
-            
+
+    # Xbox accessible controller (4 buttons + joystick)
+    # TODO: add a udev rule mapping the controller to /dev/input/arm_xbox
+    # (mirrors the existing arm_logitech rule). Until then this path is a
+    # placeholder; replace with /dev/input/jsN if testing without the rule.
+    xbox_joy = launch_ros.actions.Node(
+            package="joy",
+            executable="joy_node",
+            parameters=[
+                {'dev': '/dev/input/arm_xbox'}
+            ],
+            remappings=[
+                ("/joy", "/joy/xbox"),
+                ],
+            output="screen",
+            )
+
     # Keyboard
     ik_keyboard_controls = launch_ros.actions.Node(
             package="robotic_arm_controls",
@@ -47,6 +63,8 @@ def generate_launch_description():
             ],
             output="screen",
             )
+            
+
 
     # Router node
     m_router = launch_ros.actions.Node(
@@ -64,6 +82,7 @@ def generate_launch_description():
     return launch.LaunchDescription(
             [
                 logitech_joy,
+                xbox_joy,
                 #m_toggler,
                 ik_keyboard_controls,
                 ik_joy_controls,

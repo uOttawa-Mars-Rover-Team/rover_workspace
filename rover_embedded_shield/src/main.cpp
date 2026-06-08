@@ -204,7 +204,10 @@ void setup() {
   robotArm.addStepper(&wp);
   robotArm.addStepper(&wr);
   robotArm.addStepper(&ee);
+
+  DriverLA_InitI2C();
   robotArm.addLA(&LA1);
+  
   robotArm.init();
   
   Serial.println("Robot Arm Sequential Test Initialized");

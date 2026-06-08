@@ -111,11 +111,86 @@
 // }
 
 
-// ----------------- Usage of TaskJoint.cpp
-#include "TaskJointCtrl.h"
+// ----------------- Usage of TaskJointCtrl.cpp
+// #include "TaskJointCtrl.h"
+
+// // Instantiate the master Joint Controller
+// TaskJointCtrl robotArm;
+
+// // Global timer variable
+// static unsigned long t0 = 0;
+
+// void setup() {
+//   // Start serial communications
+//   Serial.begin(115200);
+  
+//   // Initialize all motors (Tower, Pitch, Roll, End Effector)
+//   robotArm.init();
+  
+//   Serial.println("Robot Arm Sequential Test Initialized");
+  
+//   // Record the start time
+//   t0 = millis();
+// }
+
+// void loop() {
+//   unsigned long cycleTime = (millis() - t0) % 6000;
+
+//   if (cycleTime < 2000) {
+//     // STAGE 1 (0s to 1s): Move FORWARD
+//     robotArm.MoveEE(1); 
+//     robotArm.MoveWP(1);
+//     robotArm.MoveWR(1);
+//     robotArm.MoveTW(1);
+    
+//     static unsigned long lastLog1 = 0;
+//     if (millis() - lastLog1 > 3000) {
+//        Serial.println("Stage 1: Forward (+1)");
+//        lastLog1 = millis();
+//     }
+//   } 
+//   else if (cycleTime < 4000) {
+//     // STAGE 2 (1s to 2s): STOP
+//     robotArm.MoveEE(0);
+//     robotArm.MoveWP(0);
+//     robotArm.MoveWR(0);
+//     robotArm.MoveTW(0);
+
+//     static unsigned long lastLog2 = 0;
+//     if (millis() - lastLog2 > 3000) {
+//        Serial.println("Stage 2: Stop (0)");
+//        lastLog2 = millis();
+//     }
+//   }
+//   else {
+//     // STAGE 3 (2s to 3s): Move REVERSE
+//     robotArm.MoveEE(-1);
+//     robotArm.MoveWP(-1);
+//     robotArm.MoveWR(-1);
+//     robotArm.MoveTW(-1);
+
+//     static unsigned long lastLog3 = 0;
+//     if (millis() - lastLog3 > 6000) {
+//        Serial.println("Stage 3: Reverse (-1)");
+//        lastLog3 = millis();
+//     }
+//   }
+// }
+
+
+
+// ----------------- Usage of TaskJointControl.cpp
+#include "TaskJointControl.h"
 
 // Instantiate the master Joint Controller
-TaskJointCtrl robotArm;
+TaskJointControl robotArm(5);
+
+DriverStepper tw("Tower", 55, 54, 16, 17,  5000, 1000000, 1000.0);
+DriverStepper wp("Pitch", 4,  5,  3,  2, 10000, 1000000, 2500.0);
+DriverStepper wr("Roll",  8,  9,  7,  6, 20000, 1000000, 2500.0);      
+DriverStepper ee("EE", 12, 13, 11, 10, 20000, 1000000, 2500.0); 
+
+DriverLA LA1(12);
 
 // Global timer variable
 static unsigned long t0 = 0;
@@ -125,6 +200,11 @@ void setup() {
   Serial.begin(115200);
   
   // Initialize all motors (Tower, Pitch, Roll, End Effector)
+  robotArm.addStepper(&tw);
+  robotArm.addStepper(&wp);
+  robotArm.addStepper(&wr);
+  robotArm.addStepper(&ee);
+  robotArm.addLA(&LA1);
   robotArm.init();
   
   Serial.println("Robot Arm Sequential Test Initialized");
@@ -138,10 +218,7 @@ void loop() {
 
   if (cycleTime < 2000) {
     // STAGE 1 (0s to 1s): Move FORWARD
-    robotArm.MoveEE(1); 
-    robotArm.MoveWP(1);
-    robotArm.MoveWR(1);
-    robotArm.MoveTW(1);
+    robotArm.parseMessage("1;1;1;1;1");
     
     static unsigned long lastLog1 = 0;
     if (millis() - lastLog1 > 3000) {
@@ -151,10 +228,7 @@ void loop() {
   } 
   else if (cycleTime < 4000) {
     // STAGE 2 (1s to 2s): STOP
-    robotArm.MoveEE(0);
-    robotArm.MoveWP(0);
-    robotArm.MoveWR(0);
-    robotArm.MoveTW(0);
+    robotArm.parseMessage("0;0;0;0;0");
 
     static unsigned long lastLog2 = 0;
     if (millis() - lastLog2 > 3000) {
@@ -164,10 +238,8 @@ void loop() {
   }
   else {
     // STAGE 3 (2s to 3s): Move REVERSE
-    robotArm.MoveEE(-1);
-    robotArm.MoveWP(-1);
-    robotArm.MoveWR(-1);
-    robotArm.MoveTW(-1);
+    robotArm.parseMessage("-1;-1;-1;-1;-1");
+
 
     static unsigned long lastLog3 = 0;
     if (millis() - lastLog3 > 6000) {

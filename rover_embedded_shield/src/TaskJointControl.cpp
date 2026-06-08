@@ -35,8 +35,8 @@ void TaskJointControl::JointHandle::setCommand(int8_t dir) {
 
 
     else if (type == LA) {    
-        // Not sure what 'speed' to run the LA at left at 2500 for test. 
-        la->moveMotor(2500, dir); 
+        // Not sure what 'speed' to run the LA at left at 400 for test. (was in main.cpp of another branch) 
+        la->moveMotor(400, dir); 
     }
 }
 

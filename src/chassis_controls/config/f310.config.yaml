@@ -16,6 +16,6 @@ teleop_twist_joy_node:
       yaw: 0.5
 
     enable_button: 4 # L2 shoulder button
-    enable_turbo_button: 5 # L1 shoulder button
+    enable_turbo_button: 3 # L1 shoulder button
 
     inverted_reverse: false

@@ -80,7 +80,7 @@ class Joy_IK_Controller(Node):
         self.joy_sub_logitech = self.create_subscription(Joy, "/joy/arm_cmd_logitech", self.joy_cb_logitech, 20)
         self.joy_sub_xbox = self.create_subscription(Joy, "/joy/arm_cmd_xbox", self.joy_cb_xbox, 20)
 
-
+        self.gpio_cmd = {'stepper1_en': False, 'stepper2_en': False, 'stepper3_en': False, 'stepper4_en': False}
         self.command = String()
         self.curr_cmd = ""
         self.prev_cmd = "!"
@@ -174,9 +174,8 @@ class Joy_IK_Controller(Node):
             self.get_logger().info("Wrong controller gooba")
 
     def joy_parser(self, message: Joy) -> None:
-
-
-    
+        
+        btns_zero = True 
         if not self.floatArrayEqual(self.curr_axes, self.prev_axes) or not btns_zero:
             self.prev_axes = self.curr_axes
 
@@ -242,6 +241,8 @@ class Joy_IK_Controller(Node):
 
                     prev_svd_pressed = self.prev_svd_pressed
 
+                    if self.curr_btns_lt[11] and not self.prev_btns_lt[11]:  # rising edge only
+                        self.toggle_verbose()  # Toggle verbose mode
                     if self.curr_btns_lt[4] and not self.prev_btns_lt[4]:  # button just pressed
                         new_tw_vel = round(self.max_vel_tw + 0.1, 1)
                         if new_tw_vel <= 1.0:                           
@@ -264,8 +265,18 @@ class Joy_IK_Controller(Node):
                             self.send_command("svs", "Stop shoulder camera servo")
                     self.prev_svd_pressed = self.svd_pressed
 
-                    if self.curr_btns_xb[1]:
-                        self.get_logger().info(f'Pressed da button') #Michelle to help you
+                    if self.curr_btns_xb[2] and not self.prev_btns_xb[2]:  # rising edge only
+                        self.toggle_gpio('stepper1_en', 'TW', 'stepper1')                # Toggle stepper motors
+                    if self.curr_btns_xb[3] and not self.prev_btns_xb[3]:  # rising edge only
+                        self.toggle_gpio('stepper2_en', 'WP', 'stepper2')                # Toggle stepper motors
+                    if self.curr_btns_xb[1] and not self.prev_btns_xb[1]:  # rising edge only
+                        self.toggle_gpio('stepper3_en', 'WR', 'stepper3')                # Toggle stepper motors
+                    if self.curr_btns_xb[0] and not self.prev_btns_xb[0]:  # rising edge only
+                        self.toggle_gpio('stepper4_en', 'EE', 'stepper4')                # Toggle stepper motors
+
+
+
+                      
                     # Save state at the END of joy_parser (after all button reads)
                     self.prev_btns_lt = list(self.curr_btns_lt)
                     self.prev_btns_xb = list(self.curr_btns_xb)
@@ -419,6 +430,24 @@ class Joy_IK_Controller(Node):
             self.get_logger().info(f"Using {param_name}: {param_val}")
 
         return param_val
+
+    def toggle_gpio(self, attr: str, label: str, cmd_str: str):
+        self.gpio_cmd[attr] = not self.gpio_cmd[attr]
+        self.get_logger().info(f'{label} toggled: {self.gpio_cmd[attr]}')
+        if self.mode == 'M':
+            self.arm_cmd.data = f"{cmd_str};!"
+            self.cmd_pub.publish(self.arm_cmd)
+        else:
+            self.gpio_pub.publish(self.gpio_cmd)
+    """
+    Toggles verbose mode 
+    """
+    def toggle_verbose(self):
+        self.get_logger().info('Verbose toggled')
+        if self.mode == 'M':
+            msg = String()
+            msg.data = "v;!"
+            self.cmd_pub.publish(msg)
 
 """
 Most of the code below should remain unchanged except maybe the node names

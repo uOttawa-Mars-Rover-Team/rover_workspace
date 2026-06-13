@@ -46,11 +46,11 @@ BTN_Y  = 3
 BTN_LB = 4
 BTN_RB = 5
 
-AXIS_LS_X   = 0   # WR  wrist roll
-AXIS_LS_Y   = 1   # WP  wrist pitch
+AXIS_LS_X   = 1   # WR  wrist roll
+AXIS_LS_Y   = 0   # WP  wrist pitch
 AXIS_RS_X   = 3   # TW  tower / base twist
 AXIS_RS_Y   = 4   # L1  link 1
-AXIS_DPAD_Y = 7   # L2  link 2
+AXIS_DPAD_Y = 6   # L2  link 2
 
 NUM_AXES = 8
 NUM_BTNS = 11

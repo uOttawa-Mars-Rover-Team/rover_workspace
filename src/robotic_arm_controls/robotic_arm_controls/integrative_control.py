@@ -30,7 +30,7 @@ T = TypeVar("T")
 #   0  = A
 #   1  = B
 #   2  = X
-#   3  = Y
+#   3  = Y    ← hold for TURBO mode
 #   4  = LB   ← hold for DRIVE mode
 #   5  = RB   ← hold for ARM   mode
 #   6  = Back / View
@@ -42,6 +42,7 @@ T = TypeVar("T")
 
 BTN_A  = 0
 BTN_B  = 1
+BTN_Y  = 3
 BTN_LB = 4
 BTN_RB = 5
 
@@ -69,6 +70,7 @@ class IntegrativeControl(Node):
                   Publishes geometry_msgs/Twist on /cmd_vel_teleop
                   Left stick Y = linear.x   (forward / back)
                   Left stick X = angular.z  (turn)
+                  Hold Y       = Turbo multiplier applied
 
     Hold RB  →  ARM mode
                   Publishes std_msgs/String on /arm_cmd
@@ -95,8 +97,15 @@ class IntegrativeControl(Node):
         # ---- parameters (overridable from launch file) ----------------
         self.scale_linear  = self.get_param("scale_linear",  Parameter.Type.DOUBLE, 0.5)
         self.scale_angular = self.get_param("scale_angular", Parameter.Type.DOUBLE, 0.5)
+        self.turbo_mult    = self.get_param("turbo_mult",    Parameter.Type.DOUBLE, 2.0)
+
+        # Deadbands - tunable for different controller sensitivities
+        self.deadband_ls = self.get_param("deadband_ls", Parameter.Type.DOUBLE, DEADBAND_LS)
+        self.deadband_rs = self.get_param("deadband_rs", Parameter.Type.DOUBLE, DEADBAND_RS)
+        self.deadband_dp = self.get_param("deadband_dp", Parameter.Type.DOUBLE, DEADBAND_DPAD)
 
         # Direction flips — set to -1 in launch file to invert a joint
+        self.dirTurn = self.get_param("dirTurn", Parameter.Type.INTEGER, 1) # 1 = Left is positive Z
         self.dirTW = self.get_param("dirTW", Parameter.Type.INTEGER, 1)
         self.dirL1 = self.get_param("dirL1", Parameter.Type.INTEGER, 1)
         self.dirL2 = self.get_param("dirL2", Parameter.Type.INTEGER, 1)
@@ -170,7 +179,7 @@ class IntegrativeControl(Node):
         rb_held = bool(btns[BTN_RB])
 
         if lb_held and not rb_held:
-            self._drive_handler(axes)
+            self._drive_handler(axes, btns)
         elif rb_held and not lb_held:
             self._arm_handler(axes, btns, cid)
         # both or neither → publish nothing (safe stop)
@@ -181,16 +190,18 @@ class IntegrativeControl(Node):
     # DRIVE MODE  (LB held)
     # ------------------------------------------------------------------
 
-    def _drive_handler(self, axes):
+    def _drive_handler(self, axes, btns):
         raw_linear  = axes[AXIS_LS_Y]
         raw_angular = axes[AXIS_LS_X]
 
-        if abs(raw_linear)  < DEADBAND_LS: raw_linear  = 0.0
-        if abs(raw_angular) < DEADBAND_LS: raw_angular = 0.0
+        if abs(raw_linear)  < self.deadband_ls: raw_linear  = 0.0
+        if abs(raw_angular) < self.deadband_ls: raw_angular = 0.0
+
+        multiplier = self.turbo_mult if btns[BTN_Y] else 1.0
 
         twist = Twist()
-        twist.linear.x  =  raw_linear  * self.scale_linear
-        twist.angular.z = -raw_angular * self.scale_angular  # negative: ROS convention
+        twist.linear.x  = raw_linear  * self.scale_linear * multiplier
+        twist.angular.z = raw_angular * self.scale_angular * multiplier * self.dirTurn
 
         self.tp.submit(self.drive_pub.publish, twist)
 
@@ -202,11 +213,11 @@ class IntegrativeControl(Node):
 
     def _arm_handler(self, axes, btns, cid: str):
 
-        tw = self._snap(axes[AXIS_RS_X],   DEADBAND_RS)   * self.max_vel_tw * self.dirTW
-        l1 = self._snap(axes[AXIS_RS_Y],   DEADBAND_RS)   * self.max_vel    * self.dirL1
-        l2 = self._snap(axes[AXIS_DPAD_Y], DEADBAND_DPAD) * self.max_vel    * self.dirL2
-        wp = self._snap(axes[AXIS_LS_Y],   DEADBAND_LS)   * self.max_vel    * self.dirWP
-        wr = self._snap(axes[AXIS_LS_X],   DEADBAND_LS)   * self.max_vel    * self.dirWR
+        tw = self._snap(axes[AXIS_RS_X],   self.deadband_rs) * self.max_vel_tw * self.dirTW
+        l1 = self._snap(axes[AXIS_RS_Y],   self.deadband_rs) * self.max_vel    * self.dirL1
+        l2 = self._snap(axes[AXIS_DPAD_Y], self.deadband_dp) * self.max_vel    * self.dirL2
+        wp = self._snap(axes[AXIS_LS_Y],   self.deadband_ls) * self.max_vel    * self.dirWP
+        wr = self._snap(axes[AXIS_LS_X],   self.deadband_ls) * self.max_vel    * self.dirWR
 
         if btns[BTN_A]:
             ee = -self.max_vel   # close

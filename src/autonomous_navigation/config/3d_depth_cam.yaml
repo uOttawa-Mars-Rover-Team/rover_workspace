@@ -1,0 +1,164 @@
+# GPS WPF CHANGE: Remove static layer
+#3D depth nav parameters start here
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      #we set to true here to force the rover to only drive onto areas that have been mapped
+      #this is in contrast with the same var being set to false for the global costmap
+      #if my understanding is correct, the global costmap must be false to allow it to plan driving into unkown areas,
+      #while the local needs to be true to force it to only physically go onto mapped areas
+      #ie, we can plan to go into the unknown, but arent going to throw ourselves off a cliff to get there
+
+      #NOTE: if this is causing jerky/ laggy movement, may need an alternate solution
+      track_unknown_space: true 
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      rolling_window: true
+      width: 3
+      height: 3
+      resolution: 0.05
+      robot_radius: 0.22
+      
+      # The list of plugins
+      # 1. Static (optional in local, usually not needed)
+      # 2. Obstacle Layers (Marking)
+      # 3. Inflation (Safety buffer)
+      plugins: ["2d_lidar_layer", "3d_steep_obstacle_layer", "3d_ground_clearing_layer", "inflation_layer"]
+
+      # --- LAYER 1: Existing 2D Lidar ---
+      # Handles table legs, walls, standard obstacles
+      2d_lidar_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          obstacle_max_range: 2.5
+
+      # --- LAYER 2: Bad Terrain (Walls & Steep Slopes) ---
+      # Input: The /obstacles topic from rtabmap
+      # Action: MARK obstacles. Do NOT clear (leave clearing to the ground layer).
+      3d_steep_obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: steep_cloud
+        steep_cloud:
+          topic: /filtered/obstacles
+          data_type: "PointCloud2"
+          clearing: False  # Cannot unmark obstacles, that is done in layer 3
+          marking: True    # Marks steep slopes/ obstacles as high cost
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.1 # Ignore noise on the floor
+          obstacle_max_range: 4.0
+
+      # --- LAYER 3: Safe Terrain (Flat Ground & Ramps) ---
+      # Input: The /ground topic from rtabmap
+      # Action: CLEAR obstacles. Do NOT mark.
+      # Logic: If we see ground here, remove any lethal costs (ghosts).
+      3d_ground_clearing_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: ground_cloud
+        ground_cloud:
+          topic: /filtered/ground
+          data_type: "PointCloud2"
+          clearing: True   # This removes obstacles from the map
+          marking: False   # We never mark the ground as an obstacle, marking is done in layer 2
+          
+          # CLIFF PROTECTION CONFIGURATION
+          # If the sensor sees ground, but it is > 0.5m BELOW the robot (Z < -0.5),
+          # we IGNORE it. We do NOT clear the space. 
+          # This leaves the cliff edge as "unknown" or occupied by previous inflation.
+          min_obstacle_height: -0.5 
+          max_obstacle_height: 0.5
+          
+          raytrace_max_range: 5.0
+
+      # --- LAYER 4: Inflation ---
+      # Keeps the robot away from the things marked in Layers 1 & 2
+      #inflates the cost of points around obstacles
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0  # Lower number = gentler curve (stay further away)
+        inflation_radius: 0.55     # How far out the danger zone extends
+      always_send_full_costmap: True
+
+# GPS WPF CHANGE: Remove static layer
+# GPS WPF CHANGE: Set rolling global costmap with 50x50 size. See note below
+#added size of 50x50 to mirror nav2_no_map_params.yaml
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      robot_radius: 0.22
+      resolution: 0.1
+
+      rolling_window: True
+      # When using GPS navigation you will potentially traverse huge environments which are not practical to
+      # fit on a big static costmap. Thus it is recommended to use a rolling global costmap large enough to
+      # contain each pair of successive waypoints. See: https://github.com/ros-planning/navigation2/issues/2174
+      width: 50
+      height: 50
+      #Set to false to allow planning of paths through unknown space
+      #if it were true, could cause rover to refuse to path to a waypoint since the path isnt yet mapped
+      track_unknown_space: false 
+      
+      plugins: ["obstacle_layer", "inflation_layer"]
+
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        observation_sources: scan steep_cloud
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+        steep_cloud:
+          topic: /filtered/obstacles
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "PointCloud2"
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+      always_send_full_costmap: True
+
+#rtabmap_util
+#Obstacle Detcetion node parameters
+obstacle_detection_node:
+  ros__parameters:
+    #frame_id: "base_link"
+    #queue_size: 10
+
+    #Controls the grouping of points into normal vectors, 
+    #lower number means smaller groups, higher means larger. Value is a meausurment of distance
+    #Small groups can cause over sensitivity to sensor noise/ small obstacles,
+    #Large groups can cause some obstacles to be ignored
+    normal_estimation_radius: 0.05
+
+    #Maximum allowed angle between the normals of the ground, and the point cluster
+    ground_normal_angle: PI/4
+
+    #Min number of points recquired to be classified as a real obstacle
+    #Low values = precise detection of small obstacles, susecptible to sensor noise
+    #High values = focus on big obstacles, possible to miss smaller obstacles
+    min_cluster_size: 20
+    
+    #Max height of obstacles the rover considers
+    #Supposedly default is 0? seems strange
+    max_obstacle_height: 0.0

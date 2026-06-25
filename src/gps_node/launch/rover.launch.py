@@ -18,15 +18,8 @@ def generate_launch_description():
         ),
     )
 
-    start_imu_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.dirname(os.path.realpath(__file__))
-        ),
-    )
-
     return LaunchDescription(
         [
             start_joystick_control_cmd,
-            start_imu_cmd,
         ]
     )

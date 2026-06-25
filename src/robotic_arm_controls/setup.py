@@ -45,7 +45,6 @@ setup(
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
             "m_router = robotic_arm_controls.m_router:main",
             "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
-            "arm_controller_node = robotic_arm_controls.arm_controller:main",
         ],
     },
 )

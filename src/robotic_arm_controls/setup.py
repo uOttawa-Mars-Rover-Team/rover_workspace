@@ -30,16 +30,6 @@ setup(
             os.path.join("share", package_name, "launch"),
             glob(os.path.join("launch", "*launch.[pxy][yma]*")),
         ),
-        # Config files
-        (
-            os.path.join("share", package_name, "config"),
-            glob(os.path.join("config", "*.yaml")),
-        ),
-        # Operator configs
-        (
-            os.path.join("share", package_name, "config", "operators"),
-            glob(os.path.join("config", "operators", "*.yaml")),
-        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

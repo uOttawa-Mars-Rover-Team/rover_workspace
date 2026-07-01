@@ -4,6 +4,7 @@ void DriverLA_InitI2C() { Wire.begin(); }
 
 DriverLA::DriverLA(uint8_t i2cAddress) : jrk_(i2cAddress) {}
 
+
 void DriverLA::moveMotor(uint16_t speed, int8_t direction) {
     if (direction == 1) { //extend
         int32_t target =

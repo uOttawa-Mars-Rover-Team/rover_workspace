@@ -5,6 +5,8 @@
 #include <AccelStepper.h>
 
 class DriverStepper {
+ private:
+    float lastVelocity_ = -1.0f;   // sentinel so first call always sets speed 
 public:
     // Attributes
     const char* name;

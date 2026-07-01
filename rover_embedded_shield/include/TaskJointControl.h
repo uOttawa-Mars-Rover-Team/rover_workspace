@@ -9,15 +9,16 @@ class TaskJointControl {
 public:
     // Constructor: User passes the number of joints here
     TaskJointControl(uint8_t numJoints);
-
+    ~TaskJointControl();              // ← add this
     void addStepper(DriverStepper* stepper);
     void addLA(DriverLA* la);
     void parseMessage(const char* payload);
     void init();
     void update();
+    void updateSteppers();
+    void updateLA();
     void stopAll();
 
-private:
     struct JointHandle {
         enum Type { STEPPER, LA } type;
         union { 

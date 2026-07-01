@@ -25,18 +25,11 @@ void TaskJointControl::addLA(DriverLA* driver_la) {
     }
 }
 
-
-// Note: moveMotor() works differently across Stepper and LA
 void TaskJointControl::JointHandle::setCommand(int8_t dir) {
     if (type == STEPPER) {
-        // Note that 2500 is a place holder value, the way the steppers work is based on direction specified of max range when stepper init'd (see DriverStepper.cpp)
-        stepper->moveMotor(dir*2500); 
-    } 
-
-
-    else if (type == LA) {    
-        // Not sure what 'speed' to run the LA at left at 400 for test. (was in main.cpp of another branch) 
-        la->moveMotor(400, dir); 
+        stepper->moveMotor((float)dir * stepper->speed);
+    } else if (type == LA) {
+        la->moveMotor(400, dir);
     }
 }
 
@@ -68,14 +61,25 @@ void TaskJointControl::init() {
     }
 }
 
-// Unsure what to do here...
 void TaskJointControl::update() {
     for (uint8_t i = 0; i < count_; i++) {
-        if (joints_[i].type == JointHandle::LA) {
-            // joints_[i].la->update();
-        
+        if (joints_[i].type == JointHandle::STEPPER) {
+            joints_[i].stepper->run();
         }
     }
+}
+
+void TaskJointControl::updateSteppers() {
+    for (uint8_t i = 0; i < count_; i++) {
+        if (joints_[i].type == JointHandle::STEPPER) {
+            joints_[i].stepper->run();
+        }
+    }
+}
+
+void TaskJointControl::updateLA() {
+    // LAs are fire-and-forget I2C, nothing to poll
+    // but keep this here for future use
 }
 
 void TaskJointControl::stopAll() {

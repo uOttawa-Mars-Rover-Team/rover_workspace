@@ -73,7 +73,7 @@ void DriverStepper::disable() {
 // }
 
 bool DriverStepper::moveMotor(float velocity) {
-    if (fabs(velocity) > speed) {  // 'speed' is your configured max allowed
+    if (fabs(velocity) > speed + 0.01f) {
         Serial.println("ERROR: velocity exceeds max speed");
         return false;
     }
@@ -82,19 +82,22 @@ bool DriverStepper::moveMotor(float velocity) {
         return false;
     }
 
-    driver.setMaxSpeed(fabs(velocity));
-
-    if (velocity > 0) {
-        driver.move(maxRange);      // "continuous" forward (large target)
-    } else if (velocity < 0) {
-        driver.move(-maxRange);     // "continuous" reverse
-    } else {
-        driver.stop();              // decelerate to stop (needs repeated calls)
+    if (fabs(velocity) != lastVelocity_) {          // only update if changed
+        driver.setMaxSpeed(fabs(velocity));
+        lastVelocity_ = fabs(velocity);
     }
 
-    driver.run();                   // coupled run like the sample project
+    if (velocity > 0) {
+        driver.move(maxRange);
+    } else if (velocity < 0) {
+        driver.move(-maxRange);
+    } else {
+        driver.stop();
+    }
     return true;
 }
+
+
 
 
 // Stop motor

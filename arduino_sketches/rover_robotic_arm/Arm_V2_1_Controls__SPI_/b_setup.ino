@@ -58,7 +58,7 @@ int encoderPosition;
 //let's also create a variable where we can count how many times we've tried to obtain the position in case there are errors
 uint8_t attempts;
 
-int servoPos = 90;
+int servoPos = 1000;
 int stepSize = 1;
 
 bool verbose = false;

@@ -16,10 +16,21 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'dev': '/dev/input/arm_logitech'}
+                {'device_id': 1}
             ],
             remappings=[
-                ("/joy", "/joy/arm_cmd"),
+                ("/joy", "/joy/arm_cmd_logitech"),
+                ],
+            output="screen",
+            )
+    spacemouse_joy = launch_ros.actions.Node( 
+            package="joy",
+            executable="joy_node",
+            parameters=[
+                {'device_id':  0}
+            ],
+            remappings=[
+                ("/joy", "/joy/arm_cmd_xbox")
                 ],
             output="screen",
             )
@@ -51,6 +62,7 @@ def generate_launch_description():
     return launch.LaunchDescription(
             [
                 logitech_joy,
+                spacemouse_joy,
                 ik_keyboard_controls,
                 ik_joy_controls,
                 ]

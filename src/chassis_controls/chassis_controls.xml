@@ -6,4 +6,12 @@
       Drive hardware plugin for uORover chassis.
     </description>
   </class>
+  
+  <class name="chassis_controls/DriveSystemOpenLoop"
+         type="chassis_controls::DriveSystemOpenLoop"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Drive hardware plugin for uORover chassis (open-loop).
+    </description>
+  </class>
 </library>

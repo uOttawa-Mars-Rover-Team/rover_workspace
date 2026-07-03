@@ -8,6 +8,7 @@ interface CameraFeed {
   title: string;
   topicName: string;
   messageType: string;
+  cameraModifiers: string;
 }
 
 interface AutoRefresh {

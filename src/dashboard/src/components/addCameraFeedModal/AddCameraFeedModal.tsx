@@ -21,12 +21,14 @@ const AddCameraFeedModal: React.FC<AddCameraFeedModalProps> = ({
     title,
     topicName,
     messageType,
+    cameraModifiers,
   }: {
     title: string;
     topicName: string;
     messageType: string;
+    cameraModifiers: string;
   }) => {
-    addCameraFeed({ title, topicName, messageType });
+    addCameraFeed({ title, topicName, messageType, cameraModifiers });
     dismissModal();
     form.resetFields();
   };
@@ -48,16 +50,18 @@ const AddCameraFeedModal: React.FC<AddCameraFeedModalProps> = ({
           <Input />
         </Form.Item>
         <Form.Item
-          label="ROS Topic Name"
+          label="Camera Server URL"
           name="topicName"
-          rules={[{ required: true, message: "Need to provide topic name" }]}
+          rules={[
+            { required: true, message: "Need to provide camera server URL" },
+          ]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          label="ROS Message Type"
+          label="Camera Topic"
           name="messageType"
-          rules={[{ required: true, message: "Need to provide message type" }]}
+          rules={[{ required: true, message: "Need to provide camera topic" }]}
         >
           <Input />
         </Form.Item>

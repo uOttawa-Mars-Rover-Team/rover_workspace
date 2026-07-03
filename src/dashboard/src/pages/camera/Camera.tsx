@@ -23,7 +23,7 @@ const Camera: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>rDash - Camera</title>
+        <title>rDash - Cameraaaaa</title>
       </Helmet>
       <Layout title="Camera" menuKey="camera">
         <Header
@@ -39,15 +39,18 @@ const Camera: React.FC = () => {
         />
         <Row gutter={[12, 12]}>
           <Image.PreviewGroup>
-            {cameraFeeds.map(({ title, topicName, messageType }, index) => (
-              <CameraFeed
-                key={index}
-                arrayIndex={index}
-                topicName={topicName}
-                title={title}
-                messageType={messageType}
-              />
-            ))}
+            {cameraFeeds.map(
+              ({ title, topicName, messageType, cameraModifiers }, index) => (
+                <CameraFeed
+                  key={index}
+                  arrayIndex={index}
+                  topicName={topicName}
+                  title={title}
+                  messageType={messageType}
+                  cameraModifiers={cameraModifiers}
+                />
+              )
+            )}
           </Image.PreviewGroup>
         </Row>
 

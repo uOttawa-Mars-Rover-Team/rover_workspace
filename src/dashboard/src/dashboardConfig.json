@@ -10,24 +10,28 @@
     "autoRefreshFrequency": 1000,
     "cameraFeeds": [
       {
-        "title": "IntelRealsense RGB Camera",
-        "topicName": "/camera/color/image_raw",
-        "messageType": "sensor_msgs/Image"
+        "title": "Drive Camera #1",
+        "topicName": "http://localhost:8080/",
+        "messageType": "usb_cam",
+        "cameraModifiers": ""
       },
       {
-        "title": "IntelRealsense Depth Camera",
-        "topicName": "/camera/depth/image_raw/compressed",
-        "messageType": "sensor_msgs/CompressedImage"
+        "title": "Drive Camera #2",
+        "topicName": "http://localhost:8080/",
+        "messageType": "usb_cam2",
+        "cameraModifiers": ""
       },
       {
-        "title": "Webcam RGB Camera 1",
-        "topicName": "/webcam/image_raw",
-        "messageType": "sensor_msgs/Image"
+        "title": "Module Camera #1",
+        "topicName": "http://localhost:8080/",
+        "messageType": "usb_cam3",
+        "cameraModifiers": ""
       },
       {
-        "title": "Webcam RGB Camera 2",
-        "topicName": "/camera/rgb/image_rect_color/compressed",
-        "messageType": "sensor_msgs/CompressedImage"
+        "title": "Module Camera #1",
+        "topicName": "http://localhost:8080/",
+        "messageType": "usb_cam4",
+        "cameraModifiers": ""
       }
     ],
     "cameraControls": {

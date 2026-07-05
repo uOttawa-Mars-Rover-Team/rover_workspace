@@ -6,6 +6,7 @@ import TelemetryContainer from "../telemetryContainer/TelemetryContainer";
 import { Row, Col, Space } from "antd";
 import ArtificialHorizon from "./ArtificialHorizon.tsx";
 import AccelBars from "./AccelBars.tsx";
+import Compass from "./Compass.tsx";
 
 type ImuMessage = {
   roll: number;
@@ -23,7 +24,7 @@ const SAMPLE_DATA: ImuMessage = {
   yaw: 0,
   accel_x: 3.2,
   accel_y: 7.8,
-  accel_z: 10,
+  accel_z: 9,
   accel_norm: 3.6,
 };
 
@@ -56,17 +57,15 @@ export default function IMUTelemetry() {
   }, [rosClient]);
 
   return (
-    <TelemetryContainer>
-      <Row
-        justify="center"
-        align="middle"
-        style={{ width: "100%", height: "100%" }}
-        gutter={48}
-      >
-        <Col>
+    <TelemetryContainer >
+      <Row justify="center" align="middle" style={{ width: "100%", height: "100%"}}>
+        <Col >
+          <Compass yaw={imuData.yaw} />
+        </Col>
+        <Col >
           <ArtificialHorizon roll={imuData.roll} pitch={imuData.pitch} />
         </Col>
-        <Col flex="620px">
+         <Col flex="620px">
           <AccelBars
             ax={imuData.accel_x}
             ay={imuData.accel_y}

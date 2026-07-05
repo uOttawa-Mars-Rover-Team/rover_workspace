@@ -41,7 +41,7 @@ JrkG2I2C LA2(12);
 #define NEWLINE         0x0A
 #define TAB             0x09
 
-// We will use these define macros so we can write code once compatible with 12 or 14 bit encoders
+// We will use these define macros so we can write code once compatible with 12 or 14 bit encoders    
 #define RES12           12
 
 // SPI pins

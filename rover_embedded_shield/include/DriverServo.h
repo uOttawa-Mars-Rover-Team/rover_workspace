@@ -4,38 +4,36 @@
 #include <stdint.h>
 #include <Servo.h>
 
-#define DRIVER_SERVO_DEFAULT_MIN_DEG    0
-#define DRIVER_SERVO_DEFAULT_MAX_DEG    180
-#define DRIVER_SERVO_DEFAULT_INIT_DEG   90
-
 /**
- * Single-axis positional servo with non-blocking ms-per-step motion.
- * Port of the legacy svMoving / servo_delay loop in d_loop_motor.ino.
+ * Single servo axis driven as a velocity.
+ *
+ * Port of the legacy svMoving / servo_delay loop in d_loop_motor.ino, turned
+ * into the "velocity system" the original TODO asked for: move() just sets a
+ * direction, and every `msPerStep` the axis increments by a fixed step until
+ * it reaches an end stop, where it clamps to the limit and locks (stops).
+ *
+ * The endpoints, step size ("speed") and per-step delay are fixed at init;
+ * that is the driver definition. The object is then driven with move(-1/0/+1).
  */
 class DriverServo
 {
 public:
-    enum class State : uint8_t
-    {
-        IDLE,
-        MOVING,
-        AT_TARGET,
-        AT_LIMIT
-    };
+    void init(uint8_t  pwmPin,
+              uint8_t  minDeg,
+              uint8_t  maxDeg,
+              uint8_t  initialDeg,
+              uint8_t  stepSize,
+              uint16_t msPerStep);
 
-    void init(uint8_t pwmPin,
-              uint8_t minDeg     = DRIVER_SERVO_DEFAULT_MIN_DEG,
-              uint8_t maxDeg     = DRIVER_SERVO_DEFAULT_MAX_DEG,
-              uint8_t initialDeg = DRIVER_SERVO_DEFAULT_INIT_DEG);
+    // dir: -1 = toward min (left/down), +1 = toward max (right/up), 0 = stop.
+    void move(int8_t dir);
 
-    void setTarget(uint8_t targetDeg, uint16_t msPerStep);
-    void incrementTarget(int16_t deltaDeg, uint16_t msPerStep);
-    void stop();
-
+    // Call every loop(): performs one increment once the delay has elapsed.
     void tick(unsigned long now_ms);
 
-    uint8_t getCurrentDeg() const;
-    State   getState()      const;
+    uint8_t getCurrentDeg() const { return currentDeg_; }
+    bool    isMoving()      const { return dir_ != 0; }
+    bool    atLimit()       const { return currentDeg_ == minDeg_ || currentDeg_ == maxDeg_; }
 
 private:
     Servo         servo_;
@@ -43,10 +41,10 @@ private:
     uint8_t       minDeg_;
     uint8_t       maxDeg_;
     uint8_t       currentDeg_;
-    uint8_t       targetDeg_;
+    uint8_t       stepSize_;
     uint16_t      msPerStep_;
     unsigned long lastStep_ms_;
-    State         state_;
+    int8_t        dir_;
 };
 
 #endif

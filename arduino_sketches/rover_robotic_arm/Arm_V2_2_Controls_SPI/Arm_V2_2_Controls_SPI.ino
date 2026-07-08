@@ -78,7 +78,7 @@ AccelStepper wristRoll(AccelStepper::DRIVER, STEPPER_CONFIGS[WR].STEP_PIN, STEPP
 AccelStepper endEffector(AccelStepper::DRIVER, STEPPER_CONFIGS[EE].STEP_PIN, STEPPER_CONFIGS[EE].DIR_PIN);
 
 //Linear Acutator Declarations:
-JrkG2I2C shoulder(LA1_DEVICE_NUM);
+JrkG2I2C shoulder();
 JrkG2I2C elbow(LA2_DEVICE_NUM);
 
 Servo cameraServo; //servo for shoulder camera

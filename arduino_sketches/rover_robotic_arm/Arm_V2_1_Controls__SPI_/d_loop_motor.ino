@@ -99,7 +99,9 @@
     LA2.stopMotor();
   }
 
-   // Non-blocking servo movement
+   // Non-blocking servo movement--> how do you turn it into a velocity system, set increment evyertime the variable is true and update the position; 
+   // two driver servo is one task servo 
+   // do this before coming in  
   if (svMoving && (millis() - camservo_t >= servo_delay)) {
     camservo_t = millis();
     if (svUp) {

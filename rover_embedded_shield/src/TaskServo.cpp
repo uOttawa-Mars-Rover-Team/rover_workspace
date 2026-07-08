@@ -1,25 +1,7 @@
 #include "TaskServo.h"
 #include <Arduino.h>
+#include <stdlib.h>
 #include <string.h>
-
-static int8_t clampDir(int value)
-{
-    if (value > 0) {
-        return 1;
-    }
-    if (value < 0) {
-        return -1;
-    }
-    return 0;
-}
-
-static void applyDir(DriverServo* axis, int8_t dir, uint16_t msPerStep)
-{
-    if (axis == nullptr || dir == 0) {
-        return;
-    }
-    axis->incrementTarget(dir, msPerStep);
-}
 
 void TaskServo::init(DriverServo* pan, DriverServo* tilt)
 {
@@ -27,43 +9,39 @@ void TaskServo::init(DriverServo* pan, DriverServo* tilt)
     tilt_ = tilt;
 }
 
-void TaskServo::parseMessage(const char* payload, uint16_t msPerStep)
+void TaskServo::move(int8_t panDir, int8_t tiltDir)
 {
-    if (payload == nullptr) {
-        return;
+    if (pan_ != nullptr) {
+        pan_->move(panDir);
     }
-
-    char buffer[32];
-    strncpy(buffer, payload, sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
-
-    char* token = strtok(buffer, ";");
-    if (token != nullptr) {
-        applyDir(pan_, clampDir(atoi(token)), msPerStep);
-        token = strtok(nullptr, ";");
-    }
-    if (token != nullptr) {
-        applyDir(tilt_, clampDir(atoi(token)), msPerStep);
+    if (tilt_ != nullptr) {
+        tilt_->move(tiltDir);
     }
 }
 
-void TaskServo::parseWordCommand(const char* cmd, uint16_t msPerStep)
+void TaskServo::parse(const char* msg)
 {
-    if (cmd == nullptr) {
+    if (msg == nullptr) {
         return;
     }
 
-    if (strcmp(cmd, "svd") == 0) {
-        applyDir(tilt_, -1, msPerStep);
-    } else if (strcmp(cmd, "svu") == 0) {
-        applyDir(tilt_, 1, msPerStep);
-    } else if (strcmp(cmd, "svl") == 0) {
-        applyDir(pan_, -1, msPerStep);
-    } else if (strcmp(cmd, "svr") == 0) {
-        applyDir(pan_, 1, msPerStep);
-    } else if (strcmp(cmd, "svs") == 0) {
-        stopAll();
+    char buffer[16];
+    strncpy(buffer, msg, sizeof(buffer) - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    int8_t panDir  = 0;
+    int8_t tiltDir = 0;
+
+    char* token = strtok(buffer, ";");
+    if (token != nullptr) {
+        panDir = (int8_t)atoi(token);
+        token  = strtok(nullptr, ";");
     }
+    if (token != nullptr) {
+        tiltDir = (int8_t)atoi(token);
+    }
+
+    move(panDir, tiltDir);
 }
 
 void TaskServo::tick(unsigned long now_ms)
@@ -76,31 +54,7 @@ void TaskServo::tick(unsigned long now_ms)
     }
 }
 
-void TaskServo::stopAll()
+void TaskServo::stop()
 {
-    if (pan_ != nullptr) {
-        pan_->stop();
-    }
-    if (tilt_ != nullptr) {
-        tilt_->stop();
-    }
-}
-
-void TaskServo::home(uint16_t msPerStep)
-{
-    if (pan_ != nullptr) {
-        pan_->setTarget(DRIVER_SERVO_DEFAULT_INIT_DEG, msPerStep);
-    }
-    if (tilt_ != nullptr) {
-        tilt_->setTarget(DRIVER_SERVO_DEFAULT_INIT_DEG, msPerStep);
-    }
-}
-
-bool TaskServo::isIdle() const
-{
-    bool panIdle = (pan_ == nullptr)
-        || pan_->getState() != DriverServo::State::MOVING;
-    bool tiltIdle = (tilt_ == nullptr)
-        || tilt_->getState() != DriverServo::State::MOVING;
-    return panIdle && tiltIdle;
+    move(0, 0);
 }

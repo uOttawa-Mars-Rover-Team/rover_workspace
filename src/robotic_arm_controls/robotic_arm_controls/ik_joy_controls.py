@@ -46,6 +46,9 @@ class Joy_IK_Controller(Node):
         self.pub_rate = self.get_param("pub_rate", rclpy.Parameter.Type.DOUBLE, 20.0) # pub rate in Hz
         self.deadband = self.get_param("deadband", rclpy.Parameter.Type.DOUBLE, 0.40) # spacemouse deadband
         self.mode = self.get_param("mode", rclpy.Parameter.Type.STRING, "I") # ik or manual mode, default I for ik
+
+
+        #invert the directions whetehr or not it is correct, if the tower is going the wrong way, thens et it to -1.
         self.dirWP = self.get_param("dirWP", rclpy.Parameter.Type.INTEGER, 1)
         self.dirWR = self.get_param("dirWR", rclpy.Parameter.Type.INTEGER, 1)
         self.dirTW = self.get_param("dirTW", rclpy.Parameter.Type.INTEGER, 1)
@@ -264,13 +267,17 @@ class Joy_IK_Controller(Node):
                             self.send_command("svs", "Stop shoulder camera servo")
                     self.prev_svd_pressed = self.svd_pressed
 
-                    if self.curr_btns_xb[1]:
-                        self.get_logger().info(f'Pressed da button') #Michelle to help you
-                    # Save state at the END of joy_parser (after all button reads)
+                    if self.curr_btns_xb[1] and not self.prev_btns_xb[1]:  # fire once per press
+                        self.send_command("stepper1", "Toggle stepper1 (TW)")
+                    # Save state at the END of joy parser
                     self.prev_btns_lt = list(self.curr_btns_lt)
                     self.prev_btns_xb = list(self.curr_btns_xb)
 
-
+# but does curr_btnx_xb[1] map to stepper1/TW
+# are all steppers supposed to be on the xbox buttons; each button on the xbox is a stepper? 
+# if the pat and prsetn bittona are pressed (end effector button)
+# tower speed increase and decrease if the present and past button were pressed it executres something ont he rising edge 
+# xbox controlller, 0,1,2,3 i
 
                     self.curr_cmd = "S;"
 

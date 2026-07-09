@@ -4,7 +4,7 @@ AppGNC owns servos A/B/C and turns `SV;…!` into `TaskServo::move()`. No separa
 
 For the full walkthrough, see [`MSERVO_DEMO.md`](MSERVO_DEMO.md).
 
-Branch: `appgnc-mservo-thisoneplease`  
+Branch: `appgnc-mservo-short`  
 Board: Mega 2560 (GNC env)  
 Baud: **115200**  
 Terminator: **`!`** (required). Serial Monitor may also send `\n` — that is ignored.

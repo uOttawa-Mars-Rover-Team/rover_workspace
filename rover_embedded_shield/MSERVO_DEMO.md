@@ -1,6 +1,6 @@
 # AppGNC servo (`SV;`) — full demonstration
 
-**Branch:** `appgnc-mservo-thisoneplease` (from Sameed’s `c45e886` / `embedPIO_shield`)  
+**Branch:** `appgnc-mservo-short` (from Sameed’s `c45e886` / `embedPIO_shield`)  
 **What this is:** AppGNC reads `!`-terminated strings and converts `SV;…` into `TaskServo::move()`. No separate AppMServo.
 
 For a compact command checklist only, see [`MSERVO_TEST.md`](MSERVO_TEST.md).
@@ -240,7 +240,7 @@ rover_embedded_shield/
 
 | Branch | Purpose |
 |--------|---------|
-| `appgnc-mservo-thisoneplease` | **This demo** — string `SV;…!` in AppGNC |
+| `appgnc-mservo-short` | **This demo** — string `SV;…!` in AppGNC |
 | `appgnc-mservo-testme` | Keyboard WASD push/release bench (no AppGNC) |
 | `mservo` | Earlier flat DriverServo/TaskServo WIP |
 | `embedPIO_shield` @ `c45e886` | Sameed’s AppRA / AppGNC base |

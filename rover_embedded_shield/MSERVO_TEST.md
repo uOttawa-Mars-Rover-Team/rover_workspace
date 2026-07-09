@@ -1,6 +1,8 @@
-# AppGNC + AppMServo — how to test
+# AppGNC servo (`SV;`) — how to test
 
-For the full walkthrough (architecture, scripted demo acts, expected echoes), see [`MSERVO_DEMO.md`](MSERVO_DEMO.md).
+AppGNC owns servos A/B/C and turns `SV;…!` into `TaskServo::move()`. No separate AppMServo.
+
+For the full walkthrough, see [`MSERVO_DEMO.md`](MSERVO_DEMO.md).
 
 Branch: `appgnc-mservo-thisoneplease`  
 Board: Mega 2560 (GNC env)  
@@ -71,10 +73,10 @@ Values are velocity directions: **`-1`** toward min, **`+1`** toward max, **`0`*
 
 | Command | Expected |
 |---------|----------|
-| `SV;Z;1!` | `[MSERVO] SV: unknown servo Z` |
+| `SV;Z;1!` | `[GNC] SV: unknown id Z` |
 | `SV;A!` | missing values → treated as `0,0` (stop) |
 | `GNC;stop!` | still works (existing GNC handler) |
-| `FOO;bar!` | `[GNC] Ignored (not GNC; or SV;)` |
+| `FOO;bar!` | `[GNC] Ignored` |
 
 ---
 
@@ -88,7 +90,7 @@ On the GNC USB monitor you should see:
 
 ```text
 [GNC] Serial1: SV;A;-1;1
-[MSERVO] SV A  ax0=-1  ax1=1
+[GNC] SV A -1;1
 ```
 
 USB-typed commands show `[GNC] USB: ...` instead.

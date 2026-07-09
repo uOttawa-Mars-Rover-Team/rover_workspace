@@ -1,4 +1,5 @@
 #include "AppGNC.h"
+#include "AppMServo.h"
 #include <Arduino.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,67 +7,102 @@
 // ============================================================
 // GNC (slave) Mega, terminator is '!'
 // ------------------------------------------------------------
-// Serial  (USB, pin 0/1)  : debug terminal   @ 115200
-// Serial1      (pin 18/19): inter-board link @ 115200
+// Serial  (USB, pin 0/1)  : debug terminal + SV bench  @ 115200
+// Serial1      (pin 18/19): inter-board link           @ 115200
 //
-// Message format received on Serial1:
+// Message formats (accepted on BOTH Serial and Serial1):
 //   "GNC;move;1!"     -> move forward
 //   "GNC;move;-1!"    -> move reverse
 //   "GNC;stop!"       -> stop
 //   "GNC;update!"     -> reply with status back to RA Mega
+//   "SV;A;-1;1!"      -> multi-servo velocity (see AppMServo)
+//   "SV;B;1!"         -> 1-axis servo B
+//   "SV;C;0!"         -> stop servo C
 // ============================================================
 
-static char    buf[64];
-static uint8_t bufIdx   = 0;
-static bool    msgReady = false;
+static char    bufUsb[64];
+static uint8_t bufUsbIdx   = 0;
+static bool    msgUsbReady = false;
+
+static char    bufBoard[64];
+static uint8_t bufBoardIdx   = 0;
+static bool    msgBoardReady = false;
 
 static int8_t   currentDir   = 0;
 static uint32_t lastMoveTime = 0;
 
-static void handleMessage(const char* msg);
+static AppMServo mservo;
+
+static void feedPort(HardwareSerial& port,
+                     char* buf, uint8_t& idx, bool& readyFlag);
+static void handleMessage(const char* msg, const char* source);
 static void sendUpdate();
 static void doWork();
 
 void appGNC_setup() {
-    Serial.begin(115200);    // USB debug
+    Serial.begin(115200);    // USB debug + SV bench
     Serial1.begin(115200);   // inter-board link (pins 18/19)
 
-    Serial.println(F("[GNC] Online. Waiting for messages on Serial1 (pins 18/19)..."));
+    mservo.init();
+
+    Serial.println(F("[GNC] Online."));
+    Serial.println(F("[GNC] Accepts GNC;...! and SV;...! on Serial (USB) and Serial1."));
 }
 
 void appGNC_loop() {
-    // 1. Accumulate chars from RA Mega (Serial1), terminator is '!'
-    while (Serial1.available()) {
-        char c = Serial1.read();
-        if (c == '!') {
-            buf[bufIdx] = '\0';
-            bufIdx   = 0;
-            msgReady = true;
-        } else if (c == '\n' || c == '\r') {
-            // ignore stray line-ending bytes, not part of the payload
-        } else if (bufIdx < sizeof(buf) - 1) {
-            buf[bufIdx++] = c;
-        } else {
-            // overflow: drop malformed message, reset for next one
-            bufIdx = 0;
-        }
+    // 1. Accumulate chars from USB (Serial) and RA Mega (Serial1)
+    feedPort(Serial,  bufUsb,   bufUsbIdx,   msgUsbReady);
+    feedPort(Serial1, bufBoard, bufBoardIdx, msgBoardReady);
+
+    // 2. Handle completed messages
+    if (msgUsbReady) {
+        msgUsbReady = false;
+        Serial.print(F("[GNC] USB: "));
+        Serial.println(bufUsb);
+        handleMessage(bufUsb, "USB");
+    }
+    if (msgBoardReady) {
+        msgBoardReady = false;
+        Serial.print(F("[GNC] Serial1: "));
+        Serial.println(bufBoard);
+        handleMessage(bufBoard, "Serial1");
     }
 
-    // 2. Handle completed message
-    if (msgReady) {
-        msgReady = false;
-        Serial.print(F("[GNC] Received: "));
-        Serial.println(buf);
-        handleMessage(buf);
-    }
-
-    // 3. Autonomous operation — runs regardless of messages
+    // 3. Tick multi-servo axes + other autonomous work
+    mservo.update();
     doWork();
 }
 
-static void handleMessage(const char* msg) {
+static void feedPort(HardwareSerial& port,
+                     char* buf, uint8_t& idx, bool& readyFlag)
+{
+    while (port.available()) {
+        char c = port.read();
+        if (c == '!') {
+            buf[idx] = '\0';
+            idx = 0;
+            readyFlag = true;
+            return;  // one complete message per call; rest next loop
+        } else if (c == '\n' || c == '\r') {
+            // ignore stray line-ending bytes
+        } else if (idx < 63) {
+            buf[idx++] = c;
+        } else {
+            idx = 0;  // overflow: drop malformed message
+        }
+    }
+}
+
+static void handleMessage(const char* msg, const char* /*source*/) {
+    // ---- SV -> AppMServo (multi-servo velocity) ----
+    if (strncmp(msg, "SV;", 3) == 0) {
+        mservo.handleMessage(msg);
+        return;
+    }
+
+    // ---- GNC -> existing chassis/status handlers ----
     if (strncmp(msg, "GNC;", 4) != 0) {
-        Serial.println(F("[GNC] Ignored (not my prefix)"));
+        Serial.println(F("[GNC] Ignored (not GNC; or SV;)"));
         return;
     }
 
@@ -111,6 +147,5 @@ static void sendUpdate() {
 
 static void doWork() {
     // Autonomous work here — runs every loop regardless of comms
-    // currentDir drives whatever actuators this board owns
     (void)lastMoveTime;
 }

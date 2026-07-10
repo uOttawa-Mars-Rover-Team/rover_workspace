@@ -1,118 +1,189 @@
 #include "AppRA.h"
-#include <Arduino.h>
+#include "TaskJointControl.h"
+#include "AppMorseServo.h"
+#include <TimerThree.h>
+#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
-// ============================================================
-// AppRA — piggyback comms only (joints ignored for now)
-// ------------------------------------------------------------
-// Wiring:
-//   Mega TX3 (pin 14)  →  GNC RX1 (pin 19)
-//   Mega RX3 (pin 15)  ←  GNC TX1 (pin 18)
-//   Common GND
-//
-// Serial  (USB) : user / ROS terminal  @ 115200
-// Serial3       : inter-board link     @ 115200
-//
-// Message format (terminator is '!'):
-//   "RA;message!"   -> handled locally
-//   "GNC;message!"  -> forwarded to GNC board over Serial3
-// ============================================================
+// --- Joint order, matching integrative_control.py's curr_cmd field order ---
+// index 0: TW  (tower / turret)
+// index 1: L1  (linear actuator 1)
+// index 2: L2  (linear actuator 2)
+// index 3: WP  (wrist pitch)
+// index 4: WR  (wrist roll)
+// index 5: EE  (end effector)
 
-static char    usbBuf[64];
-static uint8_t usbIdx = 0;
-static bool    usbReady = false;
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBALS
+// ═══════════════════════════════════════════════════════════════════════════════
 
-static char    boardBuf[64];
-static uint8_t boardIdx = 0;
-static bool    boardReady = false;
+static TaskJointControl robotArm(6);
 
-static void handleUSBMessage(const char* msg);
+static DriverStepper tw("Tower", 55, 54, 16, 17,  5000, 1000000, 1000.0);
+static DriverStepper wp("Pitch", 4,  5,  3,  2, 10000, 1000000, 1000.0);
+static DriverStepper wr("Roll",  8,  9,  7,  6, 20000, 1000000, 1000.0);
+static DriverStepper ee("EE",   12, 13, 11, 10, 20000, 1000000, 1000.0);
 
-void appRA_setup() {
-    Serial.begin(115200);    // USB -> user / ROS
-    Serial3.begin(115200);   // UART -> GNC board
+static DriverLA LA1(12);   // L1
+static DriverLA LA2(11);   // L2
 
-    Serial.println(F("[RA] Online. Send RA;<msg>! or GNC;<msg>!"));
-    Serial.println(F("[RA] Joints ignored -- comms test build"));
+static AppMorseServo morseApp;
+
+enum AppState { APP_ARM, APP_MORSE };
+static AppState appState = APP_ARM;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ISR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+static void timerIsr() {
+    sei();
+    robotArm.updateSteppers();
 }
 
-void appRA_loop() {
-    // 1. Accumulate chars from USB (user / ROS)
-    while (Serial.available()) {
-        char c = Serial.read();
-        if (c == '!') {
-            usbBuf[usbIdx] = '\0';
-            usbIdx   = 0;
-            usbReady = true;
-        } else if (c == '\n' || c == '\r') {
-            // ignore stray line-ending bytes, not part of the payload
-        } else if (usbIdx < sizeof(usbBuf) - 1) {
-            usbBuf[usbIdx++] = c;
-        } else {
-            // overflow: drop malformed message, reset for next one
-            usbIdx = 0;
-        }
-    }
+// ═══════════════════════════════════════════════════════════════════════════════
+// SERIAL BUFFERING
+// ═══════════════════════════════════════════════════════════════════════════════
 
-    // 2. Handle completed USB message
-    if (usbReady) {
-        usbReady = false;
-        handleUSBMessage(usbBuf);
-    }
+static char    serialBuf[64];
+static uint8_t serialIdx = 0;
 
-    // 3. Accumulate chars from GNC board (Serial3)
-    while (Serial3.available()) {
-        char c = Serial3.read();
-        if (c == '!') {
-            boardBuf[boardIdx] = '\0';
-            boardIdx   = 0;
-            boardReady = true;
-        } else if (c == '\n' || c == '\r') {
-            // ignore stray line-ending bytes, not part of the payload
-        } else if (boardIdx < sizeof(boardBuf) - 1) {
-            boardBuf[boardIdx++] = c;
-        } else {
-            boardIdx = 0;
-        }
-    }
-
-    // 4. Propagate GNC reply to user terminal
-    if (boardReady) {
-        boardReady = false;
-        Serial.print(F("[GNC->RA] "));
-        Serial.println(boardBuf);
-    }
+static bool isNumericStart(char c) {
+    return isdigit((unsigned char)c) || c == '-' || c == '+' || c == '.';
 }
 
-// ----------------------------------------------------------
-// Route a fully-received USB message
-// ----------------------------------------------------------
-static void handleUSBMessage(const char* msg) {
-    // Expect "PREFIX;payload"
-    const char* sep = strchr(msg, ';');
-    if (sep == NULL) {
-        Serial.println(F("[RA] Malformed message (no ';')"));
+// ═══════════════════════════════════════════════════════════════════════════════
+// AXIS COMMAND DISPATCH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+static void dispatchAxisCommand(char* msg) {
+    float values[6] = {0, 0, 0, 0, 0, 0};
+    uint8_t index = 0;
+
+    char* token = strtok(msg, ";");
+
+    // Skip leading non-numeric token (e.g. "S")
+    if (token != NULL && !isNumericStart(token[0])) {
+        token = strtok(NULL, ";");
+    }
+
+    while (token != NULL && index < 6) {
+        if (!isNumericStart(token[0])) break;   // stop at trailing "!" or junk
+        values[index] = atof(token);
+        token = strtok(NULL, ";");
+        index++;
+    }
+
+    if (index < 6) {
+        Serial.print("WARNING: expected 6 axis values, got ");
+        Serial.println(index);
         return;
     }
 
-    uint8_t prefixLen = sep - msg;
+    float v_tw = values[0];
+    float v_l1 = values[1];
+    float v_l2 = values[2];
+    float v_wp = values[3];
+    float v_wr = values[4];
+    float v_ee = values[5];
 
-    // ---- RA -> this board handles it (joints ignored for now) ----
-    if (prefixLen == 2 && strncmp(msg, "RA", 2) == 0) {
-        const char* payload = sep + 1;
-        Serial.print(F("[RA] Handling locally: "));
-        Serial.println(payload);
-        // TODO: joints ignored in this build
+    tw.moveMotor(v_tw * tw.speed);
+    wp.moveMotor(v_wp * wp.speed);
+    wr.moveMotor(v_wr * wr.speed);
+    ee.moveMotor(v_ee * ee.speed);
+
+    int8_t l1dir = (v_l1 >  0.05f) ? 1 : (v_l1 < -0.05f) ? -1 : 0;
+    LA1.moveMotor(400, l1dir);
+    int8_t l2dir = (v_l2 >  0.05f) ? 1 : (v_l2 < -0.05f) ? -1 : 0;
+    LA2.moveMotor(400, l2dir);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MESSAGE ROUTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+static void handleMessage(char* msg) {
+
+    // ── Global mode switches — always checked first ──────────────────────────
+    if (strcmp(msg, "MORSE") == 0) {
+        appState = APP_MORSE;
+        morseApp.init();
+        Serial.println(F("[SYS] Entering MORSE mode — arm holding position"));
+        Serial.println(F("[SYS] Type EXIT to return to arm mode"));
+        return;
     }
-    // ---- GNC -> forward to GNC board over Serial3 ----
-    else if (prefixLen == 3 && strncmp(msg, "GNC", 3) == 0) {
-        Serial.print(F("[RA] Forwarding to GNC: "));
-        Serial.println(msg);          // echo so user knows it was routed
-        Serial3.print(msg);
-        Serial3.print('!');
+    if (strcmp(msg, "EXIT") == 0) {
+        appState = APP_ARM;
+        Serial.println(F("[SYS] Returning to ARM mode"));
+        Serial.println(F("[SYS] Awaiting: S;tw;l1;l2;wp;wr;ee;!"));
+        return;
     }
-    else {
-        Serial.print(F("[RA] Unknown prefix: "));
-        Serial.println(msg);
+
+    // ── MORSE mode — route to morse app, arm ignored ─────────────────────────
+    if (appState == APP_MORSE) {
+        morseApp.handleMessage(msg);
+        return;
+    }
+
+    // ── ARM mode — dispatch axis command ─────────────────────────────────────
+    dispatchAxisCommand(msg);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SERIAL POLL — per-character accumulation, '!' or '\n' as terminator
+// ═══════════════════════════════════════════════════════════════════════════════
+
+static void pollSerialCommand() {
+    while (Serial.available() > 0) {
+        char c = Serial.read();
+
+        if (c == '!' || c == '\n' || c == '\r') {
+            if (serialIdx > 0) {
+                serialBuf[serialIdx] = '\0';
+                serialIdx = 0;
+                handleMessage(serialBuf);
+            }
+        } else if (serialIdx < sizeof(serialBuf) - 1) {
+            serialBuf[serialIdx++] = c;
+        } else {
+            serialIdx = 0;
+            Serial.println(F("Command too long, discarded"));
+        }
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC ENTRY POINTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+void appRA_setup() {
+    Serial.begin(9600);
+
+    robotArm.addStepper(&tw);
+    robotArm.addStepper(&wp);
+    robotArm.addStepper(&wr);
+    robotArm.addStepper(&ee);
+
+    DriverLA_InitI2C();
+    robotArm.addLA(&LA1);
+    robotArm.addLA(&LA2);
+
+    robotArm.init();
+
+    Timer3.initialize(100);
+    Timer3.attachInterrupt(timerIsr);
+
+    Serial.println(F("[SYS] Robot Arm Initialized"));
+    Serial.println(F("[SYS] Awaiting: S;tw;l1;l2;wp;wr;ee;!"));
+    Serial.println(F("[SYS] Type MORSE to enter morse mode, EXIT to return"));
+}
+
+void appRA_loop() {
+    pollSerialCommand();
+
+    if (appState == APP_MORSE) {
+        morseApp.update();
+    }
+}
+

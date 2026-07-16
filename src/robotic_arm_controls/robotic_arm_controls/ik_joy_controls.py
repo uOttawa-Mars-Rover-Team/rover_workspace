@@ -88,6 +88,16 @@ class Joy_IK_Controller(Node):
         self.curr_btns_xb = [0,0,0,0,0,0,0,0,0,0,0,0]
         self.speed_axis = [0.0]
 
+        # New flight-controller joy stub.
+        # NEW_BTN_COUNT is how we *detect* this stick today (len(buttons) == N).
+        # TODO: hardcode the real button count once we know how many are active
+        #       on the new flight controller (may not stay at 21). Mapping TBD.
+        self.NEW_BTN_COUNT = 21
+        self.prev_btns_new = [0] * self.NEW_BTN_COUNT
+        self.curr_btns_new = [0] * self.NEW_BTN_COUNT
+        self.curr_axes_new = []
+        self._new_joy_seen = False
+
         self.speed_raw = 0.0
         self.xb_btns = [0,1,2,3,4,5,6,7,8,9,10]
         self.xb_axes = []
@@ -101,10 +111,14 @@ class Joy_IK_Controller(Node):
 
 
     def joy_cb_logitech(self, message: Joy) -> None:
+        # Detect controller by button count on this topic.
+        # 12 = legacy Logitech (active). 21 = new stick (stub only).
         btn_sum = 0
         btns_zero = True
 
-        if (len(message.buttons) == 12):
+        if len(message.buttons) == self.NEW_BTN_COUNT:
+            self.joy_cb_new(message)
+        elif (len(message.buttons) == 12):
             for i in range(12):
                 btn_sum += message.buttons[i]
                 self.curr_btns_lt[i] = message.buttons[self.lt_btns[i]]
@@ -127,8 +141,37 @@ class Joy_IK_Controller(Node):
             self.get_logger().info("Wrong controller gooba")
 
 
+    def joy_cb_new(self, message: Joy) -> None:
+        """Stub for the new 21-button controller. Store raw state only — no joy_parser yet."""
+        n_btns = len(message.buttons)
+        n_axes = len(message.axes)
+
+        if n_btns != self.NEW_BTN_COUNT:
+            self.get_logger().warn(
+                f"joy_cb_new expected {self.NEW_BTN_COUNT} buttons, got {n_btns}"
+            )
+            return
+
+        for i in range(self.NEW_BTN_COUNT):
+            self.curr_btns_new[i] = message.buttons[i]
+
+        self.curr_axes_new = list(message.axes)
+
+        if not self._new_joy_seen:
+            self._new_joy_seen = True
+            self.get_logger().info(
+                f"New joy seen: {n_btns} buttons, {n_axes} axes "
+                f"(stub — not mapped, not calling joy_parser)"
+            )
+
+        self.prev_btns_new = list(self.curr_btns_new)
+        # Mapping TBD: do not call self.joy_parser(message) until button/axis map is known.
+
+
     def joy_cb_xbox(self, message: Joy) -> None:
-        if (len(message.buttons) == 11):
+        if len(message.buttons) == self.NEW_BTN_COUNT:
+            self.joy_cb_new(message)
+        elif (len(message.buttons) == 11):
             for i in range(11):
                 self.curr_btns_xb[i] = message.buttons[self.xb_btns[i]]
 

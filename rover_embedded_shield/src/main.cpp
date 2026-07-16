@@ -8,6 +8,7 @@
     #error "No APP_RA or APP_GNC build flag defined. Build with -e AppRA or -e AppGNC."
 #endif
 
+
 void setup() {
 #if defined(APP_RA)
     appRA_setup();

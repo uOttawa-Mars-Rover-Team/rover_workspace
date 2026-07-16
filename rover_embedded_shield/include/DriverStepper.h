@@ -19,6 +19,7 @@ public:
     float speed;
     bool enabled;
     AccelStepper driver;
+    int8_t lastDirection_ = 0;
 
     // Constructor
     DriverStepper(const char* n, uint8_t step, uint8_t dir, uint8_t boot,

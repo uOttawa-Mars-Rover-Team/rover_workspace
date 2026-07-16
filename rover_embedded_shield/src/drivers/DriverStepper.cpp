@@ -44,33 +44,34 @@ void DriverStepper::disable() {
     Serial.print(name);
     Serial.println(" disabled");
 }
+/*
+bool DriverStepper::moveMotor(int8_t value) {
+     if (value < -1 || value > 1) {
+         Serial.println("ERROR: value must be -1, 0, or 1");
+         return false;
+     }
 
-// bool StepperMotor::moveMotor(int8_t value) {
-//     if (value < -1 || value > 1) {
-//         Serial.println("ERROR: value must be -1, 0, or 1");
-//         return false;
-//     }
+     if (!enabled) {
+         Serial.println("ERROR: motor is disabled");
+         return false;
+     }
 
-//     if (!enabled) {
-//         Serial.println("ERROR: motor is disabled");
-//         return false;
-//     }
+     driver.setMaxSpeed(speed);
 
-//     driver.setMaxSpeed(speed);
+     if (value == 1) {
+         driver.move(maxRange);   // Forward
+     }
+     else if (value == -1) {
+         driver.move(-maxRange);  // Reverse
+     }
+     else {
+         driver.stop();           // Stop
+     }
 
-//     if (value == 1) {
-//         driver.move(maxRange);   // Forward
-//     }
-//     else if (value == -1) {
-//         driver.move(-maxRange);  // Reverse
-//     }
-//     else {
-//         driver.stop();           // Stop
-//     }
-
-//     driver.run();                // <-- this is the “fix” / coupling
-//     return true;
-// }
+     driver.run();                // <-- this is the “fix” / coupling
+     return true;
+ }
+*/
 
 bool DriverStepper::moveMotor(float velocity) {
     if (fabs(velocity) > speed + 0.01f) {
@@ -82,11 +83,40 @@ bool DriverStepper::moveMotor(float velocity) {
         return false;
     }
 
-    if (fabs(velocity) != lastVelocity_) {          // only update if changed
+    if (fabs(velocity) != lastVelocity_) {
         driver.setMaxSpeed(fabs(velocity));
         lastVelocity_ = fabs(velocity);
     }
 
+    int8_t dir = (velocity > 0) ? 1 : (velocity < 0) ? -1 : 0;
+
+    if (dir != lastDirection_) {
+        if (dir == 1) {
+            driver.move(maxRange);
+        } else if (dir == -1) {
+            driver.move(-maxRange);
+        } else {
+            driver.stop();
+        }
+        lastDirection_ = dir;
+    }
+
+    return true;
+}
+/*
+bool DriverStepper::moveMotor(float velocity) {
+    if (fabs(velocity) > speed + 0.01f) {
+        Serial.println("ERROR: velocity exceeds max speed");
+        return false;
+    }
+    if (!enabled) {
+        Serial.println("ERROR: motor is disabled");
+        return false;
+    }
+    if (fabs(velocity) != lastVelocity_) {
+        driver.setMaxSpeed(fabs(velocity));
+        lastVelocity_ = fabs(velocity);
+    }
     if (velocity > 0) {
         driver.move(maxRange);
     } else if (velocity < 0) {
@@ -95,9 +125,7 @@ bool DriverStepper::moveMotor(float velocity) {
         driver.stop();
     }
     return true;
-}
-
-
+}*/
 
 
 // Stop motor

@@ -387,7 +387,7 @@ class Joy_IK_Controller(Node):
         self.gpio_cmd[attr] = not self.gpio_cmd[attr]
         self.get_logger().info(f'{label} toggled: {self.gpio_cmd[attr]}')
         if self.mode == 'M':
-            self.arm_cmd.data = f"{cmd_str};!"
+            self.arm_cmd.data = f"{cmd_str}!"
             self.cmd_pub.publish(self.arm_cmd)
         else:
             self.gpio_pub.publish(self.gpio_cmd)

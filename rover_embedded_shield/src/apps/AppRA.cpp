@@ -65,6 +65,21 @@ static bool isNumericStart(char c) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MESSAGE ROUTER
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+static bool tw_enabled = true;
+static bool wp_enabled = true;
+static bool wr_enabled = true;
+static bool ee_enabled = true;
+
+static void toggleStepper(DriverStepper& motor, bool& enabledFlag, const char* label) {
+    enabledFlag = !enabledFlag;
+    if (enabledFlag) motor.enable();
+    else              motor.disable();
+    Serial.print(F("[RAF] "));
+    Serial.print(label);
+    Serial.println(enabledFlag ? F(" enabled") : F(" disabled"));
+}
+
 void appRA_handleRA(char* payload) {
 
     if (strcmp(payload, "MORSE") == 0) {
@@ -114,6 +129,11 @@ void appRA_handleRA(char* payload) {
     if (strcmp(payload, "svH") == 0) { svBtn.holdDown();     return; }
     if (strcmp(payload, "svR") == 0) { svBtn.releaseUp();    return; }
 
+    if (strcmp(payload, "stepper1") == 0) { toggleStepper(tw, tw_enabled, "TW"); return; }
+    if (strcmp(payload, "stepper2") == 0) { toggleStepper(wp, wp_enabled, "WP"); return; }
+    if (strcmp(payload, "stepper3") == 0) { toggleStepper(wr, wr_enabled, "WR"); return; }
+    if (strcmp(payload, "stepper4") == 0) { toggleStepper(ee, ee_enabled, "EE"); return; }
+
     // ── Axis command via RA;S; ───────────────────────────────────────────────
     if (payload[0] == 'S' && payload[1] == ';') {
         appRA_dispatchAxisCommand(payload);
@@ -123,6 +143,7 @@ void appRA_handleRA(char* payload) {
     Serial.print(F("[RAF] Unknown: "));
     Serial.println(payload);
 }
+
 
 void appRA_dispatchAxisCommand(char* msg) {
     float values[6] = {0, 0, 0, 0, 0, 0};
@@ -225,7 +246,11 @@ void appRA_setup() {
 
 void appRA_loop() {
     pollSerialCommand();
-    reportEncoders();
+
+    if (appState == APP_ARM) {
+        reportEncoders();   // tower serial reporting only makes sense outside Morse
+    }
+
     svBtn.update();
 
 

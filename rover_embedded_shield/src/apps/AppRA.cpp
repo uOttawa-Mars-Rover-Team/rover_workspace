@@ -40,7 +40,7 @@ DriverEncoder encTW(66, RES12);
 enum AppState { APP_ARM, APP_MORSE };
 static AppState appState = APP_ARM;
 
-CommSerial comms(Serial3, 9600, "RA;", appRA_handleRA);
+CommSerial commsRA(Serial3, 9600, "RA;", appRA_handleRA);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ISR
@@ -205,7 +205,7 @@ static void pollSerialCommand() {
             if (serialIdx > 0) {
                 serialBuf[serialIdx] = '\0';
                 serialIdx = 0;
-                comms.handleMessage(serialBuf);  // ← goes through CommSerial now
+                commsRA.handleMessage(serialBuf);  // ← goes through CommSerial now
             }
         } else if (serialIdx < sizeof(serialBuf) - 1) {
             serialBuf[serialIdx++] = c;
@@ -221,7 +221,7 @@ static void pollSerialCommand() {
 
 void appRA_setup() {
     Serial.begin(9600);
-    comms.init();          // starts Serial3 only
+    commsRA.init();          // starts Serial3 only
 
     svBtn.begin(6, 160, 20, 15, 10);
     

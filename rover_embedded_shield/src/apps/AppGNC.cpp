@@ -9,14 +9,27 @@
 
 // ============================================================
 // GNC Mega — terminator '!'
-// Serial (RX0/TX0) : debug + commands + inter-board, all on one port @ 9600
 //
-//   SV;A;-1;1!   servo A (2-axis): pan -1, tilt +1  (keeps moving until 0)
+// Normal (APP_GNC):
+//   Serial (RX0/TX0) : commands + debug @ 9600
+//
+// Debug (APP_GNC_DEBUG):
+//   Serial1 (RX1/TX1) : commands (from RA Mega or USB-serial)
+//   Serial  (RX0/TX0) : debug output to USB Serial Monitor
+//
+//   SV;A;-1;1!   servo A (2-axis): pan -1, tilt +1
 //   SV;B;1!      servo B (1-axis)
 //   SV;C;0!      servo C stop
 //   SV;D;1!      servo D (1-axis)
 //   GNC;move;1! / GNC;move;-1! / GNC;stop! / GNC;update!
 // ============================================================
+
+#ifdef APP_GNC_DEBUG
+    #define CMD_SERIAL Serial1   // receives commands
+#else
+    #define CMD_SERIAL Serial    // receives commands
+#endif
+// Serial (USB) always used for debug prints regardless of mode
 
 #define A_PAN_PIN  6
 #define A_TILT_PIN 7
@@ -30,36 +43,44 @@
 #define STEP       2
 #define STEP_DELAY 15
 
-// --- serial buffer (single port now: Serial / RX0-TX0) ---
-static char    bufUsb[64];
-static uint8_t bufUsbIdx   = 0;
+// --- serial buffer ---
+static char    buf[64];
+static uint8_t bufIdx = 0;
 
-// --- GNC chassis stubs ---
+// --- GNC chassis state ---
 static int8_t   currentDir   = 0;
 static uint32_t lastMoveTime = 0;
 
-// --- servos A (2-axis), B (1-axis), C (1-axis), D (1-axis) ---
+// --- servos ---
 static DriverServo aPan, aTilt, bAxis, cAxis, dAxis;
 static TaskServo   servoA, servoB, servoC, servoD;
 
-static void handleSV(char* msg);   // mutable copy for strtok
+static void handleSV(char* msg);
 static void sendUpdate();
 static void appGNC_handleGNC(char* payload);
 static void pollSerialCommand();
-static CommSerial commsGNC(Serial, 9600, "GNC;", appGNC_handleGNC);
 
-static int8_t clampDir(int v)
-{
-    if (v > 0) return 1;
+static CommSerial commsGNC(CMD_SERIAL, 9600, "GNC;", appGNC_handleGNC);
+
+static int8_t clampDir(int v) {
+    if (v > 0) return  1;
     if (v < 0) return -1;
     return 0;
 }
 
-// CommSerial now wraps the single Serial (RX0/TX0) port, same pattern as AppRA
+// ── Setup ─────────────────────────────────────────────────────────────────────
 
 void appGNC_setup()
 {
-    Serial.begin(9600);
+    Serial.begin(9600);          // debug output always on USB
+
+#ifdef APP_GNC_DEBUG
+    CMD_SERIAL.begin(9600);      // Serial1 for commands in debug mode
+    Serial.println(F("[GNC] DEBUG mode — commands on Serial1, debug on Serial0"));
+#else
+    Serial.println(F("[GNC] Online. SV;A|B|C|D;...! or GNC;...!"));
+#endif
+
     commsGNC.init();
 
     aPan.init (A_PAN_PIN,  MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
@@ -74,9 +95,9 @@ void appGNC_setup()
 
     dAxis.init(D_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     servoD.init(&dAxis, nullptr);
-
-    Serial.println(F("[GNC] Online. SV;A|B|C|D;...! or GNC;...! on Serial"));
 }
+
+// ── Loop ──────────────────────────────────────────────────────────────────────
 
 void appGNC_loop()
 {
@@ -89,38 +110,40 @@ void appGNC_loop()
     servoD.tick(now);
 }
 
-// ── SERIAL POLL — single port, per-character accumulation, '!' terminator ──
+// ── Serial poll — reads from CMD_SERIAL, prints debug to Serial ───────────────
+
 static void pollSerialCommand()
 {
-    while (Serial.available() > 0) {
-        char c = Serial.read();
+    while (CMD_SERIAL.available() > 0) {
+        char c = CMD_SERIAL.read();
         if (c == '!' || c == '\n' || c == '\r') {
-            if (bufUsbIdx > 0) {
-                bufUsb[bufUsbIdx] = '\0';
-                bufUsbIdx = 0;
+            if (bufIdx > 0) {
+                buf[bufIdx] = '\0';
+                bufIdx = 0;
 
                 Serial.print(F("[GNC] RX: "));
-                Serial.println(bufUsb);
+                Serial.println(buf);
 
-                if (strncmp(bufUsb, "SV;", 3) == 0) {
+                if (strncmp(buf, "SV;", 3) == 0) {
                     char copy[64];
-                    strncpy(copy, bufUsb, sizeof(copy) - 1);
+                    strncpy(copy, buf, sizeof(copy) - 1);
                     copy[sizeof(copy) - 1] = '\0';
                     handleSV(copy);
                 } else {
-                    commsGNC.handleMessage(bufUsb);   // strips "GNC;" and calls appGNC_handleGNC
+                    commsGNC.handleMessage(buf);
                 }
             }
-        } else if (bufUsbIdx < sizeof(bufUsb) - 1) {
-            bufUsb[bufUsbIdx++] = c;
+        } else if (bufIdx < sizeof(buf) - 1) {
+            buf[bufIdx++] = c;
         } else {
-            bufUsbIdx = 0;
+            bufIdx = 0;
             Serial.println(F("[GNC] Command too long, discarded"));
         }
     }
 }
 
-// payload already has "GNC;" stripped by CommSerial
+// ── GNC command handler ───────────────────────────────────────────────────────
+
 static void appGNC_handleGNC(char* payload)
 {
     if (strncmp(payload, "move;1", 6) == 0) {
@@ -139,16 +162,17 @@ static void appGNC_handleGNC(char* payload)
     } else {
         Serial.print(F("[GNC] Unknown: "));
         Serial.println(payload);
-        Serial.print(F("GNC;error;unknown;"));
-        Serial.print(payload);
-        Serial.print('!');
+        CMD_SERIAL.print(F("GNC;error;unknown;"));
+        CMD_SERIAL.print(payload);
+        CMD_SERIAL.print('!');
     }
 }
 
-// SV;<id>;<v0>[;<v1>]  — convert string → TaskServo::move(); holds until 0
+// ── SV handler ────────────────────────────────────────────────────────────────
+
 static void handleSV(char* msg)
 {
-    strtok(msg, ";");                    // "SV"
+    strtok(msg, ";");
     char* idTok = strtok(nullptr, ";");
     if (idTok == nullptr || idTok[0] == '\0') {
         Serial.println(F("[GNC] SV: missing id"));
@@ -159,16 +183,11 @@ static void handleSV(char* msg)
     TaskServo* servo = nullptr;
     uint8_t axes = 1;
 
-    if (id == 'A' || id == 'a') {
-        servo = &servoA;
-        axes = 2;
-    } else if (id == 'B' || id == 'b') {
-        servo = &servoB;
-    } else if (id == 'C' || id == 'c') {
-        servo = &servoC;
-    } else if (id == 'D' || id == 'd') {
-        servo = &servoD;
-    } else {
+    if      (id == 'A' || id == 'a') { servo = &servoA; axes = 2; }
+    else if (id == 'B' || id == 'b') { servo = &servoB; }
+    else if (id == 'C' || id == 'c') { servo = &servoC; }
+    else if (id == 'D' || id == 'd') { servo = &servoD; }
+    else {
         Serial.print(F("[GNC] SV: unknown id "));
         Serial.println(id);
         return;
@@ -188,12 +207,11 @@ static void handleSV(char* msg)
     Serial.print(id);
     Serial.print(F(" "));
     Serial.print(d0);
-    if (axes == 2) {
-        Serial.print(F(";"));
-        Serial.print(d1);
-    }
+    if (axes == 2) { Serial.print(F(";")); Serial.print(d1); }
     Serial.println();
 }
+
+// ── Update reply ──────────────────────────────────────────────────────────────
 
 static void sendUpdate()
 {
@@ -201,8 +219,8 @@ static void sendUpdate()
     snprintf(reply, sizeof(reply),
              "GNC;status;dir=%d;uptime=%lums",
              currentDir, millis());
-    Serial.print(reply);
-    Serial.print('!');
+    CMD_SERIAL.print(reply);   // reply goes back on command port
+    CMD_SERIAL.print('!');
     Serial.print(F("[GNC] Sent: "));
     Serial.println(reply);
     (void)lastMoveTime;

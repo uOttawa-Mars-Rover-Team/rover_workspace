@@ -232,13 +232,13 @@ class Joy_IK_Controller(Node):
                             self.get_logger().info(f'Max tw scalar: {self.max_vel_tw}  →  tower speed: {round(self.max_vel * self.max_vel_tw, 3)}')
 
                     if self.curr_btns_xb[4]:
-                        self.send_servo_command('svu', 'Shoulder camera servo: up')
+                        self.send_servo_command('SV;C;1', 'Shoulder camera servo: up')
                     elif self.svd_pressed:
-                        self.send_servo_command('svd', 'Shoulder camera servo: down')
+                        self.send_servo_command('SV;C;-1', 'Shoulder camera servo: down')
                     else:
                         if prev_svd_pressed or self.prev_btns_xb[4]:
                             self.servo_cmd_sent = False
-                            self.send_command("svs", "Stop shoulder camera servo")
+                            self.send_command("SV;C;0", "Stop shoulder camera servo")
                     self.prev_svd_pressed = self.svd_pressed
 
                     if self.curr_btns_xb[2] and not self.prev_btns_xb[2]:

@@ -33,9 +33,9 @@
 
 #define A_PAN_PIN  6
 #define A_TILT_PIN 7
-#define B_PIN      8
+#define B_PAN_PIN  8
+#define B_TILT_PIN 
 #define C_PIN      9
-#define D_PIN      10
 
 #define MIN_DEG    0
 #define MAX_DEG    180
@@ -52,8 +52,8 @@ static int8_t   currentDir   = 0;
 static uint32_t lastMoveTime = 0;
 
 // --- servos ---
-static DriverServo aPan, aTilt, bAxis, cAxis, dAxis;
-static TaskServo   servoA, servoB, servoC, servoD;
+static DriverServo aPan, aTilt, bPan, bTilt, cAxis;
+static TaskServo   servoA, servoB, servoC;
 
 static void handleSV(char* msg);
 static void sendUpdate();
@@ -78,7 +78,7 @@ void appGNC_setup()
     CMD_SERIAL.begin(9600);      // Serial1 for commands in debug mode
     Serial.println(F("[GNC] DEBUG mode — commands on Serial1, debug on Serial0"));
 #else
-    Serial.println(F("[GNC] Online. SV;A|B|C|D;...! or GNC;...!"));
+    Serial.println(F("[GNC] Online. SV;A|B|C;...! or GNC;...!"));
 #endif
 
     commsGNC.init();
@@ -87,8 +87,9 @@ void appGNC_setup()
     aTilt.init(A_TILT_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     servoA.init(&aPan, &aTilt);
 
-    bAxis.init(B_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
-    servoB.init(&bAxis, nullptr);
+    bPan.init(B_PAN_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
+    bTilt.init(B_TILT_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
+    servoB.init(&bPan, &aTilt);
 
     cAxis.init(C_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     servoC.init(&cAxis, nullptr);
@@ -184,7 +185,7 @@ static void handleSV(char* msg)
     uint8_t axes = 1;
 
     if      (id == 'A' || id == 'a') { servo = &servoA; axes = 2; }
-    else if (id == 'B' || id == 'b') { servo = &servoB; }
+    else if (id == 'B' || id == 'b') { servo = &servoB; axes = 2; }
     else if (id == 'C' || id == 'c') { servo = &servoC; }
     else if (id == 'D' || id == 'd') { servo = &servoD; }
     else {

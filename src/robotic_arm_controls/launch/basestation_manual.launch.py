@@ -54,7 +54,7 @@ def generate_launch_description():
                 {'pub_rate': 20.0},
                 {'mode': "M"},
                 {'dirTW': -1},
-                {'dirL2': -1}
+                {'dirL1': -1}
             ],
             output="screen",
             )

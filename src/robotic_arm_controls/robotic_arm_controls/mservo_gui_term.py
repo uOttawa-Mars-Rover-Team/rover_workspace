@@ -1,24 +1,28 @@
 #!/usr/bin/python3
 """
-MSERVO GUI — terminal edition (AppGNC target).
+MSERVO GUI — terminal edition (Arm_V2_2 target).
 
-Box-drawing full-redraw monitor + command console for the AppGNC servo demo, in
-the house F710 rendering style. Publishes std_msgs/String on /arm_cmd; m_router
-forwards it to the GNC Mega over serial. v1 mirrors commanded state — it does NOT
-read back real hardware feedback.
+Box-drawing full-redraw monitor + command console for the manual joint-space arm,
+in the house F710 rendering style. Publishes std_msgs/String on /arm_cmd; m_router
+forwards it to the arm Mega over serial (9600). v1 mirrors commanded state — it
+does NOT read back real hardware feedback (m_router only logs f;/g; today).
 
-Wire grammar (see mservo_protocol / MSERVO_DEMO.md):
-  SV;<id>;<v0>[;<v1>]!   A=pan/tilt (2-axis), B, C (1-axis); dir in {-1,0,+1}
-  GNC;move;1! / GNC;move;-1! / GNC;stop! / GNC;update!
+Wire grammar (see mservo_protocol / Arm_V2_2_Controls_SPI):
+  S;<TW>;<WP>;<WR>;<EE>;<SL>;<EL>;!   per-joint velocity multipliers
+  set0;! zero  ·  stop;! e-stop  ·  v;! verbose  ·  stepper1..4;! driver enable
+  svu;!/svd;!/svs;! camera servo
 
-Keys (hotkey mode):
-  ← / →     Servo A  pan  -1 / +1        ↑ / ↓   Servo A tilt +1 / -1
-  f / g     Servo B  -1 / +1             h / j   Servo C  -1 / +1
-  z x c     stop servo A / B / C
-  r / m     GNC move  reverse / forward  u       GNC update
-  SPACE     ALL STOP (all servos + GNC stop)
-  :         enter serial-prompt typing mode
-  q         quit (sends ALL STOP first)
+Joints (enum order): TW tower, WP wrist-pitch, WR wrist-roll, EE end-effector
+(steppers) · SL shoulder, EL elbow (linear actuators).
+
+Keys (hotkey mode) — lowercase = toward MIN (−speed), UPPERCASE = toward MAX (+speed):
+  a/A TW    s/S WP    d/D WR    f/F EE    g/G SL    h/H EL
+  0         zero all joint velocities (send S; all 0)     SPACE  E-STOP (stop;!)
+  1 2 3 4   toggle stepper1..4 enable (TW WP WR EE)        k      set0;! (zero enc)
+  ↑ / ↓     speed scalar +/-                               v      toggle verbose
+  u/j/n     camera servo up / stop / down
+  m         switch mode label (SERVO/ARM, display only)
+  :         serial-prompt typing mode        q  quit (sends set0;! first)
 
 Serial-prompt mode (after ':'):
   type text, ENTER sends it on /arm_cmd ('!' auto-appended), ESC cancels.
@@ -37,6 +41,9 @@ from robotic_arm_controls import mservo_protocol as proto
 
 W = 54
 
+# joint id -> the lowercase jog key (uppercase of the same key = +direction)
+JOINT_KEYS = {"a": "TW", "s": "WP", "d": "WR", "f": "EE", "g": "SL", "h": "EL"}
+
 
 def row(text):
     return f"║ {text:<{W}} ║"
@@ -46,23 +53,29 @@ def hline(left, right, fill="═"):
     return left + fill * (W + 2) + right
 
 
-def sdir(d):
-    """Discrete signed direction indicator: ◀ (min) · 0 · ▶ (max)."""
-    lo = "\u25c0" if d < 0 else "\u00b7"   # ◀ / ·
-    mid = "0" if d == 0 else "\u00b7"
-    hi = "\u25b6" if d > 0 else "\u00b7"   # ▶ / ·
-    return f"{lo}   {mid}   {hi}"
+def tbar(pct, w=20):
+    f = int(max(0.0, min(100.0, pct)) / 100.0 * w)
+    return f"[{'#' * f}{'.' * (w - f)}] {pct:>5.1f}%"
 
 
-def servo_label(d):
-    return "\u2192 MAX" if d > 0 else "\u2192 MIN" if d < 0 else "STOP"
-
-
-def gnc_label(d):
-    return "FWD" if d > 0 else "REV" if d < 0 else "STOP"
+def sbar(v, vmax, w=12):
+    """Signed centered bar for a joint velocity in [-vmax, +vmax]."""
+    c = w // 2
+    if vmax <= 0:
+        frac = 0.0
+    else:
+        frac = max(-1.0, min(1.0, v / vmax))
+    f = int(abs(frac) * c)
+    if frac > 0:
+        return f"[{'.' * c}|{'#' * f}{'.' * (c - f)}]"
+    if frac < 0:
+        return f"[{'.' * (c - f)}{'#' * f}|{'.' * c}]"
+    return f"[{'.' * c}|{'.' * c}]"
 
 
 class MservoTermGui(Node):
+
+    MODES = ("SERVO", "ARM")
 
     def __init__(self, node_name: str = "mservo_gui_term"):
         super().__init__(node_name)
@@ -73,13 +86,14 @@ class MservoTermGui(Node):
         self.topic = topic
 
         # Mirrored state (what we've commanded — not hardware truth).
-        # Servo A is 2-axis (pan, tilt); B and C are 1-axis.
-        self.servo = {
-            "A": {"pan": 0, "tilt": 0},
-            "B": {"axis": 0},
-            "C": {"axis": 0},
-        }
-        self.gnc = 0  # -1 reverse / 0 stop / +1 forward
+        self.jv = {j: 0.0 for j in proto.JOINT_IDS}   # per-joint velocity mult.
+        self.steppers = {1: False, 2: False, 3: False, 4: False}
+        self.speed = 0.7           # scalar magnitude in [0.4, 1.0]
+        self.spd_step = 0.1
+        self.mode_idx = 1          # index into MODES; display-only label
+        self.verbose = False
+        self.estopped = False
+        self.camera = "stop"       # up / down / stop
 
         # Serial-prompt line editor.
         self.typing = False
@@ -114,19 +128,28 @@ class MservoTermGui(Node):
         self.last_action = text
         self.last_action_time = time.time()
 
-    def send_servo_a(self, label=""):
-        self.send(proto.servo("A", self.servo["A"]["pan"], self.servo["A"]["tilt"]),
-                  label)
+    def send_joints(self, label: str = ""):
+        self.send(proto.set_velocities([self.jv[j] for j in proto.JOINT_IDS]), label)
 
-    def all_stop(self):
-        self.servo["A"] = {"pan": 0, "tilt": 0}
-        self.servo["B"]["axis"] = 0
-        self.servo["C"]["axis"] = 0
-        self.gnc = 0
-        self.send(proto.servo("A", 0, 0))
-        self.send(proto.servo("B", 0))
-        self.send(proto.servo("C", 0))
-        self.send(proto.gnc_stop(), "ALL STOP")
+    def jog(self, joint: str, sign: int):
+        self.estopped = False
+        self.jv[joint] = round(sign * self.speed, 2)
+        self.send_joints(f"{joint} -> {'MAX' if sign > 0 else 'MIN'} ({self.jv[joint]:+.2f})")
+
+    def zero_velocities(self):
+        for j in self.jv:
+            self.jv[j] = 0.0
+        self.send_joints("all joints velocity 0")
+
+    def reapply_speed(self):
+        # Rescale any active joints to the new speed magnitude.
+        changed = False
+        for j, v in self.jv.items():
+            if v != 0.0:
+                self.jv[j] = round((1 if v > 0 else -1) * self.speed, 2)
+                changed = True
+        if changed:
+            self.send_joints(f"speed -> {self.speed:.2f}")
 
     # ── Keyboard handling ────────────────────────────────────────────────────
 
@@ -160,60 +183,64 @@ class MservoTermGui(Node):
                 self.buffer += ch
 
     def _on_press_hotkey(self, key):
-        # Servo A (2-axis) on the arrow keys.
-        if key == keyboard.Key.left:
-            self.servo["A"]["pan"] = -1
-            self.send_servo_a("A pan -> MIN")
-            return
-        if key == keyboard.Key.right:
-            self.servo["A"]["pan"] = 1
-            self.send_servo_a("A pan -> MAX")
+        if key == keyboard.Key.space:
+            self.estopped = True
+            for j in self.jv:
+                self.jv[j] = 0.0
+            self.send(proto.estop(), "E-STOP")
             return
         if key == keyboard.Key.up:
-            self.servo["A"]["tilt"] = 1
-            self.send_servo_a("A tilt -> MAX")
+            old = self.speed
+            self.speed = round(min(self.speed + self.spd_step, 1.0), 2)
+            if self.speed != old:
+                self.reapply_speed()
+                self.toast(f"speed {old:.2f} -> {self.speed:.2f}")
             return
         if key == keyboard.Key.down:
-            self.servo["A"]["tilt"] = -1
-            self.send_servo_a("A tilt -> MIN")
-            return
-        if key == keyboard.Key.space:
-            self.all_stop()
+            old = self.speed
+            self.speed = round(max(self.speed - self.spd_step, 0.4), 2)
+            if self.speed != old:
+                self.reapply_speed()
+                self.toast(f"speed {old:.2f} -> {self.speed:.2f}")
             return
 
         ch = getattr(key, "char", None)
         if ch is None:
             return
 
-        if ch == "f":
-            self.servo["B"]["axis"] = -1
-            self.send(proto.servo("B", -1), "B -> MIN")
-        elif ch == "g":
-            self.servo["B"]["axis"] = 1
-            self.send(proto.servo("B", 1), "B -> MAX")
-        elif ch == "h":
-            self.servo["C"]["axis"] = -1
-            self.send(proto.servo("C", -1), "C -> MIN")
-        elif ch == "j":
-            self.servo["C"]["axis"] = 1
-            self.send(proto.servo("C", 1), "C -> MAX")
-        elif ch == "z":
-            self.servo["A"] = {"pan": 0, "tilt": 0}
-            self.send_servo_a("A stop")
-        elif ch == "x":
-            self.servo["B"]["axis"] = 0
-            self.send(proto.servo("B", 0), "B stop")
-        elif ch == "c":
-            self.servo["C"]["axis"] = 0
-            self.send(proto.servo("C", 0), "C stop")
-        elif ch == "m":
-            self.gnc = 1
-            self.send(proto.gnc_move(1), "GNC forward")
-        elif ch == "r":
-            self.gnc = -1
-            self.send(proto.gnc_move(-1), "GNC reverse")
+        # Joint jog: lowercase = -speed, uppercase = +speed.
+        low = ch.lower()
+        if low in JOINT_KEYS:
+            joint = JOINT_KEYS[low]
+            self.jog(joint, +1 if ch.isupper() else -1)
+            return
+
+        if ch in ("1", "2", "3", "4"):
+            n = int(ch)
+            self.steppers[n] = not self.steppers[n]
+            self.send(proto.toggle_stepper(n),
+                      f"stepper{n} ({proto.STEPPERS[n]}) -> "
+                      f"{'ON' if self.steppers[n] else 'OFF'}")
+        elif ch == "0":
+            self.zero_velocities()
+        elif ch == "k":
+            self.estopped = False
+            self.send(proto.zero_all(), "set0 (zero encoders)")
+        elif ch == "v":
+            self.verbose = not self.verbose
+            self.send(proto.toggle_verbose(), f"verbose -> {self.verbose}")
         elif ch == "u":
-            self.send(proto.gnc_update(), "GNC update requested")
+            self.camera = "up"
+            self.send(proto.camera_servo("up"), "camera servo up")
+        elif ch == "n":
+            self.camera = "down"
+            self.send(proto.camera_servo("down"), "camera servo down")
+        elif ch == "j":
+            self.camera = "stop"
+            self.send(proto.camera_servo("stop"), "camera servo stop")
+        elif ch == "m":
+            self.mode_idx = (self.mode_idx + 1) % len(self.MODES)
+            self.toast(f"mode label -> {self.MODES[self.mode_idx]}")
         elif ch == ":":
             self.typing = True
             self.buffer = ""
@@ -223,32 +250,47 @@ class MservoTermGui(Node):
 
     # ── Rendering ──────────────────────────────────────────────────────────────
 
+    def stepper_diamond(self):
+        """4 steppers as a diamond: TW top, WP right, WR bottom, EE left."""
+        def cell(n):
+            jid = proto.STEPPERS[n]
+            mark = "\u25c6" if self.steppers[n] else "\u25c7"  # ◆ on / ◇ off
+            return f"{mark} {jid}"
+
+        c = W // 2
+        top = cell(1).center(W)
+        mid = f"{cell(4):<{c}}{cell(2):>{W - c}}"
+        bot = cell(3).center(W)
+        return [top, mid, bot]
+
     def draw(self):
         sys.stdout.write("\033[2J\033[H")
 
-        a = self.servo["A"]
-        b = self.servo["B"]["axis"]
-        c = self.servo["C"]["axis"]
+        mode = self.MODES[self.mode_idx]
 
         print(hline("╔", "╗"))
-        print(row("MSERVO GUI  (terminal)  ->  AppGNC"))
+        print(row("MSERVO ARM GUI  (terminal)"))
         print(hline("╠", "╣"))
-        print(row(f"Grammar: SV;/GNC;    Topic: /{self.topic}"))
+        print(row(f"Mode: {mode:<6}  Topic: /{self.topic}"))
+        print(row(f"Speed scalar   {tbar(self.speed * 100.0)}"))
+        print(row(f"Verbose: {'ON' if self.verbose else 'OFF':<3}  Camera: {self.camera.upper()}"))
 
         print(hline("╠", "╣"))
-        print(row("SERVO A (2-axis)                     (arrows)"))
-        print(row(f"  pan    {sdir(a['pan']):<12}  {servo_label(a['pan'])}"))
-        print(row(f"  tilt   {sdir(a['tilt']):<12}  {servo_label(a['tilt'])}"))
-        print(row("SERVO B (1-axis)                     (f/g, x stop)"))
-        print(row(f"  axis   {sdir(b):<12}  {servo_label(b)}"))
-        print(row("SERVO C (1-axis)                     (h/j, c stop)"))
-        print(row(f"  axis   {sdir(c):<12}  {servo_label(c)}"))
+        print(row("JOINT VELOCITIES   (a/s/d/f/g/h = -, SHIFT = +)"))
+        for j in proto.JOINT_IDS:
+            v = self.jv[j]
+            print(row(f"  {j:<3} {sbar(v, self.speed)}  {v:>+6.2f}"))
 
         print(hline("╠", "╣"))
-        print(row(f"GNC    {sdir(self.gnc):<12}  {gnc_label(self.gnc):<5} (r/m, u update)"))
+        print(row("STEPPER ENABLE MAP  (keys 1-4)"))
+        for line in self.stepper_diamond():
+            print(row(line))
 
         print(hline("╠", "╣"))
-        print(row("  STATUS: RUNNING    (SPACE = ALL STOP)"))
+        if self.estopped:
+            print(row("  ****  E-STOP ENGAGED  (k=set0 to clear)  ****"))
+        else:
+            print(row("  STATUS: ARMED   (SPACE = E-STOP, 0 = zero vel)"))
 
         print(hline("╠", "╣"))
         print(row("LOG  (last sent -> serial)"))
@@ -269,7 +311,7 @@ class MservoTermGui(Node):
         if self.last_action and (time.time() - self.last_action_time < 3.0):
             print(row(f"  >> {self.last_action[:W - 5]}"))
         else:
-            print(row("  z/x/c stop A/B/C   SPACE all-stop   u update"))
+            print(row("  1-4 stepper  0 zero-vel  k set0  v verbose  u/j/n cam"))
 
         print(hline("╚", "╝"))
         sys.stdout.flush()
@@ -287,11 +329,9 @@ def main(args=None):
         try:
             node.listener.stop()
             if rclpy.ok():
-                for frame in (proto.servo("A", 0, 0), proto.servo("B", 0),
-                              proto.servo("C", 0), proto.gnc_stop()):
-                    stop = String()
-                    stop.data = frame
-                    node.pub.publish(stop)
+                zero = String()
+                zero.data = proto.zero_all()
+                node.pub.publish(zero)
                 node.destroy_node()
                 rclpy.shutdown()
         except Exception:

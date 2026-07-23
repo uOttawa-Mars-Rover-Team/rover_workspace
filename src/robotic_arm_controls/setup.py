@@ -46,6 +46,7 @@ setup(
             "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
             "m_router = robotic_arm_controls.m_router:main",
+            "mservo_gui_term = robotic_arm_controls.mservo_gui_term:main",
             "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
         ],
     },

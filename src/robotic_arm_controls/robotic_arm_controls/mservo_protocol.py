@@ -92,6 +92,44 @@ def camera_servo(direction: str) -> str:
     return frame(mapping[direction])
 
 
+# ── Parsing (incoming /arm_cmd traffic) ──────────────────────────────────────
+
+def parse(frame: str) -> dict:
+    """Parse a frame seen on /arm_cmd into a dict describing the command.
+
+    Used by the GUI to mirror whatever is on the bus (its own echoes, plus
+    ik_joy_controls / ik_keyboard_controls commands). Positional velocity fields
+    map to JOINT_IDS order (TW WP WR EE SL EL) — the order Arm_V2_2 interprets.
+
+    Returns one of:
+      {"type": "S", "velocities": [float, ...]}
+      {"type": "set0" | "stop" | "v" | "svu" | "svd" | "svs"}
+      {"type": "stepper", "n": int}
+      {"type": "other", "head": str}
+    """
+    s = frame.strip()
+    if s.endswith("!"):
+        s = s[:-1]
+    parts = s.split(";")
+    head = parts[0] if parts else ""
+
+    if head == "S":
+        vels = []
+        for p in parts[1:]:
+            if p == "":
+                continue
+            try:
+                vels.append(float(p))
+            except ValueError:
+                pass
+        return {"type": "S", "velocities": vels}
+    if head in ("set0", "stop", "v", "svu", "svd", "svs"):
+        return {"type": head}
+    if head.startswith("stepper") and head[len("stepper"):].isdigit():
+        return {"type": "stepper", "n": int(head[len("stepper"):])}
+    return {"type": "other", "head": head}
+
+
 # ── Free-text serial prompt ──────────────────────────────────────────────────
 
 def raw(text: str) -> str:

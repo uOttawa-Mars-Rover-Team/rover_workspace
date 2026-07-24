@@ -29,13 +29,15 @@ Serial-prompt mode (after ':'):
 """
 
 import os
+import select
 import sys
+import termios
 import time
+import tty
 
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from pynput import keyboard
 
 from robotic_arm_controls import mservo_protocol as proto
 
@@ -83,9 +85,16 @@ class MservoTermGui(Node):
 
         topic = os.environ.get("ARM_CMD_TOPIC", "arm_cmd")
         self.pub = self.create_publisher(String, f"/{topic}", 20)
+        # Subscribe to the SAME topic so the display reflects every command on
+        # the bus — our own echoes plus ik_joy_controls / ik_keyboard_controls.
+        self.sub = self.create_subscription(String, f"/{topic}", self.on_arm_cmd, 20)
         self.topic = topic
 
-        # Mirrored state (what we've commanded — not hardware truth).
+        # Bus activity (proof the subscriber is live).
+        self.rx_count = 0
+
+        # Mirrored state — driven by /arm_cmd traffic (see on_arm_cmd), NOT by
+        # keypresses directly. Keys only publish; the echo updates these.
         self.jv = {j: 0.0 for j in proto.JOINT_IDS}   # per-joint velocity mult.
         self.steppers = {1: False, 2: False, 3: False, 4: False}
         self.speed = 0.7           # scalar magnitude in [0.4, 1.0]
@@ -108,20 +117,21 @@ class MservoTermGui(Node):
         self.running = True
         self._first_draw = True
 
-        self.listener = keyboard.Listener(on_press=self.on_press)
-        self.listener.start()
+        # Read keys from this terminal's stdin (raw mode set up in main()); this
+        # works locally AND over SSH, unlike pynput's global capture which needs X.
+        self.stdin_fd = sys.stdin.fileno()
 
         self.timer = self.create_timer(1.0 / 30.0, self.draw)
+        self.input_timer = self.create_timer(1.0 / 60.0, self.poll_input)
 
     # ── Command dispatch ─────────────────────────────────────────────────────
 
     def send(self, frame: str, label: str = ""):
+        # Publish only. The display updates when the frame comes back on the
+        # subscription (on_arm_cmd) — same path as external publishers.
         msg = String()
         msg.data = frame
         self.pub.publish(msg)
-        stamp = time.strftime("%H:%M:%S")
-        self.log.append(f"{stamp}  ->  {frame}")
-        self.log = self.log[-200:]
         if label:
             self.toast(label)
 
@@ -129,87 +139,141 @@ class MservoTermGui(Node):
         self.last_action = text
         self.last_action_time = time.time()
 
-    def send_joints(self, label: str = ""):
-        self.send(proto.set_velocities([self.jv[j] for j in proto.JOINT_IDS]), label)
-
     def jog(self, joint: str, sign: int):
-        self.estopped = False
-        self.jv[joint] = round(sign * self.speed, 2)
-        self.send_joints(f"{joint} -> {'MAX' if sign > 0 else 'MIN'} ({self.jv[joint]:+.2f})")
+        vals = [self.jv[j] for j in proto.JOINT_IDS]
+        vals[proto.JOINT_IDS.index(joint)] = round(sign * self.speed, 2)
+        self.send(proto.set_velocities(vals),
+                  f"{joint} -> {'MAX' if sign > 0 else 'MIN'}")
 
     def zero_velocities(self):
-        for j in self.jv:
-            self.jv[j] = 0.0
-        self.send_joints("all joints velocity 0")
+        self.send(proto.set_velocities([0.0] * len(proto.JOINT_IDS)), "zero velocities")
 
     def reapply_speed(self):
-        # Rescale any active joints to the new speed magnitude.
-        changed = False
-        for j, v in self.jv.items():
-            if v != 0.0:
-                self.jv[j] = round((1 if v > 0 else -1) * self.speed, 2)
-                changed = True
-        if changed:
-            self.send_joints(f"speed -> {self.speed:.2f}")
+        # Rescale any active joints to the new speed magnitude and republish.
+        vals = [self.jv[j] for j in proto.JOINT_IDS]
+        if any(v != 0.0 for v in vals):
+            vals = [round((1 if v > 0 else -1) * self.speed, 2) if v != 0.0 else 0.0
+                    for v in vals]
+            self.send(proto.set_velocities(vals), f"speed -> {self.speed:.2f}")
+
+    def on_arm_cmd(self, msg: String):
+        """Reflect every /arm_cmd frame on the bus (ours + ik_joy/ik_keyboard)."""
+        frame = msg.data
+        self.rx_count += 1
+        stamp = time.strftime("%H:%M:%S")
+        self.log.append(f"{stamp}  {frame[:W - 4]}")
+        self.log = self.log[-200:]
+
+        info = proto.parse(frame)
+        t = info["type"]
+        if t == "S":
+            vels = info["velocities"]
+            for i, j in enumerate(proto.JOINT_IDS):
+                self.jv[j] = round(vels[i], 2) if i < len(vels) else 0.0
+            if any(v != 0.0 for v in self.jv.values()):
+                self.estopped = False
+        elif t == "set0":
+            for j in self.jv:
+                self.jv[j] = 0.0
+        elif t == "stop":
+            self.estopped = True
+            for j in self.jv:
+                self.jv[j] = 0.0
+        elif t == "v":
+            self.verbose = not self.verbose
+        elif t == "stepper":
+            n = info["n"]
+            if n in self.steppers:
+                self.steppers[n] = not self.steppers[n]
+        elif t in ("svu", "svd", "svs"):
+            self.camera = {"svu": "up", "svd": "down", "svs": "stop"}[t]
 
     # ── Keyboard handling ────────────────────────────────────────────────────
 
-    def on_press(self, key):
+    def poll_input(self):
+        """Drain any pending stdin bytes and dispatch them as key tokens."""
         try:
-            if self.typing:
-                self._on_press_typing(key)
-            else:
-                self._on_press_hotkey(key)
-        except Exception as exc:  # never let a stray key kill the listener thread
-            self.get_logger().warn(f"key handler error: {exc}")
+            r, _, _ = select.select([self.stdin_fd], [], [], 0)
+            if not r:
+                return
+            data = os.read(self.stdin_fd, 64).decode(errors="ignore")
+        except Exception:
+            return
+        for tok in self._parse(data):
+            try:
+                if self.typing:
+                    self._key_typing(tok)
+                else:
+                    self._key_hotkey(tok)
+            except Exception as exc:
+                self.get_logger().warn(f"key handler error: {exc}")
 
-    def _on_press_typing(self, key):
-        if key == keyboard.Key.enter:
+    @staticmethod
+    def _parse(data: str):
+        """Turn a raw stdin chunk into tokens: 'UP'/'DOWN'/'LEFT'/'RIGHT',
+        'ENTER'/'ESC'/'BACKSPACE', or ('CHAR', c)."""
+        arrows = {"\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT"}
+        tokens = []
+        i = 0
+        while i < len(data):
+            c = data[i]
+            if c == "\x1b":
+                if data[i:i + 3] in arrows:
+                    tokens.append(arrows[data[i:i + 3]])
+                    i += 3
+                    continue
+                tokens.append("ESC")
+            elif c in ("\r", "\n"):
+                tokens.append("ENTER")
+            elif c in ("\x7f", "\x08"):
+                tokens.append("BACKSPACE")
+            else:
+                tokens.append(("CHAR", c))
+            i += 1
+        return tokens
+
+    def _key_typing(self, tok):
+        if tok == "ENTER":
             text = self.buffer.strip()
             self.typing = False
             self.buffer = ""
             if text:
                 self.send(proto.raw(text), f"serial: {text}")
-        elif key == keyboard.Key.esc:
+        elif tok == "ESC":
             self.typing = False
             self.buffer = ""
             self.toast("serial prompt cancelled")
-        elif key == keyboard.Key.backspace:
+        elif tok == "BACKSPACE":
             self.buffer = self.buffer[:-1]
-        elif key == keyboard.Key.space:
-            self.buffer += " "
-        else:
-            ch = getattr(key, "char", None)
-            if ch is not None:
-                self.buffer += ch
+        elif isinstance(tok, tuple) and tok[0] == "CHAR":
+            self.buffer += tok[1]
 
-    def _on_press_hotkey(self, key):
-        if key == keyboard.Key.space:
-            self.estopped = True
-            for j in self.jv:
-                self.jv[j] = 0.0
-            self.send(proto.estop(), "E-STOP")
-            return
-        if key == keyboard.Key.up:
+    def _key_hotkey(self, tok):
+        if tok == "UP":
             old = self.speed
             self.speed = round(min(self.speed + self.spd_step, 1.0), 2)
             if self.speed != old:
                 self.reapply_speed()
                 self.toast(f"speed {old:.2f} -> {self.speed:.2f}")
             return
-        if key == keyboard.Key.down:
+        if tok == "DOWN":
             old = self.speed
             self.speed = round(max(self.speed - self.spd_step, 0.4), 2)
             if self.speed != old:
                 self.reapply_speed()
                 self.toast(f"speed {old:.2f} -> {self.speed:.2f}")
             return
+        if not (isinstance(tok, tuple) and tok[0] == "CHAR"):
+            return  # ignore LEFT/RIGHT/ENTER/ESC/BACKSPACE outside typing mode
+        ch = tok[1]
 
-        ch = getattr(key, "char", None)
-        if ch is None:
+        # NOTE: handlers only publish; display state updates in on_arm_cmd when
+        # the frame echoes back (so GUI and external commands behave identically).
+        if ch == " ":
+            self.send(proto.estop(), "E-STOP")
             return
 
-        # Joint jog: lowercase = -speed, uppercase = +speed.
+        # Joint jog: lowercase = -speed, uppercase (Shift) = +speed.
         low = ch.lower()
         if low in JOINT_KEYS:
             joint = JOINT_KEYS[low]
@@ -218,26 +282,18 @@ class MservoTermGui(Node):
 
         if ch in ("1", "2", "3", "4"):
             n = int(ch)
-            self.steppers[n] = not self.steppers[n]
-            self.send(proto.toggle_stepper(n),
-                      f"stepper{n} ({proto.STEPPERS[n]}) -> "
-                      f"{'ON' if self.steppers[n] else 'OFF'}")
+            self.send(proto.toggle_stepper(n), f"stepper{n} ({proto.STEPPERS[n]})")
         elif ch == "0":
             self.zero_velocities()
         elif ch == "k":
-            self.estopped = False
             self.send(proto.zero_all(), "set0 (zero encoders)")
         elif ch == "v":
-            self.verbose = not self.verbose
-            self.send(proto.toggle_verbose(), f"verbose -> {self.verbose}")
+            self.send(proto.toggle_verbose(), "verbose toggle")
         elif ch == "u":
-            self.camera = "up"
             self.send(proto.camera_servo("up"), "camera servo up")
         elif ch == "n":
-            self.camera = "down"
             self.send(proto.camera_servo("down"), "camera servo down")
         elif ch == "j":
-            self.camera = "stop"
             self.send(proto.camera_servo("stop"), "camera servo stop")
         elif ch == "m":
             self.mode_idx = (self.mode_idx + 1) % len(self.MODES)
@@ -272,10 +328,11 @@ class MservoTermGui(Node):
         lines.append(row(f"MSERVO ARM GUI   Mode:{mode}   Cam:{self.camera.upper()}  Vb:{vb}"))
         lines.append(hline("╠", "╣"))
         lines.append(row(f"Speed  {tbar(self.speed * 100.0)}"))
+        lines.append(row(f"Bus /{self.topic}   rx: {self.rx_count}"))
         lines.append(hline("╠", "╣"))
         for j in proto.JOINT_IDS:
             v = self.jv[j]
-            lines.append(row(f"  {j:<3}{sbar(v, self.speed)} {v:>+6.2f}"))
+            lines.append(row(f"  {j:<3}{sbar(v, 1.0)} {v:>+6.2f}"))
         lines.append(hline("╠", "╣"))
         for dline in self.stepper_diamond():
             lines.append(row(dline))
@@ -312,6 +369,18 @@ class MservoTermGui(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+
+    # Put this terminal in cbreak mode so we get keystrokes immediately without
+    # Enter and without echo (cbreak keeps Ctrl-C -> SIGINT working). Restored
+    # in finally. Requires a real TTY; over a pipe this is skipped.
+    fd = sys.stdin.fileno()
+    old_termios = None
+    try:
+        old_termios = termios.tcgetattr(fd)
+        tty.setcbreak(fd)
+    except (termios.error, ValueError):
+        pass  # not a TTY (e.g. piped) — keys just won't be read
+
     node = MservoTermGui()
     try:
         while rclpy.ok() and node.running:
@@ -320,7 +389,6 @@ def main(args=None):
         pass
     finally:
         try:
-            node.listener.stop()
             if rclpy.ok():
                 zero = String()
                 zero.data = proto.zero_all()
@@ -329,6 +397,8 @@ def main(args=None):
                 rclpy.shutdown()
         except Exception:
             pass
+        if old_termios is not None:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_termios)
         sys.stdout.write("\033[2J\033[H")
         sys.stdout.flush()
 

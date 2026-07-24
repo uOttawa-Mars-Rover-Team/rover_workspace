@@ -101,16 +101,17 @@ class MservoTermGui(Node):
 
         # Scrolling command log.
         self.log = []
-        self.LOG_ROWS = 8
+        self.LOG_ROWS = 3
 
         self.last_action = ""
         self.last_action_time = 0.0
         self.running = True
+        self._first_draw = True
 
         self.listener = keyboard.Listener(on_press=self.on_press)
         self.listener.start()
 
-        self.timer = self.create_timer(1.0 / 15.0, self.draw)
+        self.timer = self.create_timer(1.0 / 30.0, self.draw)
 
     # ── Command dispatch ─────────────────────────────────────────────────────
 
@@ -264,56 +265,48 @@ class MservoTermGui(Node):
         return [top, mid, bot]
 
     def draw(self):
-        sys.stdout.write("\033[2J\033[H")
-
         mode = self.MODES[self.mode_idx]
+        vb = "ON" if self.verbose else "OFF"
 
-        print(hline("╔", "╗"))
-        print(row("MSERVO ARM GUI  (terminal)"))
-        print(hline("╠", "╣"))
-        print(row(f"Mode: {mode:<6}  Topic: /{self.topic}"))
-        print(row(f"Speed scalar   {tbar(self.speed * 100.0)}"))
-        print(row(f"Verbose: {'ON' if self.verbose else 'OFF':<3}  Camera: {self.camera.upper()}"))
-
-        print(hline("╠", "╣"))
-        print(row("JOINT VELOCITIES   (a/s/d/f/g/h = -, SHIFT = +)"))
+        lines = [hline("╔", "╗")]
+        lines.append(row(f"MSERVO ARM GUI   Mode:{mode}   Cam:{self.camera.upper()}  Vb:{vb}"))
+        lines.append(hline("╠", "╣"))
+        lines.append(row(f"Speed  {tbar(self.speed * 100.0)}"))
+        lines.append(hline("╠", "╣"))
         for j in proto.JOINT_IDS:
             v = self.jv[j]
-            print(row(f"  {j:<3} {sbar(v, self.speed)}  {v:>+6.2f}"))
-
-        print(hline("╠", "╣"))
-        print(row("STEPPER ENABLE MAP  (keys 1-4)"))
-        for line in self.stepper_diamond():
-            print(row(line))
-
-        print(hline("╠", "╣"))
+            lines.append(row(f"  {j:<3}{sbar(v, self.speed)} {v:>+6.2f}"))
+        lines.append(hline("╠", "╣"))
+        for dline in self.stepper_diamond():
+            lines.append(row(dline))
+        lines.append(hline("╠", "╣"))
         if self.estopped:
-            print(row("  ****  E-STOP ENGAGED  (k=set0 to clear)  ****"))
+            lines.append(row("  ****  E-STOP  (k = set0 to clear)  ****"))
         else:
-            print(row("  STATUS: ARMED   (SPACE = E-STOP, 0 = zero vel)"))
-
-        print(hline("╠", "╣"))
-        print(row("LOG  (last sent -> serial)"))
+            lines.append(row("  ARMED    SPACE = E-STOP    0 = zero vel"))
+        lines.append(hline("╠", "╣"))
         recent = self.log[-self.LOG_ROWS:]
-        pad = self.LOG_ROWS - len(recent)
-        for _ in range(pad):
-            print(row(""))
+        for _ in range(self.LOG_ROWS - len(recent)):
+            lines.append(row(""))
         for entry in recent:
-            print(row(f"  {entry[:W - 2]}"))
-
-        print(hline("╠", "╣"))
+            lines.append(row(f"  {entry[:W - 2]}"))
+        lines.append(hline("╠", "╣"))
         if self.typing:
-            print(row(f"  serial> {self.buffer[:W - 11]}\u2588"))
+            lines.append(row(f"  serial> {self.buffer[:W - 11]}\u2588"))
+        elif self.last_action and (time.time() - self.last_action_time < 3.0):
+            lines.append(row(f"  >> {self.last_action[:W - 5]}"))
         else:
-            print(row("  serial prompt: press ':'  |  q=quit"))
+            lines.append(row("  a/s/d/f/g/h jog  1-4 step  v vrb  u/j/n cam  : q"))
+        lines.append(hline("╚", "╝"))
 
-        print(hline("╠", "╣"))
-        if self.last_action and (time.time() - self.last_action_time < 3.0):
-            print(row(f"  >> {self.last_action[:W - 5]}"))
-        else:
-            print(row("  1-4 stepper  0 zero-vel  k set0  v verbose  u/j/n cam"))
-
-        print(hline("╚", "╝"))
+        # Redraw in place: home cursor, clear each line to EOL (no full-screen
+        # wipe = no flicker/scroll), no trailing newline, then clear below in
+        # case a previous frame was taller.
+        out = "\033[2J" if self._first_draw else ""
+        self._first_draw = False
+        out += "\033[H" + "".join(l + "\033[K\n" for l in lines[:-1])
+        out += lines[-1] + "\033[K\033[J"
+        sys.stdout.write(out)
         sys.stdout.flush()
 
 

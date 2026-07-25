@@ -72,7 +72,7 @@ class Joy_IK_Controller(Node):
         self.joy_sub_logitech = self.create_subscription(Joy, "/joy/arm_cmd_logitech", self.joy_cb_logitech, 20)
         self.joy_sub_xbox = self.create_subscription(Joy, "/joy/arm_cmd_xbox", self.joy_cb_xbox, 20)
 
-        self.gpio_cmd = {'stepper1_en': False, 'stepper2_en': False, 'stepper3_en': False, 'stepper4_en': False}
+        self.gpio_cmd = {'stepper1_en': True, 'stepper2_en': True, 'stepper3_en': True, 'stepper4_en': True}
         self.command = String()
         self.curr_cmd = ""
         self.prev_cmd = "!"
@@ -86,6 +86,9 @@ class Joy_IK_Controller(Node):
         self.curr_btns_lt = [0,0,0,0,0,0,0,0,0,0,0,0,0]
         self.prev_btns_xb = [0,0,0,0,0,0,0,0,0,0,0,0]
         self.curr_btns_xb = [0,0,0,0,0,0,0,0,0,0,0,0]
+        self.curr_btns_vo = [0] * 24
+        self.prev_btns_vo = [0] * 24 
+        
         self.speed_axis = [0.0]
 
         self.speed_raw = 0.0
@@ -120,11 +123,28 @@ class Joy_IK_Controller(Node):
             # self.get_logger().info(f"speed_raw: {self.speed_raw}")
 
             self.joy_parser(message)
+        elif (len(message.buttons) == 24):
+            for i in range(24):
+                btn_sum += message.buttons[i]
+                self.curr_btns_vo[i] = message.buttons[i]
+            if btn_sum != 0:
+                btns_zero = False
+
+            self.curr_axes[2] = message.axes[1]
+            self.curr_axes[1] = message.axes[4]
+            self.curr_axes[0] = message.axes[2]
+            self.speed_raw = message.axes[5]
+
+            # DEBUG: uncomment to confirm dial raw value range
+            # self.get_logger().info(f"speed_raw: {self.speed_raw}")
+
+            self.joy_parser(message)
 
         elif (len(message.buttons) == 11):
             self.get_logger().info("Xbox wired to logitech port")
         else:
             self.get_logger().info("Wrong controller gooba")
+
 
 
     def joy_cb_xbox(self, message: Joy) -> None:
@@ -222,17 +242,27 @@ class Joy_IK_Controller(Node):
                     self.prev_svd_pressed = self.svd_pressed
 
                     if self.curr_btns_xb[2] and not self.prev_btns_xb[2]:
-                        self.toggle_gpio('stepper1_en', 'TW', 'stepper1')
+                        self.toggle_gpio('stepper1_en', 'TW', 'RA;stepper1')
                     if self.curr_btns_xb[3] and not self.prev_btns_xb[3]:
-                        self.toggle_gpio('stepper2_en', 'WP', 'stepper2')
+                        self.toggle_gpio('stepper2_en', 'WP', 'RA;stepper2')
                     if self.curr_btns_xb[1] and not self.prev_btns_xb[1]:
-                        self.toggle_gpio('stepper3_en', 'WR', 'stepper3')
+                        self.toggle_gpio('stepper3_en', 'WR', 'RA;stepper3')
                     if self.curr_btns_xb[0] and not self.prev_btns_xb[0]:
-                        self.toggle_gpio('stepper4_en', 'EE', 'stepper4')
+                        self.toggle_gpio('stepper4_en', 'EE', 'RA;stepper4')
+
+
+                    # Voice/aux button 16: tap → svT, held → svH (repeats), release → svR
+                    if self.curr_btns_vo[14] and not self.prev_btns_vo[16]:
+                        self.send_raw_command("RA;svT!", "RA button: tap")
+                    elif self.curr_btns_vo[16] and self.prev_btns_vo[16]:
+                        self.send_raw_command("RA;svH!", "RA button: held")
+                    elif not self.curr_btns_vo[16] and self.prev_btns_vo[16]:
+                        self.send_raw_command("RA;svR!", "RA button: released")
 
                     # Save state at the END of joy_parser (after all button reads)
                     self.prev_btns_lt = list(self.curr_btns_lt)
                     self.prev_btns_xb = list(self.curr_btns_xb)
+                    self.prev_btns_vo = list(self.curr_btns_vo)
 
                     self.curr_cmd = "S;"
                     self.curr_cmd += str(round(self.curr_axes[0]*self.dirTW, 2))
@@ -246,9 +276,10 @@ class Joy_IK_Controller(Node):
                     self.curr_cmd += str(round(self.curr_axes[4]*self.dirWR, 2))
                     self.curr_cmd += ";"
 
-                    if self.curr_btns_lt[0]:
+
+                    if self.curr_btns_vo[17]:
                         self.curr_cmd += str(-round(self.max_vel, 2))
-                    elif self.curr_btns_lt[1]:
+                    elif self.curr_btns_vo[15]:
                         self.curr_cmd += str(round(self.max_vel, 2))
                     else:
                         self.curr_cmd += "0.0"
@@ -270,6 +301,14 @@ class Joy_IK_Controller(Node):
 
     def send_command(self, data: str, label: str):
         self.arm_cmd.data = f"{data};!"
+        self.get_logger().info(label)
+        self.cmd_pub.publish(self.arm_cmd)
+
+    def send_raw_command(self, data: str, label: str):
+        """Publish data exactly as given, with no ';!' auto-append.
+        Use this when the terminator/prefix is already fully formed
+        (e.g. 'RA;svT!')."""
+        self.arm_cmd.data = data
         self.get_logger().info(label)
         self.cmd_pub.publish(self.arm_cmd)
 
@@ -348,7 +387,7 @@ class Joy_IK_Controller(Node):
         self.gpio_cmd[attr] = not self.gpio_cmd[attr]
         self.get_logger().info(f'{label} toggled: {self.gpio_cmd[attr]}')
         if self.mode == 'M':
-            self.arm_cmd.data = f"{cmd_str};!"
+            self.arm_cmd.data = f"{cmd_str}!"
             self.cmd_pub.publish(self.arm_cmd)
         else:
             self.gpio_pub.publish(self.gpio_cmd)

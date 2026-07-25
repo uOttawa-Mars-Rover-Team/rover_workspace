@@ -30,7 +30,7 @@ def generate_launch_description():
                 {'device_id':  0}
             ],
             remappings=[
-                ("/joy", "/joy/arm_cmd_xbox")
+                ("/joy", "/joy/arm_cmd_xbox"),
                 ],
             output="screen",
             )
@@ -53,9 +53,7 @@ def generate_launch_description():
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
                 {'mode': "M"},
-                {'dirTW': -1},
-                {'dirL2': -1},
-                {'dirEE': -1}
+                {'dirL1': -1}
             ],
             output="screen",
             )

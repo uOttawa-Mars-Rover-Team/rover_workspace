@@ -72,7 +72,7 @@ jstest /dev/input/js0
 You will need this before every session (for now). Add to `~/.bashrc`:
 
 ```bash
-alias killjoy='ssh mann@192.168.1.201 "pkill -f joy_node; pkill -f teleop_twist_joy"'
+alias killjoy='ssh roverpc@192.168.1.201 "pkill -f joy_node; pkill -f teleop_twist_joy"'
 ```
 
 Then reload:
@@ -288,7 +288,7 @@ BOOT-UP CHECKLIST
 ─────────────────
 1. Power on rover                → wait 30s
 2. ping 192.168.1.201            → confirm reachable
-3. killjoy                       → remove phantom joy nodes
+3. killjoy                       → remove joy nodes
 4. ros2 launch chassis_controls controller.launch.py
 5. Hold LB + drive
 6. Ctrl+C when done

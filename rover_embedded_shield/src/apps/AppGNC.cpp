@@ -1,6 +1,8 @@
 #include "AppGNC.h"
 #include "DriverServo.h"
 #include "TaskServo.h"
+#include "DriverLED.h"
+#include "TaskLED.h"
 #include "CommSerial.h"
 #include <Arduino.h>
 #include <stdlib.h>
@@ -21,6 +23,7 @@
 //   SV;B;1!      servo B (1-axis)
 //   SV;C;0!      servo C stop
 //   SV;D;1!      servo D (1-axis)
+//   LED;A;on!  / LED;A;off! / LED;A;toggle! / LED;A;bright;180!
 //   GNC;move;1! / GNC;move;-1! / GNC;stop! / GNC;update!
 // ============================================================
 
@@ -34,8 +37,13 @@
 #define A_PAN_PIN  6
 #define A_TILT_PIN 7
 #define B_PAN_PIN  8
-#define B_TILT_PIN 
+#define B_TILT_PIN 13
 #define C_PIN      9
+#define D_PIN      44
+
+#define LED_A_PIN  46
+#define LED_B_PIN  45
+#define LED_C_PIN  44
 
 #define MIN_DEG    0
 #define MAX_DEG    180
@@ -52,10 +60,15 @@ static int8_t   currentDir   = 0;
 static uint32_t lastMoveTime = 0;
 
 // --- servos ---
-static DriverServo aPan, aTilt, bPan, bTilt, cAxis;
-static TaskServo   servoA, servoB, servoC;
+static DriverServo aPan, aTilt, bPan, bTilt, cAxis, dAxis;
+static TaskServo   servoA, servoB, servoC, servoD;
+
+// --- LEDs ---
+static DriverLED ledA, ledB, ledC;
+static TaskLED   ledTask;
 
 static void handleSV(char* msg);
+static void handleLED(char* msg);
 static void sendUpdate();
 static void appGNC_handleGNC(char* payload);
 static void pollSerialCommand();
@@ -96,6 +109,11 @@ void appGNC_setup()
 
     dAxis.init(D_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     servoD.init(&dAxis, nullptr);
+
+    ledA.init(LED_A_PIN);
+    ledB.init(LED_B_PIN);
+    ledC.init(LED_C_PIN);
+    ledTask.init(&ledA, &ledB, &ledC);
 }
 
 // ── Loop ──────────────────────────────────────────────────────────────────────
@@ -130,6 +148,11 @@ static void pollSerialCommand()
                     strncpy(copy, buf, sizeof(copy) - 1);
                     copy[sizeof(copy) - 1] = '\0';
                     handleSV(copy);
+                } else if (strncmp(buf, "LED;", 4) == 0) {
+                    char copy[64];
+                    strncpy(copy, buf, sizeof(copy) - 1);
+                    copy[sizeof(copy) - 1] = '\0';
+                    handleLED(copy);
                 } else {
                     commsGNC.handleMessage(buf);
                 }
@@ -210,6 +233,23 @@ static void handleSV(char* msg)
     Serial.print(d0);
     if (axes == 2) { Serial.print(F(";")); Serial.print(d1); }
     Serial.println();
+}
+
+// ── LED handler ───────────────────────────────────────────────────────────────
+
+static void handleLED(char* msg)
+{
+    strtok(msg, ";");   // discard "LED" token
+    char* payload = strtok(nullptr, "");
+    if (payload == nullptr) {
+        Serial.println(F("[GNC] LED: missing payload"));
+        return;
+    }
+
+    ledTask.parse(payload);
+
+    Serial.print(F("[GNC] LED "));
+    Serial.println(payload);
 }
 
 // ── Update reply ──────────────────────────────────────────────────────────────

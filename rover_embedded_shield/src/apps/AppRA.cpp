@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "DriverEncoder.h"
 #include "TaskButton.h"
 
@@ -40,6 +41,10 @@ DriverEncoder encTW(66, RES12);
 enum AppState { APP_ARM, APP_MORSE };
 static AppState appState = APP_ARM;
 
+// verbose mode — gates all runtime/status serial output. Startup messages
+// in appRA_setup() are unconditional and always print.
+static bool verboseMode = false;
+
 CommSerial commsRA(Serial3, 9600, "RA;", appRA_handleRA);
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -62,6 +67,14 @@ static bool isNumericStart(char c) {
     return isdigit((unsigned char)c) || c == '-' || c == '+' || c == '.';
 }
 
+// Wrap a 0..360 degree value to -180..180 for readability (e.g. 277 -> -83)
+static float wrapDeg180(float deg) {
+    deg = fmod(deg, 360.0f);
+    if (deg > 180.0f)  deg -= 360.0f;
+    if (deg < -180.0f) deg += 360.0f;
+    return deg;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MESSAGE ROUTER
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -75,22 +88,26 @@ static void toggleStepper(DriverStepper& motor, bool& enabledFlag, const char* l
     enabledFlag = !enabledFlag;
     if (enabledFlag) motor.enable();
     else              motor.disable();
-    Serial.print(F("[RAF] "));
-    Serial.print(label);
-    Serial.println(enabledFlag ? F(" enabled") : F(" disabled"));
+    if (verboseMode) {
+        Serial.print(F("[RAF] "));
+        Serial.print(label);
+        Serial.println(enabledFlag ? F(" enabled") : F(" disabled"));
+    }
 }
 
 void appRA_handleRA(char* payload) {
 
     if (strcmp(payload, "MORSE") == 0) {
-        svBtn.disable();   // block svT/svH/svR while morse runs
+        svBtn.disable();       // block svT/svH/svR while morse runs
+        svBtn.detachServo();   // release pin 6 before morse claims it
         appState = APP_MORSE;
-        morseApp.init(); // morse has its own Servo on same pin — btn won't touch it
+        morseApp.init();
         return;
     }
     if (strcmp(payload, "EXIT") == 0) {
+        morseApp.end();                   // release pin 6 before button reattaches
         appState = APP_ARM;
-        svBtn.enable();    // restore button control
+        svBtn.enable();
         svBtn.begin(6, 160, 20, 15, 10);  // reattach after morse releases pin
         return;
     }
@@ -104,24 +121,39 @@ void appRA_handleRA(char* payload) {
     // ── ARM control commands ─────────────────────────────────────────────────
     if (strcmp(payload, "ESTOP") == 0) {
         robotArm.stopAll();
-        Serial.println(F("[RAF] ESTOP"));
+        if (verboseMode) Serial.println(F("[RAF] ESTOP"));
         return;
     }
     if (strcmp(payload, "ENABLE") == 0) {
         tw.enable(); wp.enable(); wr.enable(); ee.enable();
-        Serial.println(F("[RAF] All steppers enabled"));
+        if (verboseMode) Serial.println(F("[RAF] All steppers enabled"));
         return;
     }
     if (strcmp(payload, "DISABLE") == 0) {
         tw.disable(); wp.disable(); wr.disable(); ee.disable();
-        Serial.println(F("[RAF] All steppers disabled"));
+        if (verboseMode) Serial.println(F("[RAF] All steppers disabled"));
         return;
     }
     if (strcmp(payload, "STATUS") == 0) {
-        Serial.print(F("[RAF] TW=")); Serial.println(tw.driver.currentPosition());
-        Serial.print(F("[RAF] WP=")); Serial.println(wp.driver.currentPosition());
-        Serial.print(F("[RAF] WR=")); Serial.println(wr.driver.currentPosition());
-        Serial.print(F("[RAF] EE=")); Serial.println(ee.driver.currentPosition());
+        if (verboseMode) {
+            Serial.print(F("[RAF] TW=")); Serial.println(tw.driver.currentPosition());
+            Serial.print(F("[RAF] WP=")); Serial.println(wp.driver.currentPosition());
+            Serial.print(F("[RAF] WR=")); Serial.println(wr.driver.currentPosition());
+            Serial.print(F("[RAF] EE=")); Serial.println(ee.driver.currentPosition());
+        }
+        return;
+    }
+
+    if (strcmp(payload, "VBS") == 0) {
+        verboseMode = !verboseMode;
+        // this line is deliberately unconditional so toggling always confirms
+        Serial.println(verboseMode ? F("[RAF] Verbose ON") : F("[RAF] Verbose OFF"));
+        return;
+    }
+
+    if (strcmp(payload, "SET0") == 0) {
+        encTW.setZero();
+        if (verboseMode) Serial.println(F("[RAF] TW encoder zeroed"));
         return;
     }
 
@@ -140,10 +172,30 @@ void appRA_handleRA(char* payload) {
         return;
     }
 
-    Serial.print(F("[RAF] Unknown: "));
-    Serial.println(payload);
+    if (verboseMode) {
+        Serial.print(F("[RAF] Unknown: "));
+        Serial.println(payload);
+    }
 }
 
+static void reportServo() {
+    if (!verboseMode) return;
+
+    static unsigned long lastPrint = 0;
+    if (millis() - lastPrint < 250) return;   // faster than encoder poll, servo moves quicker
+    lastPrint = millis();
+
+    Serial.print(F("[RAF] SV logical="));
+    Serial.print(svBtn.currentDeg());
+    Serial.print(F(" physical="));
+    Serial.print(svBtn.physicalDeg());
+    Serial.print(F(" target="));
+    Serial.print(svBtn.targetDeg());
+    Serial.print(F(" sweeping="));
+    Serial.print(svBtn.isSweeping() ? F("Y") : F("N"));
+    Serial.print(F(" state="));
+    Serial.println(svBtn.stateName());
+}
 
 void appRA_dispatchAxisCommand(char* msg) {
     float values[6] = {0, 0, 0, 0, 0, 0};
@@ -159,8 +211,10 @@ void appRA_dispatchAxisCommand(char* msg) {
         token = strtok(NULL, ";");
     }
     if (index < 6) {
-        Serial.print(F("[RAF] WARNING: expected 6 values, got "));
-        Serial.println(index);
+        if (verboseMode) {
+            Serial.print(F("[RAF] WARNING: expected 6 values, got "));
+            Serial.println(index);
+        }
         return;
     }
 
@@ -182,6 +236,8 @@ void appRA_dispatchAxisCommand(char* msg) {
 // SERIAL POLL — per-character accumulation, '!' or '\n' as terminator
 // ═══════════════════════════════════════════════════════════════════════════════
 static void reportEncoders() {
+    if (!verboseMode) return;
+
     static unsigned long lastPrint = 0;
     if (millis() - lastPrint < 1000) return;
     lastPrint = millis();
@@ -190,7 +246,7 @@ static void reportEncoders() {
 
     if (encTW.isOk()) { 
       Serial.print(F("[RAF] TW=")); 
-      Serial.println((posTW / 4096.0f) * 360.0f);
+      Serial.println(wrapDeg180((posTW / 4096.0f) * 360.0f));
     }
     else               { 
       Serial.println(F("[RAF] TW=ERROR")); 
@@ -223,7 +279,7 @@ void appRA_setup() {
     Serial.begin(9600);
     commsRA.init();          // starts Serial3 only
 
-    svBtn.begin(6, 160, 20, 15, 10);
+    svBtn.begin(6, 180, 0, 15, 10);
     
     robotArm.addStepper(&tw);
     robotArm.addStepper(&wp);
@@ -239,8 +295,9 @@ void appRA_setup() {
     Timer3.initialize(400);
     Timer3.attachInterrupt(timerIsr);
 
-    Serial.println(F("[SYS] Robot Arm Initialized"));
-    Serial.println(F("[SYS] Awaiting: S;tw;l1;l2;wp;wr;ee;!"));
+    // startup messages are unconditional — always print regardless of verboseMode
+    Serial.println(F("[SYS] Robotic Arm Initialized"));
+    Serial.println(F("[SYS] Awaiting: S;TW;L1;L1;WP;WR;EE;!"));
     Serial.println(F("[SYS] Type MORSE to enter morse mode, EXIT to return"));
 }
 
@@ -248,7 +305,7 @@ void appRA_loop() {
     pollSerialCommand();
 
     if (appState == APP_ARM) {
-        reportEncoders();   // tower serial reporting only makes sense outside Morse
+        reportEncoders(); 
     }
 
     svBtn.update();
@@ -258,4 +315,3 @@ void appRA_loop() {
         morseApp.update();
     }
 }
-

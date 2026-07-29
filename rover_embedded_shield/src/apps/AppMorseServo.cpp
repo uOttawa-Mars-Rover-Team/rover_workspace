@@ -23,11 +23,30 @@ const AppMorseServo::MorseChar AppMorseServo::MORSE_TABLE[] = {
 // ── Init ───────────────────────────────────────────────────────────────────────
 void AppMorseServo::init() {
     recomputeTiming();
+
+    // Guard against double-attach: if something else (e.g. TaskButton on the
+    // same pin) is still holding the Servo timer channel, detach first so we
+    // don't end up with two Servo instances fighting over pin 6.
+    if (servo_.attached()) servo_.detach();
     servo_.attach(SERVO_PIN);
+
+    currentPos_ = ENDPOINT_HI;
+    targetPos_  = ENDPOINT_HI;
+    sweeping_   = false;
+    morseState_ = MS_IDLE;
+
     servo_.write(currentPos_);
     Serial.println(F("[MORSE] App initialized on pin 6"));
     Serial.println(F("[MORSE] Commands: M <text>, G, S <n>, D <ms>, T <ms>, P, EXIT"));
     printStatus();
+}
+
+// ── Teardown — call before handing the pin back to another consumer ───────────
+void AppMorseServo::end() {
+    if (servo_.attached()) servo_.detach();
+    sweeping_   = false;
+    morseState_ = MS_IDLE;
+    qHead_ = qTail_ = 0;
 }
 
 // ── Main update — call every loop when in MORSE mode ──────────────────────────

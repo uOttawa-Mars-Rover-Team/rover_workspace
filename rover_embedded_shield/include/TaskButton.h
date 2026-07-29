@@ -14,12 +14,13 @@ public:
         msPerStep_ = msPerStep;
         currentDeg_ = restDeg_;
         servo_.attach(pin_);
-        servo_.write(currentDeg_);
+        writeServo(currentDeg_);
     }
 
     void enable()  { disabled_ = false; }
     void disable() { disabled_ = true;  }  // call when morse takes over
     bool isDisabled() const { return disabled_; }
+    void detachServo() { if (servo_.attached()) servo_.detach(); }
 
     // press → hold 100ms → release
     void tap() {
@@ -56,6 +57,22 @@ public:
 
     bool isIdle() const { return state_ == IDLE; }
 
+    // ── debug ─────────────────────────────────────────────────────────────
+    uint8_t currentDeg()  const { return currentDeg_; }   // == physical angle
+    uint8_t physicalDeg() const { return currentDeg_; }   // no inversion
+    uint8_t targetDeg()   const { return targetDeg_; }
+    bool    isSweeping()  const { return sweeping_; }
+    const char* stateName() const {
+        switch (state_) {
+            case IDLE:      return "IDLE";
+            case PRESSING:  return "PRESSING";
+            case HOLDING:   return "HOLDING";
+            case HELD:      return "HELD";
+            case RELEASING: return "RELEASING";
+        }
+        return "?";
+    }
+
     // call every loop()
     void update() {
         unsigned long now = millis();
@@ -70,7 +87,7 @@ public:
                 else if (currentDeg_ > targetDeg_)
                     currentDeg_ = max((int)currentDeg_ - stepDeg_, (int)targetDeg_);
 
-                servo_.write(currentDeg_);
+                writeServo(currentDeg_);
 
                 if (currentDeg_ == targetDeg_) {
                     sweeping_ = false;
@@ -118,12 +135,12 @@ public:
 private:
     Servo    servo_;
     uint8_t  pin_        = 6;
-    uint8_t  restDeg_    = 160;
-    uint8_t  pressDeg_   = 20;
+    uint8_t  restDeg_    = 180;
+    uint8_t  pressDeg_   = 0;
     uint8_t  stepDeg_    = 15;
     uint16_t msPerStep_  = 10;
-    uint8_t  currentDeg_ = 160;
-    uint8_t  targetDeg_  = 160;
+    uint8_t  currentDeg_ = 180;
+    uint8_t  targetDeg_  = 180;
 
     bool          sweeping_     = false;
     unsigned long lastStep_     = 0;
@@ -140,5 +157,9 @@ private:
         sweeping_  = true;
         lastStep_  = millis();
     }
-};
 
+    // direct pass-through — no inversion, currentDeg_ already matches physical angle
+    void writeServo(uint8_t deg) {
+        servo_.write(180-deg);
+    }
+};

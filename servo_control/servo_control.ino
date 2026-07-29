@@ -47,8 +47,8 @@ struct MorseChar {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 static const uint8_t SERVO_PIN   = 6;
-static const int     ENDPOINT_HI = 160;   // rest / key-up
-static const int     ENDPOINT_LO = 20;    // pressed / key-down
+static const int     ENDPOINT_HI = 180;   // rest / key-up
+static const int     ENDPOINT_LO = -10;    // pressed / key-down
 
 static const MorseChar MORSE_TABLE[] = {
   // Letters
@@ -91,8 +91,8 @@ uint16_t   qTail = 0;
 
 // ── Servo ─────────────────────────────────────────────────────────────────────
 Servo servo;
-int  currentPos  = ENDPOINT_HI;
-int  targetPos   = ENDPOINT_HI;
+int  currentPos  = ENDPOINT_LO;
+int  targetPos   = ENDPOINT_LO;
 int  stepSize    = 15;    // default changed to 5
 int  stepDelayMs = 10;
 bool sweeping    = false;

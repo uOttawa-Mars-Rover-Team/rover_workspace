@@ -34,22 +34,21 @@
 #endif
 // Serial (USB) always used for debug prints regardless of mode
 
-#define A_PAN_PIN  6
-#define A_TILT_PIN 7
-#define B_PAN_PIN  8
-#define B_TILT_PIN 13
-#define C_PIN      9
-#define D_PIN      44
 
 #define LED_A_PIN  46
 #define LED_B_PIN  45
 #define LED_C_PIN  44
+#define A_PAN_PIN  8
+#define A_TILT_PIN 9
+#define B_PAN_PIN  5
+#define B_TILT_PIN 4
+#define C_PIN      7
 
 #define MIN_DEG    0
 #define MAX_DEG    180
 #define START_DEG  180
 #define STEP       2
-#define STEP_DELAY 15
+#define STEP_DELAY 30
 
 // --- serial buffer ---
 static char    buf[64];
@@ -102,13 +101,10 @@ void appGNC_setup()
 
     bPan.init(B_PAN_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     bTilt.init(B_TILT_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
-    servoB.init(&bPan, &aTilt);
+    servoB.init(&bPan, &bTilt);
 
     cAxis.init(C_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
     servoC.init(&cAxis, nullptr);
-
-    dAxis.init(D_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
-    servoD.init(&dAxis, nullptr);
 
     ledA.init(LED_A_PIN);
     ledB.init(LED_B_PIN);
@@ -126,7 +122,6 @@ void appGNC_loop()
     servoA.tick(now);
     servoB.tick(now);
     servoC.tick(now);
-    servoD.tick(now);
 }
 
 // ── Serial poll — reads from CMD_SERIAL, prints debug to Serial ───────────────
@@ -210,7 +205,6 @@ static void handleSV(char* msg)
     if      (id == 'A' || id == 'a') { servo = &servoA; axes = 2; }
     else if (id == 'B' || id == 'b') { servo = &servoB; axes = 2; }
     else if (id == 'C' || id == 'c') { servo = &servoC; }
-    else if (id == 'D' || id == 'd') { servo = &servoD; }
     else {
         Serial.print(F("[GNC] SV: unknown id "));
         Serial.println(id);

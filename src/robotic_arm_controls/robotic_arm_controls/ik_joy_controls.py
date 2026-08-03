@@ -259,6 +259,11 @@ class Joy_IK_Controller(Node):
                     elif not self.curr_btns_vo[16] and self.prev_btns_vo[16]:
                         self.send_raw_command("RA;svR!", "RA button: released")
 
+                    if self.curr_btns_vo[2] and not self.prev_btns_vo[2]:
+                        self.send_raw_command("RA;VBS!", "Verbosity Toggled")
+                    if self.curr_btns_vo[3] and not self.prev_btns_vo[3]:
+                        self.send_raw_command("RA;SET0!", "All encoders reset")
+
                     # Save state at the END of joy_parser (after all button reads)
                     self.prev_btns_lt = list(self.curr_btns_lt)
                     self.prev_btns_xb = list(self.curr_btns_xb)

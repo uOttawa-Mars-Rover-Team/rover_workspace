@@ -70,6 +70,7 @@ static void handleSV(char* msg);
 static void handleLED(char* msg);
 static void sendUpdate();
 static void appGNC_handleGNC(char* payload);
+static void handleGNCLight(char* payload);
 static void pollSerialCommand();
 
 static CommSerial commsGNC(CMD_SERIAL, 9600, "GNC;", appGNC_handleGNC);
@@ -161,7 +162,6 @@ static void pollSerialCommand()
     }
 }
 
-// ── GNC command handler ───────────────────────────────────────────────────────
 
 static void appGNC_handleGNC(char* payload)
 {
@@ -178,6 +178,11 @@ static void appGNC_handleGNC(char* payload)
         Serial.println(F("[GNC] Stopped"));
     } else if (strncmp(payload, "update", 6) == 0) {
         sendUpdate();
+    } else if ((payload[0] == 'L' || payload[0] == 'l' ||
+                payload[0] == 'M' || payload[0] == 'm' ||
+                payload[0] == 'R' || payload[0] == 'r' ||
+                payload[0] == 'O' || payload[0] == 'o') && payload[1] == ';') {
+        handleGNCLight(payload);
     } else {
         Serial.print(F("[GNC] Unknown: "));
         Serial.println(payload);
@@ -246,6 +251,78 @@ static void handleLED(char* msg)
     Serial.println(payload);
 }
 
+// ── GNC light handler ─────────────────────────────────────────────────────────
+// Payload forms (prefix "GNC;" already stripped):
+//   L;1        L;0        M;1  R;1  O;1        -> on/off
+//   L;B;0.75   M;B;0.30   R;B;1.00  O;B;0.50    -> brightness 0.00–1.00
+//   O = outer = Left + Right together (Middle untouched)
+
+static void applyLightCmd(DriverLED& led, bool isBrightness, float brightVal, int onOff)
+{
+    if (isBrightness) {
+        uint8_t b = (uint8_t)(brightVal * 255.0f + 0.5f);
+        led.setBrightness(b);
+    } else {
+        if (onOff) led.on(); else led.off();
+    }
+}
+
+static void handleGNCLight(char* payload)
+{
+    char* target = strtok(payload, ";");   // "L" "M" "R" "O"
+    if (target == nullptr) {
+        Serial.println(F("[GNC] Light: missing target"));
+        return;
+    }
+    char t = target[0];
+
+    char* next = strtok(nullptr, ";");
+    if (next == nullptr) {
+        Serial.println(F("[GNC] Light: missing value"));
+        return;
+    }
+
+    bool  isBrightness = (next[0] == 'B' || next[0] == 'b');
+    float brightVal = 0.0f;
+    int   onOff = -1;
+
+    if (isBrightness) {
+        char* valTok = strtok(nullptr, ";");
+        if (valTok == nullptr) {
+            Serial.println(F("[GNC] Light: missing brightness value"));
+            return;
+        }
+        brightVal = atof(valTok);
+        if (brightVal < 0.0f) brightVal = 0.0f;
+        if (brightVal > 1.0f) brightVal = 1.0f;
+    } else {
+        onOff = atoi(next);
+    }
+
+    switch (t) {
+        case 'L': case 'l': applyLightCmd(ledA, isBrightness, brightVal, onOff); break;
+        case 'M': case 'm': applyLightCmd(ledB, isBrightness, brightVal, onOff); break;
+        case 'R': case 'r': applyLightCmd(ledC, isBrightness, brightVal, onOff); break;
+        case 'O': case 'o':
+            applyLightCmd(ledA, isBrightness, brightVal, onOff);   // Left
+            applyLightCmd(ledC, isBrightness, brightVal, onOff);   // Right
+            break;
+        default:
+            Serial.print(F("[GNC] Light: unknown target "));
+            Serial.println(t);
+            return;
+    }
+
+    Serial.print(F("[GNC] Light "));
+    Serial.print(t);
+    if (isBrightness) {
+        Serial.print(F(" brightness="));
+        Serial.println(brightVal, 2);
+    } else {
+        Serial.print(F(" state="));
+        Serial.println(onOff);
+    }
+}
 // ── Update reply ──────────────────────────────────────────────────────────────
 
 static void sendUpdate()

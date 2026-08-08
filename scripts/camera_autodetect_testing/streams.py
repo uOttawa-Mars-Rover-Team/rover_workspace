@@ -20,9 +20,12 @@ Viewing (Windows client):
 """
 
 import logging
+import re
 import signal
+import subprocess
 import threading
 import time
+from fractions import Fraction
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -51,6 +54,28 @@ CAPTURE_PREFS: List[Tuple[int, int, str]] = [
     (800, 600, "15/1"),
     (1280, 720, "15/1"),  # fallback if 640x480 fails
 ]
+
+# Format priority at a given resolution — most bandwidth-efficient capture
+# codec wins, *then* we pick the framerate closest to CAPTURE_PREFS from
+# whatever that codec actually offers. "RAW" covers every raw fourcc the
+# device reports (YUYV, NV12, GREY, …) since v4l2src negotiates the pixel
+# format itself once width/height/framerate are pinned.
+FORMAT_PRIORITY: List[str] = ["H264", "MJPG", "RAW"]
+
+# Rough bytes-per-pixel used only to *rank/gate* candidates, not for exact
+# accounting. Good enough to stop us from e.g. picking MJPEG@8K120 over
+# RAW@640x480x15 just because MJPEG outranks RAW in FORMAT_PRIORITY.
+BANDWIDTH_BYTES_PER_PIXEL: Dict[str, float] = {
+    "H264": 0.04,  # camera-side hardware encode — very low bits/pixel
+    "MJPG": 0.25,  # motion-JPEG, mid-quality estimate
+    "RAW": 2.0,  # uncompressed (YUYV/NV12/etc.) — worst case ~2 bytes/px
+}
+
+# Hard ceiling on *estimated* USB capture bandwidth per camera. Candidates
+# above this are skipped even if their format/fps would otherwise win.
+# ~40MB/s is a conservative shared-bus budget for USB2 Hi-Speed; raise it
+# if every camera has its own USB3 controller.
+MAX_CAPTURE_MBPS = 40.0
 
 # ── IMPORTANT: Run once, check logs for serial numbers, fill these in ──
 # Serial shown in log as:  hint: add to CAMERA_NAMES → "XXXXXXXX": "Name"
@@ -192,43 +217,156 @@ def _probe(launch_str: str) -> bool:
             pipe.get_state(3 * Gst.SECOND)
 
 
+_FOURCC_FAMILY: Dict[str, str] = {
+    "H264": "H264",
+    "MJPG": "MJPG",
+    "MJPEG": "MJPG",
+}
+
+
+def _query_v4l2_caps(dev: str) -> Dict[str, Dict[Tuple[int, int], List[float]]]:
+    """
+    Query real capture capabilities via `v4l2-ctl --list-formats-ext`,
+    grouped into families: H264 / MJPG / RAW (every other raw fourcc —
+    YUYV, NV12, GREY, …). Returns {} if v4l2-ctl is missing or the output
+    can't be parsed — callers fall back to the old preference-only probing.
+    """
+    try:
+        out = subprocess.run(
+            ["v4l2-ctl", "-d", dev, "--list-formats-ext"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout
+    except Exception as e:
+        log.debug("v4l2-ctl caps query failed for %s: %s", dev, e)
+        return {}
+
+    caps: Dict[str, Dict[Tuple[int, int], List[float]]] = {}
+    family: Optional[str] = None
+    size: Optional[Tuple[int, int]] = None
+
+    for line in out.splitlines():
+        m = re.search(r"\[\d+\]:\s*'(\w+)'", line)
+        if m:
+            family = _FOURCC_FAMILY.get(m.group(1), "RAW")
+            size = None
+            continue
+        m = re.search(r"Size:\s*Discrete\s*(\d+)x(\d+)", line)
+        if m and family:
+            size = (int(m.group(1)), int(m.group(2)))
+            continue
+        m = re.search(r"\(([\d.]+)\s*fps\)", line)
+        if m and family and size:
+            caps.setdefault(family, {}).setdefault(size, []).append(float(m.group(1)))
+
+    return caps
+
+
+def _estimate_mbps(family: str, w: int, h: int, fps: float) -> float:
+    bpp = BANDWIDTH_BYTES_PER_PIXEL.get(family, 2.0)
+    return (w * h * bpp * fps) / (1024 * 1024)
+
+
+def _fps_fraction(fps: float) -> str:
+    frac = Fraction(fps).limit_denominator(1001)
+    return f"{frac.numerator}/{frac.denominator}"
+
+
+def _family_strategy(
+    family: str, w: int, h: int, fps: float, SRC: str, NVMM: str
+) -> Tuple[str, str, str]:
+    fps_str = _fps_fraction(fps)
+    tag = f"{w}x{h}@{fps:g}fps"
+
+    if family == "H264":
+        caps = f"video/x-h264,width={w},height={h},framerate={fps_str}"
+        return (
+            f"H264 {tag}",
+            f"{SRC} ! {caps} ! nvv4l2decoder ! nvvidconv ! video/x-raw",
+            # Camera already outputs H.264 — parse + payload directly,
+            # skipping the decode/re-encode round-trip entirely.
+            f"( {SRC} ! {caps} ! h264parse config-interval=1 ! "
+            f"rtph264pay name=pay0 pt=96 mtu={MTU} )",
+        )
+    if family == "MJPG":
+        caps = f"image/jpeg,width={w},height={h},framerate={fps_str}"
+        return (
+            f"MJPG {tag}",
+            f"{SRC} ! {caps} ! jpegdec ! videoconvert ! video/x-raw",
+            f"( {SRC} ! {caps} ! "
+            f"nvv4l2decoder mjpeg=1 ! nvvidconv ! {NVMM} ! {_ENCODER} )",
+        )
+    caps = f"video/x-raw,width={w},height={h},framerate={fps_str}"
+    return (
+        f"RAW {tag}",
+        f"{SRC} ! {caps}",
+        f"( {SRC} ! {caps} ! "
+        f"videoconvert ! video/x-raw,format=I420 ! "
+        f"nvvidconv ! {NVMM} ! {_ENCODER} )",
+    )
+
+
+def _legacy_pref_strategies(SRC: str, NVMM: str) -> List[Tuple[str, str, str]]:
+    """Old exact-fps-only MJPEG/RAW cascade — used only when v4l2-ctl caps
+    aren't available, so behaviour still degrades gracefully."""
+    strategies: List[Tuple[str, str, str]] = []
+    for w, h, fps in CAPTURE_PREFS:
+        strategies.append(
+            _family_strategy("MJPG", w, h, float(fps.split("/")[0]), SRC, NVMM)
+        )
+    for w, h, fps in CAPTURE_PREFS:
+        strategies.append(
+            _family_strategy("RAW", w, h, float(fps.split("/")[0]), SRC, NVMM)
+        )
+    return strategies
+
+
 def _find_pipeline(dev: str) -> Optional[Tuple[str, str]]:
     """
     Try capture strategies in order. Returns (label, rtsp_pipeline) or None.
+
+    Strategy order: for each preferred resolution (CAPTURE_PREFS, in order),
+    walk FORMAT_PRIORITY (H264 > MJPG > RAW) and take the framerate closest
+    to that preference's target that the camera actually offers — skipping
+    any candidate whose estimated USB bandwidth exceeds MAX_CAPTURE_MBPS.
+    Native fallbacks are tried last, unchanged from before.
     """
     SRC = f"v4l2src device={dev} do-timestamp=true"
     NVMM = "video/x-raw(memory:NVMM),format=NV12"
 
+    caps = _query_v4l2_caps(dev)
     strategies: List[Tuple[str, str, str]] = []
 
-    # ── MJPEG at each preferred resolution ────────────────
-    for w, h, fps in CAPTURE_PREFS:
-        tag = f"{w}x{h}@{fps.split('/')[0]}fps"
-        caps = f"image/jpeg,width={w},height={h},framerate={fps}"
-        strategies.append(
-            (
-                f"MJPEG {tag}",
-                # Probe pipeline (no encoder)
-                f"{SRC} ! {caps} ! jpegdec ! videoconvert ! video/x-raw",
-                # RTSP pipeline
-                f"( {SRC} ! {caps} ! "
-                f"nvv4l2decoder mjpeg=1 ! nvvidconv ! {NVMM} ! {_ENCODER} )",
-            )
+    if caps:
+        for w, h, fps_pref in CAPTURE_PREFS:
+            target_fps = float(fps_pref.split("/")[0])
+            for family in FORMAT_PRIORITY:
+                available = caps.get(family, {}).get((w, h))
+                if not available:
+                    continue
+                for fps in sorted(set(available), key=lambda f: abs(f - target_fps)):
+                    est = _estimate_mbps(family, w, h, fps)
+                    if est > MAX_CAPTURE_MBPS:
+                        log.debug(
+                            "    skip %s %dx%d@%gfps — est. %.1f MB/s exceeds cap",
+                            family,
+                            w,
+                            h,
+                            fps,
+                            est,
+                        )
+                        continue
+                    strategies.append(_family_strategy(family, w, h, fps, SRC, NVMM))
+                    break  # closest-fitting fps for this resolution/format only
+    else:
+        log.warning(
+            "    v4l2-ctl caps unavailable for %s (install v4l-utils?) — "
+            "falling back to exact-fps probing",
+            dev,
         )
-
-    # ── RAW at each preferred resolution ──────────────────
-    for w, h, fps in CAPTURE_PREFS:
-        tag = f"{w}x{h}@{fps.split('/')[0]}fps"
-        caps = f"video/x-raw,width={w},height={h},framerate={fps}"
-        strategies.append(
-            (
-                f"RAW {tag}",
-                f"{SRC} ! {caps}",
-                f"( {SRC} ! {caps} ! "
-                f"videoconvert ! video/x-raw,format=I420 ! "
-                f"nvvidconv ! {NVMM} ! {_ENCODER} )",
-            )
-        )
+        strategies.extend(_legacy_pref_strategies(SRC, NVMM))
 
     # ── Native fallbacks ──────────────────────────────────
     strategies.append(

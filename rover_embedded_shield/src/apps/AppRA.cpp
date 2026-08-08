@@ -108,7 +108,7 @@ void appRA_handleRA(char* payload) {
         morseApp.end();                   // release pin 6 before button reattaches
         appState = APP_ARM;
         svBtn.enable();
-        svBtn.begin(6, 160, 20, 15, 10);  // reattach after morse releases pin
+        svBtn.begin(6, 100, 30, 15, 10);  // reattach after morse releases pin
         return;
     }
 
@@ -279,7 +279,7 @@ void appRA_setup() {
     Serial.begin(9600);
     commsRA.init();          // starts Serial3 only
 
-    svBtn.begin(6, 180, 0, 15, 10);
+    svBtn.begin(6, 100, 30, 15, 10);
     
     robotArm.addStepper(&tw);
     robotArm.addStepper(&wp);

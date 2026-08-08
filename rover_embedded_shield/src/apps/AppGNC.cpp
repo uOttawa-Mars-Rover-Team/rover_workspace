@@ -96,15 +96,15 @@ void appGNC_setup()
 
     commsGNC.init();
 
-    aPan.init (A_PAN_PIN,  MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
-    aTilt.init(A_TILT_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
+    aPan.init (A_PAN_PIN,  MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
+    aTilt.init(A_TILT_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
     servoA.init(&aPan, &aTilt);
 
-    bPan.init(B_PAN_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
-    bTilt.init(B_TILT_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
+    bPan.init(B_PAN_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
+    bTilt.init(B_TILT_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
     servoB.init(&bPan, &bTilt);
 
-    cAxis.init(C_PIN, MIN_DEG, MAX_DEG, START_DEG, STEP, STEP_DELAY);
+    cAxis.init(C_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
     servoC.init(&cAxis, nullptr);
 
     ledA.init(LED_A_PIN);

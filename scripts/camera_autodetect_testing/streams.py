@@ -47,9 +47,9 @@ PROBE_BUFFERS = 3
 PROBE_SETTLE_S = 0.5
 
 CAPTURE_PREFS: List[Tuple[int, int, str]] = [
-    (640, 480, "30/1"),
-    (800, 600, "30/1"),
-    (1280, 720, "30/1"),  # fallback if 640x480 fails
+    (640, 480, "15/1"),
+    (800, 600, "15/1"),
+    (1280, 720, "15/1"),  # fallback if 640x480 fails
 ]
 
 # ── IMPORTANT: Run once, check logs for serial numbers, fill these in ──

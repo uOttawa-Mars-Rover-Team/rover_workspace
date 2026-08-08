@@ -1,0 +1,12 @@
+[Unit]
+Description=Starts the camera system
+
+[Service]
+User=roverpc
+Group=roverpc
+ExecStart=/usr/local/bin/camera-start.sh
+StandardOutput=append:/var/log/camera-start.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

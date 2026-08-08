@@ -16,7 +16,7 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'device_id': 0}
+                {'device_id': 1}
             ],
             remappings=[
                 ("/joy", "/joy/arm_cmd_logitech"),
@@ -27,10 +27,10 @@ def generate_launch_description():
             package="joy",
             executable="joy_node",
             parameters=[
-                {'device_id':  1}
+                {'device_id':  0}
             ],
             remappings=[
-                ("/joy", "/joy/arm_cmd_spacemouse"),
+                ("/joy", "/joy/arm_cmd_xbox"),
                 ],
             output="screen",
             )
@@ -53,8 +53,7 @@ def generate_launch_description():
                 {'deadzone': 0.4},
                 {'pub_rate': 20.0},
                 {'mode': "M"},
-                {'dirTW': -1},
-                {'dirL2': -1}
+                {'dirL1': -1}
             ],
             output="screen",
             )

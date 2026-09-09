@@ -1,15 +1,37 @@
 import { Helmet } from "react-helmet";
 import { Header, Layout } from "../../components";
 import { Image, Row, Button } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   CameraOutlined,
   VideoCameraAddOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
+import ros from "../../contexts/ros";
 
 const AutonomousNavigationMission: React.FC = () => {
   const [coordinates, setCoordinates] = useState(false);
+
+  useEffect(() => {
+    if (coordinates) {
+      var fibonacciClient = new ROSLIB.Action({
+        ros: ros,
+        name: "/fibonacci",
+        actionType: "idk",
+      });
+
+      // Send an action goal
+      var goal = { GPS_coordinates: [/* target GPS coordinates */] };
+
+      var goal_id = fibonacciClient.sendGoal(
+        goal,
+        function (result) {
+          //Result confirming if the robot reached the target coordinates or not
+        },
+        function (feedback) {
+          //Feedback from server current GPS coordinates
+        }, //[current GPS coordinates of the robot]);
+    }
 
   return(
   <>
@@ -38,3 +60,4 @@ const AutonomousNavigationMission: React.FC = () => {
 };
 
 export default AutonomousNavigationMission;
+

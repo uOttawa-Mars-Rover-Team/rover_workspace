@@ -19,6 +19,7 @@ package_maintainer_emails = ", ".join(
 )
 package_url = package_info.find("url").text
 
+
 setup(
     name=package_name,
     version=package_version,
@@ -41,9 +42,11 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
+            'integrative_control = robotic_arm_controls.integrative_control:main',
             "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
             "m_router = robotic_arm_controls.m_router:main",
+            "arm_gui_term = robotic_arm_controls.arm_gui_term:main",
             "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
         ],
     },

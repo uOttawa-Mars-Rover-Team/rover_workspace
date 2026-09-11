@@ -29,8 +29,6 @@ import { DashboardContext } from "../../contexts";
 const Overview: React.FC = () => {
   const [addCameraModalVisible, setAddCameraModalVisible] = useState(false);
   const { cameraFeeds } = useContext(DashboardContext);
-  const initPosition = new Leaflet.LatLng(latitude, longitude);
-  const newPosition = new Leaflet.LatLng(latitude, longitude);
 
   return (
     <>

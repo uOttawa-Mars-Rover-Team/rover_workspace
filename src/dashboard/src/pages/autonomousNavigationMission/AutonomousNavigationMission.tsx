@@ -31,14 +31,11 @@ const AutonomousNavigationMission: React.FC = () => {
     config.overview.navigation.baseStationInitPosition;
   const currentPosition = new Leaflet.LatLng(latitude, longitude);
   const newPosition = new Leaflet.LatLng(latitude, longitude);
-  const [targetPosition, setTargetPosition] = useState<Leaflet.LatLngTuple>([
-      newPosition.lat,
-      newPosition.lng,
-    ]);
+  const [targetPosition, setTargetPosition] = useState<Leaflet.LatLngTuple>([0.0,0.0]);
 
   const [roverPosition, setRoverPosition] = useState<Leaflet.LatLngTuple>([
-      currentPosition.lat,
-      currentPosition.lng,
+      latitude,
+      longitude,
     ]);
 
     const [gpsWaypointMessage, setGpsWaypointMessage] = useState<GPSMessage>({
@@ -47,6 +44,46 @@ const AutonomousNavigationMission: React.FC = () => {
       latitude: currentPosition.lat,
       longitude: currentPosition.lng,
     });
+
+
+    const handleSubmitTargetPosition = (targetPosition: Leaflet.LatLngTuple) => {
+
+      if (rosClient) {
+        const abc = new ROSLIB.ActionClient({
+          ros: rosClient,
+          serverName: "FollowGpsWaypoints",
+          actionName: "/follow_gps_waypoints",
+        });
+        
+        var goal = new ROSLIB.Goal({
+          actionClient: abc,
+          goalMessage: { 
+            number_of_loops: 0,
+            goal_index: 0,
+            gps_poses: [
+              { 
+                position: {latitude: targetPosition[0], longitude: targetPosition[1], altitude: 0 },
+                orientation: {x: 0, y: 0, z: 0, w: 1}
+              }
+            ]
+          },
+        });
+        
+        goal.on("result", function (result) {
+          console.log("Action result:", result);
+          notification.success({
+            message: "Mission Completed",
+            description: "The rover has reached the target position.",
+          });
+        });
+
+        goal.send();
+      }
+      
+
+      // setTargetPosition([0.0, 0.0]);
+
+    };
 
   useEffect(() => {
     if (rosClient) {
@@ -104,9 +141,6 @@ const AutonomousNavigationMission: React.FC = () => {
           title="Autonomous Navigation System"
           icon=""
         />
-        <div style={{ marginBottom: "70px" , marginLeft: "70px" , marginRight: "70px"}}>
-          <Navigation/>
-        </div>
         
         <Descriptions>
           <Descriptions.Item label={<b>Current GPS Position</b>} span={24}>
@@ -121,36 +155,42 @@ const AutonomousNavigationMission: React.FC = () => {
           </Descriptions.Item>
 
           <Descriptions.Item label={<b>Target GPS Position</b>} span={24}>
+          <div style={{display: "flex", flexDirection: "column", marginTop: "10px" }}>
+            <label style={{ fontWeight: "bold" }}>Lattitude</label>
             <Input
-              value={targetPosition?.newPosition?.lat || ""}
-              placeholder="Enter a GPS lattitude value (eg: 34.0522° N)"
+              value={targetPosition[0]}
+              max={90}
+              min={-90}
               type="number"
               onChange={(e) => {
-                setTargetPosition({
-                  newPosition: {
-                    lat: e.target.value
-                  }
-                });
+                setTargetPosition([
+                  Math.min(90, Math.max(-90, parseFloat(e.target.value))),
+                  targetPosition[1]
+                ]);
               }}
             />
+            </div>
+            <div style={{display: "flex", flexDirection: "column", marginTop: "10px" }}>
+            <label style={{ fontWeight: "bold" }}>Longitude</label>
             <Input
-              value={targetPosition?.newPosition?.lng || ""}
-              placeholder="Enter an GPS longitude value (eg: 118.2437° W)"
+              value={targetPosition[1]}
+              max={180}
+              min={-180}
               type="number"
               onChange={(e) => {
-                setTargetPosition({
-                  newPosition: {
-                    lng: e.target.value
-                  }
-                });
+                setTargetPosition([
+                  targetPosition[0],
+                  Math.min(180, Math.max(-180, parseFloat(e.target.value)))
+                ]);
               }}
             />
+            </div>
           </Descriptions.Item>
         </Descriptions>
 
 
         <Space>
-          <Button onClick={() => setTargetPosition({ newPosition: { lat: 0, lng: 0 } })}>
+          <Button onClick={() => handleSubmitTargetPosition(targetPosition)}>
             Submit targetPosition
           </Button>
         </Space>

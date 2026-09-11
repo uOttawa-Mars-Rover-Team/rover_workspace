@@ -26,7 +26,7 @@ import {
   ExportOutlined,
 } from "@ant-design/icons";
 import React, { useContext, useEffect, useState } from "react";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 
 import CopiableTag from "../copiableTag/CopiableTag";
 import { DashboardContext, RosContext } from "../../contexts";

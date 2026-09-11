@@ -1,6 +1,6 @@
 import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 import { useContext, useEffect, useState } from "react";
 
 // Components

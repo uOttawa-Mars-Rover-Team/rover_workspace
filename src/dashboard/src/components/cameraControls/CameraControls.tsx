@@ -12,7 +12,7 @@ import {
 import CollapsibleWrapper from "../collapsibleWrapper/CollapsibleWrapper";
 import { useContext, useEffect, useState } from "react";
 import { RosContext } from "../../contexts";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 import * as config from "../../dashboardConfig.json";
 import {
   CreatePanoramaRequest,

@@ -16,12 +16,11 @@ import {
   Typography,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
-import ros from "../../contexts/ros";
 import GpsWaypointRecorder from "../../components/gpsWaypointRecorder/GpsWaypointRecorder";
 import { GPSMessage } from "../../components/navigation/Navigation";
 import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 
 export const defaultPrecision = 5;
 
@@ -47,17 +46,16 @@ const AutonomousNavigationMission: React.FC = () => {
 
 
     const handleSubmitTargetPosition = (targetPosition: Leaflet.LatLngTuple) => {
-
       if (rosClient) {
-        const abc = new ROSLIB.ActionClient({
+        console.log("Got target position:", targetPosition);
+
+        const client = new  ROSLIB.Action({
           ros: rosClient,
-          serverName: "FollowGpsWaypoints",
-          actionName: "/follow_gps_waypoints",
+          name: "/follow_gps_waypoints",
+          actionType: "general_interfaces/action/FollowGpsWaypointsAction"
         });
-        
-        var goal = new ROSLIB.Goal({
-          actionClient: abc,
-          goalMessage: { 
+
+        const goal = {
             number_of_loops: 0,
             goal_index: 0,
             gps_poses: [
@@ -66,23 +64,18 @@ const AutonomousNavigationMission: React.FC = () => {
                 orientation: {x: 0, y: 0, z: 0, w: 1}
               }
             ]
-          },
-        });
-        
-        goal.on("result", function (result) {
+          };
+
+        const goal_id = client.sendGoal(goal, function (result) {
           console.log("Action result:", result);
           notification.success({
             message: "Mission Completed",
             description: "The rover has reached the target position.",
           });
+        }, function (feedback) {
+          console.log("Action feedback:", feedback);
         });
-
-        goal.send();
       }
-      
-
-      // setTargetPosition([0.0, 0.0]);
-
     };
 
   useEffect(() => {

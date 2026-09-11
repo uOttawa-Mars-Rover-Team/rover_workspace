@@ -10,7 +10,7 @@ import {
 import { useState, useEffect, useContext } from "react";
 import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Space } from "antd";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 import { RosContext } from "../../contexts";
 
 interface Datapoint {

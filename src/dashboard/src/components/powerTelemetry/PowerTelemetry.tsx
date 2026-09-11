@@ -2,7 +2,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "leaflet/dist/leaflet.css";
 import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 import { useContext, useEffect, useState } from "react";
 
 // Components

@@ -20,7 +20,7 @@ import { DraggableMarker, MarkerPopup } from "./Markers";
 import { tileLayerOffline, savetiles, SaveStatus } from "leaflet.offline";
 import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
-import ROSLIB from "roslib";
+import * as ROSLIB from "roslib";
 import GpsWaypointRecorder from "../gpsWaypointRecorder/GpsWaypointRecorder";
 
 type NavigationType = {

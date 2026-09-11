@@ -1,4 +1,5 @@
-import ROSLIB, { Ros } from "roslib";
+import { Ros } from "roslib";
+import * as ROSLIB from "roslib";
 import { Node } from "../hooks/useNodes";
 import { Param } from "../hooks/useParams";
 

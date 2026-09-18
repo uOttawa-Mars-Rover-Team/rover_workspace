@@ -1,0 +1,8 @@
+{
+  "title": "Camera Controls - Robotic Arm Config.",
+  "cameras": {
+    "drive": "drive.yaml",
+    "arm": "arm.yaml",
+    "end_effector": "end_effector.yaml"
+  }
+}

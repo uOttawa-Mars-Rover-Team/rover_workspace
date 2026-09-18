@@ -1,0 +1,24 @@
+# Config parameters for the Logitech F310 controller
+#
+# The following parameters are for the node named "teleop_twist_joy"
+teleop_twist_joy:
+  ros__parameters:
+    axis_linear:
+      x: 1 # linear joystick
+    scale_linear:
+      x: 1.0
+    scale_linear_turbo:
+      x: 1.0
+
+    axis_angular:
+      yaw: 0 # angular joystick
+    scale_angular:
+      yaw: 1.0
+
+    enable_button: 6 # L2 shoulder button
+    enable_turbo_button: 4 # L1 shoulder button
+
+    # The following parameters are used in teleop_twist_joy.cpp from the
+    # teleop_twist_joy package
+    shift_up: 3
+    shift_down: 0

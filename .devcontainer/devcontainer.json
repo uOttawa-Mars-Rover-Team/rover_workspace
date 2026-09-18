@@ -1,0 +1,71 @@
+{
+  "name": "Rover Workspace (Jazzy Universal)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "USERNAME": "rover"
+    }
+  },
+  "workspaceFolder": "/workspace",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "source=rover-build-vol,target=/workspace/build,type=volume",
+    "source=rover-install-vol,target=/workspace/install,type=volume",
+    "source=rover-log-vol,target=/workspace/log,type=volume",
+    "source=rover-ccache-vol,target=/workspace/.ccache,type=volume",
+    // WSLg / X11 sockets for native Windows/Linux windows
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
+    "source=/mnt/wslg,target=/mnt/wslg,type=bind"
+  ],
+
+  "runArgs": [
+    "--ipc=host"
+  ],
+
+  "forwardPorts": [8765, 6080, 3000, 5173],
+  "portsAttributes": {
+    "8765": {
+      "label": "Foxglove Bridge"
+    },
+    "6080": {
+      "label": "Web Desktop (noVNC)",
+      "onAutoForward": "silent"
+    },
+    "3000": {
+      "label": "Dashboard (Port 3000)"
+    },
+    "5173": {
+      "label": "Dashboard (Vite)"
+    }
+  },
+
+  "containerEnv": {
+    "DISPLAY": ":0",
+    "ROS_DOMAIN_ID": "0",
+    "RCUTILS_COLORIZED_OUTPUT": "1"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "Ranch-Hand-Robotics.rde-pack",
+        "althack.ament-task-provider",
+        "redhat.vscode-xml",
+        "twxs.cmake",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "ros.rosDistro": "jazzy"
+      }
+    }
+  },
+
+  "postStartCommand": "sudo /usr/local/bin/init-desktop.sh",
+  "postCreateCommand": "sudo rosdep fix-permissions && rosdep update && sudo apt-get update && rosdep install --from-paths src --ignore-src -y -r --rosdistro jazzy || true",
+
+  "remoteUser": "rover"
+}

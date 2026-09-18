@@ -1,8 +1,23 @@
 build/
+bin/
 devel/
 src/CMakeLists.txt
+src/chassis_controls/bin/
+install/
+log/
+.cache/
+.ccache/
+compile_commands.json
+.ipynb_checkpoints/
+.virtual_documents/
+*.ikcache
 
 **/.vscode/
 **/.vs/
 **.pyc
 **.pyi
+
+supervisord.log
+supervisord.pid
+
+.DS_Store

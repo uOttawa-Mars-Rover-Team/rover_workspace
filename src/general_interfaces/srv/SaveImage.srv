@@ -1,0 +1,20 @@
+# Purpose: This service will be used to request for an image from a
+# ROS image topic to be saved at a specified path
+
+# The ROS topic to receive the image from
+string image_topic
+
+# The path to write the image to
+string path
+
+# Whether to create the path, if it doesn't already exist
+bool create_path false
+
+---
+
+# Whether the request succeeded
+bool status
+
+# A message containing the result of the service.
+# This can contain extra info. about the status of the request, etc.
+string message

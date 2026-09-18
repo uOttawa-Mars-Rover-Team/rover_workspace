@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="drive_ros2_control" params="name use_gazebo">
+        <ros2_control name="${name}" type="system">
+            <hardware>
+                <xacro:if value="${use_gazebo}">
+                    <plugin>mock_components/GenericSystem</plugin>
+                </xacro:if>
+                <xacro:unless value="${use_gazebo}">
+                    <plugin>chassis_controls/DriveSystem</plugin>
+                    <param name="FL_id">${FL_id}</param>
+                    <param name="FR_id">${FR_id}</param>
+                    <param name="RR_id">${RR_id}</param>
+                    <param name="RL_id">${RL_id}</param>
+                    <param name="Kp_FL">${Kp_FL}</param>
+                    <param name="Ki_FL">${Ki_FL}</param>
+                    <param name="Kd_FL">${Kd_FL}</param>
+                    <param name="Kp_FR">${Kp_FR}</param>
+                    <param name="Ki_FR">${Ki_FR}</param>
+                    <param name="Kd_FR">${Kd_FR}</param>
+                    <param name="Kp_RR">${Kp_RR}</param>
+                    <param name="Ki_RR">${Ki_RR}</param>
+                    <param name="Kd_RR">${Kd_RR}</param>
+                    <param name="Kp_RL">${Kp_RL}</param>
+                    <param name="Ki_RL">${Ki_RL}</param>
+                    <param name="Kd_RL">${Kd_RL}</param>
+                    <param name="wheel_diameter">${wheel_diameter}</param>
+                    <param name="wheel_encoder_counts_per_revolution">${wheel_encoder_counts_per_revolution}</param>
+                </xacro:unless>
+            </hardware>
+
+            <joint name="q1"> <!-- FL_wheel -->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+            </joint>
+            <joint name="q2"> <!-- FR_wheel -->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+            </joint>
+            <joint name="q3"> <!-- RR_wheel -->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+            </joint>
+            <joint name="q4"> <!-- RL_wheel -->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+            </joint>
+        </ros2_control>
+    </xacro:macro>
+</robot>

@@ -1,0 +1,6 @@
+float64 velocity_feedback
+float64 positon_feedback
+float64 output_current
+float64 output_voltage
+string sticky_faults
+int32 faults_bitfield

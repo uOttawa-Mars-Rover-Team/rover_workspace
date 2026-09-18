@@ -1,0 +1,27 @@
+<library path="arm_hardware">
+    <class  name="arm_controls/ArmSystem"
+    type="arm_controls::ArmSystem"
+    base_class_type="hardware_interface::SystemInterface">
+        <description>
+            Hardware plugin for a 6DOF arm.
+        </description>
+    </class>
+</library>
+<library path="peripheral_controller">
+  <class name="arm_controls/PeripheralController" 
+  type="arm_controls::PeripheralController" 
+  base_class_type="controller_interface::ControllerInterface">
+    <description>
+      This controller publishes the GPIOs.
+    </description>
+  </class>
+</library>
+<library path="gripper_controller">
+  <class name="arm_controls/GripperController" 
+  type="arm_controls::GripperController" 
+  base_class_type="controller_interface::ControllerInterface">
+    <description>
+      This controller publishes velocities to the Roll and EE joints.
+    </description>
+  </class>
+</library>

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>camera_nodes</name>
+  <version>0.1.0</version>
+  <description>The camera_nodes package</description>
+  <maintainer email="12845445-bvsam@users.noreply.gitlab.com">Benjamin Sam</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>general_interfaces</exec_depend>
+  <!-- Used to publish from camera to ROS image topics -->
+  <exec_depend>usb_cam</exec_depend>
+  <!-- Used to make sure launch files can be used and different launch file
+  formats are recognized -->
+  <exec_depend>ros2launch</exec_depend>
+  <!-- Used for the camera control app -->
+  <exec_depend>python3-urwid</exec_depend>
+
+  <depend>rclpy</depend>
+  <depend>cv_bridge</depend>
+  <depend>sensor_msgs</depend>
+  <depend>ffmpeg_image_transport</depend>
+  <depend>image_transport</depend>
+  <depend>ffmpeg</depend>
+  <depend>gscam</depend>
+
+  <exec_depend>python3-gi</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-base</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-good</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-bad</exec_depend>
+  <exec_depend>gstreamer1.0-libav</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

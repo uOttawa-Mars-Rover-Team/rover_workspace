@@ -13,8 +13,9 @@
   <test_depend>python3-pytest</test_depend>
 
   <depend>urdf</depend>
-  <depend>gazebo_ros2_control</depend>
-  <depend>gazebo_ros_pkgs</depend>
+  <depend>gz_ros2_control</depend>
+  <depend>ros_gz_sim</depend>
+  <depend>ros_gz_bridge</depend>
   <build_depend>launch_ros</build_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>rviz2</exec_depend>

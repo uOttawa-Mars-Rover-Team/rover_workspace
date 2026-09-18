@@ -28,7 +28,7 @@ namespace arm_controls {
     int num_joints;
     int num_peripherals;
 
-    class HARDWARE_INTERFACE_PUBLIC ArmSystem: public hardware_interface::SystemInterface {
+    class ArmSystem: public hardware_interface::SystemInterface {
         public:
             CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
             std::vector<hardware_interface::StateInterface> export_state_interfaces() override;

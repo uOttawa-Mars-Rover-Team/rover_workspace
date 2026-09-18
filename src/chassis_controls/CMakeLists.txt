@@ -45,6 +45,9 @@ set_target_properties(phoenix_cci PROPERTIES
 
 # --- drive_test executable ---
 add_executable(drive_test src/drive_test.cpp)
+
+target_compile_options(drive_test PRIVATE -Wno-overloaded-virtual)
+
 target_include_directories(
     drive_test
     PRIVATE

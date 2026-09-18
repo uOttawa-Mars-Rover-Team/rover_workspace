@@ -16,10 +16,10 @@ namespace chassis_controls
 {
   using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-  class HARDWARE_INTERFACE_PUBLIC DriveSystem : public hardware_interface::SystemInterface
+  class DriveSystem : public hardware_interface::SystemInterface
   {
   public:
-    CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
+    CallbackReturn on_init(const hardware_interface::HardwareComponentInterfaceParams &params) override;
 
     hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State &previous_state) override;
 

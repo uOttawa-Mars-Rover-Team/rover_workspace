@@ -21,8 +21,8 @@ private:
     };
     // ── Constants ──────────────────────────────────────────────────
     static const uint8_t  SERVO_PIN    = 6;
-    static const int      ENDPOINT_HI  = 0;
-    static const int      ENDPOINT_LO  = 180;
+    static const int      ENDPOINT_HI  = 30;
+    static const int      ENDPOINT_LO  = 100;
     static const uint16_t QUEUE_SIZE   = 512;
     static const MorseChar MORSE_TABLE[];
     // ── Timing ─────────────────────────────────────────────────────
@@ -39,8 +39,8 @@ private:
     Servo        servo_;
     int          currentPos_   = ENDPOINT_LO;
     int          targetPos_    = ENDPOINT_LO;
-    int          stepSize_     = 15;
-    int          stepDelayMs_  = 10;
+    int          stepSize_     = 10;
+    int          stepDelayMs_  = 5;
     bool         sweeping_     = false;
     bool         firstLeg_     = false;
     unsigned long lastStepTime_ = 0;

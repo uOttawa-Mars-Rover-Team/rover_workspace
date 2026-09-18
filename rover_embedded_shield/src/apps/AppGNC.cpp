@@ -104,7 +104,7 @@ void appGNC_setup()
     bTilt.init(B_TILT_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
     servoB.init(&bPan, &bTilt);
 
-    cAxis.init(C_PIN, MIN_DEG, MAX_DEG, 40, STEP, STEP_DELAY);
+    cAxis.init(C_PIN, MIN_DEG, MAX_DEG, 80, STEP, STEP_DELAY);
     servoC.init(&cAxis, nullptr);
 
     ledA.init(LED_A_PIN);

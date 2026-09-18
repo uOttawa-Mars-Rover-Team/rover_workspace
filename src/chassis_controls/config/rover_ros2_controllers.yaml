@@ -1,0 +1,47 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    # Prevent unwanted random ros2-control errors during drive system startup
+    # https://github.com/ros-controls/ros2_control/issues/1905
+    lock_memory: false
+
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+diff_cont:
+  ros__parameters:
+    odom_frame_id: odom
+    base_frame_id: base_link
+    left_wheel_names: ["q1", "q4"]
+    right_wheel_names: ["q2", "q3"]
+    # Taken from Jackal config params listed at https://wiki.ros.org/diff_drive_controller
+    pose_covariance_diagonal:
+      [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
+
+    wheels_per_side: 2
+    wheel_separation: 0.865 # (nominal) center to center = 0.7524; inner to inner = 0.5698
+    wheel_radius: 0.203005
+
+    open_loop: false
+    enable_odom_tf: true
+    use_stamped_vel: false
+
+    # Using a multiplier allows for more accurate turning odometry
+    wheel_separation_multiplier: 1.45
+
+    linear:
+      x:
+        has_velocity_limits: true
+        max_velocity: 2.0 # m/s
+        has_acceleration_limits: true
+        max_acceleration: 2.5 # m/s^2
+    angular:
+      z:
+        has_velocity_limits: true
+        max_velocity: 4.0 # rad/s
+        has_acceleration_limits: true
+        max_acceleration: 16.0 # rad/s^2

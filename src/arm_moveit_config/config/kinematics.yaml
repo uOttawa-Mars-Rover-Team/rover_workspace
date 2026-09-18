@@ -1,0 +1,11 @@
+uorover_arm:
+  # The cached KDL kinematics plugin caches solution to speed up IK calculations later on
+  kinematics_solver: cached_ik_kinematics_plugin/CachedKDLKinematicsPlugin
+  kinematics_solver_search_resolution: 0.001 # smaller value will increase percision at the cost of computation time
+  kinematics_solver_timeout: 0.05 # max time for computation
+  kinematics_solver_attempts: 5
+  max_cache_size: 10000
+  min_pose_distance: 1.0 # minimum distance between end effector locations for solutions to be considered distinct
+  min_joint_config_distance: 4.0 # minimum distance between joint configs
+  # If true, disregard the end effector orientation and focus solely on the reaching the desired position
+  position_only_ik: false 

@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     dbus-x11 \
     git \
+    iputils-ping \
     libgl1 \
     libgl1-mesa-dri \
     libglx-mesa0 \

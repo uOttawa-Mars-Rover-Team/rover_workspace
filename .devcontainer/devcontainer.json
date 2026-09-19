@@ -7,6 +7,8 @@
     }
   },
   "workspaceFolder": "/workspace",
+
+  "initializeCommand": "mkdir -p /tmp/.X11-unix",
   
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind",

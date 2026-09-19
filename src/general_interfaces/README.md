@@ -1,25 +1,49 @@
-# general_interfaces Package
+# general_interfaces
 
-## Purpose
+Custom ROS 2 messages, services, and actions shared by every other package in
+this workspace. This package contains no nodes and nothing to launch — it only
+generates interface types.
 
-- Define messages, services, and actions that will be used throughout the rest of the workspace
+## Build
+
+```bash
+colcon build --packages-select general_interfaces
+source install/setup.bash
+```
+
+Any package that uses these types must be rebuilt after this one changes.
+
+## Interfaces
+
+| Kind | Files |
+| --- | --- |
+| Messages (`msg/`) | `ArmControl`, `ArmError`, `ArmGpio`, `ArmPose`, `ArmState`, `DriveControl`, `DriveSensor`, `GPS`, `GripperControl`, `IMU`, `MotorData`, `PowerData`, `ReferencePositions`, `ToggleMessage` |
+| Services (`srv/`) | `SaveImage`, `CreatePanorama` |
+| Actions (`action/`) | `ZeroArm` |
+
+Inspect one at runtime with:
+
+```bash
+ros2 interface show general_interfaces/msg/GPS
+```
+
+> Note: `DriveSensor.msg` and `ReferencePositions.msg` exist on disk but are not
+> listed in `CMakeLists.txt`, so they are **not** built. Add them there if you
+> need them.
 
 ## Adding a new interface
 
-1. Add a message (under `./msg/`), service (under `./srv/`), or action (under `./action/`) definition within this package
-2. Add the path to the new interface definition inside the `CMakeLists.txt` file for this package to allow it to be built
+1. Add the definition under `msg/`, `srv/`, or `action/`.
+2. Add its path to the `rosidl_generate_interfaces()` call in `CMakeLists.txt`.
+3. Rebuild this package, then rebuild anything that consumes it.
 
-## Q&A
+Field types and naming rules are in the
+[ROS 2 custom interfaces tutorial](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html).
 
-- How can I learn more about how to create a custom interface (message/service/action) and about what this package does?
+## Why a separate package?
 
-  - Visit the ROS2 (Humble) docs explaining how to create custom interfaces: https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html
-
-- Why can't custom interfaces (message/service/action) be defined in the packages that they are used in?
-
-  - It might be possible to do so. However, this may complicate dependencies for interrelated packages. For example, if an interface is defined in package `A` and used in package `B` and `C`, then both `B` and `C` must have dependencies of package `A` defined in the `package.xml`. This may start to get messy as the codebase grows larger.
-  - Also, the tutorial from the ROS2 docs teach how to create custom interfaces in a separate package, so the example given was followed
-
-- Why is this package a C++ (ament_cmake) package and not a Python (ament_python) package?
-
-  - The [docs](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html) and other online sources seem to imply that interface definition packages can't be Python type packages. However, this is probably fine, since not much, if any, C++ knowledge is required to build a new interface.
+Keeping interfaces in one place avoids circular/messy dependencies: if a message
+lived in package `A` and were used by `B` and `C`, both would need to depend on
+`A`. It is also an `ament_cmake` package rather than `ament_python` because
+`rosidl` interface generation requires CMake — no C++ knowledge is needed to add
+a message.

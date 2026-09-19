@@ -1,25 +1,72 @@
-# gps_node package
+# gps_node
 
-## Purpose
+GPS and IMU publishing for the rover — the nodes that report where the rover is
+and how it is oriented.
 
-- This package is meant to house the ROS code that runs the GPS and IMU publishers, which publish data related to the rover's positioning and orientation in space.
+The package currently wraps the [`ublox_dgnss`](https://github.com/aussierobots/ublox_dgnss)
+driver for our u-blox RTK receiver, and ships dummy publishers for testing
+without hardware.
 
-- The code in this package was initially migrated from our old `gps_node` package that was meant for ROS Melodic.
+## Build
+
+```bash
+colcon build --packages-select gps_node
+source install/setup.bash
+```
+
+## Launch files
+
+Both launch files just include the matching `ublox_dgnss` launch file, so the
+`ublox_dgnss` package must be installed and the receiver plugged in over USB.
+
+| Launch file | Run on | What it does |
+| --- | --- | --- |
+| `rover.launch.py` | rover / Jetson | Starts the u-blox receiver in **rover** (moving base) mode |
+| `base.launch.py` | base station | Starts the u-blox receiver in **base** (fixed RTK reference) mode |
+
+```bash
+# on the rover
+ros2 launch gps_node rover.launch.py
+
+# on the base station
+ros2 launch gps_node base.launch.py
+```
 
 ## Nodes
 
-### `gps_node` Node
+| Executable | Purpose |
+| --- | --- |
+| `gps_dummy_node` | Publishes fake `general_interfaces/GPS` data for testing the dashboard / navigation without hardware |
+| `imu_dummy_node` | Publishes fake `general_interfaces/IMU` data for the same reason |
 
-The `gps_node` (in `gps_node/gps_node.py`) ROS node runs both the GPS and IMU publishers. It receives GPS and IMU measurements by reading from an Arduino running `GPS_IMU_No_ROSserial.ino` (from the `arduino_sketches` folder of this repository) over the serial port.
+```bash
+ros2 run gps_node gps_dummy_node
+ros2 run gps_node imu_dummy_node
+```
 
-The Arduino reads GPS and IMU data from sensors attached to it and writes this data over its serial port. The `gps_node` node reads reads the GPS and IMU data from the Arduino over the serial port and publishes it on 2 separate ROS topics: the GPS data is published on a topic using a message of type `general_interfaces/GPS` and the IMU data is published onto a topic using a message of type `general_interfaces/IMU`.
+> Note: `setup.py` also declares a `gps_node` executable pointing at
+> `gps_node/gps_node.py`, but that file is not in the repo (it was the old
+> Arduino serial reader). Building is fine, but `ros2 run gps_node gps_node`
+> will fail until the file is restored or the entry point is removed.
 
-The `latitude` and `longitude` values this node reads from the Arduino may be specified using [degrees and decimal minutes](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion), in the format `DDMM.MMMM` (the first two characters are the degrees, everything that follows are minutes). If this is the case, you may want to convert these values into decimal degrees coordinates. Instructions exist online specifying how to do so. For more information on converting from decimal degrees and minutes to decimal degrees please visit [this page](https://learn.adafruit.com/adafruit-ultimate-gps/direct-computer-wiring/).
+## Checking the data
 
-## Helpful Resources
+```bash
+ros2 topic list
+ros2 topic echo /fix          # or whatever topic the driver/dummy publishes
+ros2 topic hz /fix
+```
 
-The wiki page for GPS on GitLab: https://gitlab.com/uorover/rover_workspace/-/wikis/Research/GPS-for-Rover
+## Coordinate format
 
-The Adafruit pages on the GPS module: https://learn.adafruit.com/adafruit-ultimate-gps/
+Older Arduino-sourced data reported `latitude`/`longitude` in degrees and
+decimal minutes (`DDMM.MMMM` — first two characters are degrees, the rest are
+minutes) rather than decimal degrees. If you are reading raw NMEA, convert
+before feeding it to navigation. See
+[Adafruit's explanation](https://learn.adafruit.com/adafruit-ultimate-gps/direct-computer-wiring/).
 
-The Sparkfun pages on the IMU module: https://learn.sparkfun.com/tutorials/lsm9ds1-breakout-hookup-guide/all
+## Resources
+
+- [GPS wiki page](https://gitlab.com/uorover/rover_workspace/-/wikis/Research/GPS-for-Rover)
+- [Adafruit Ultimate GPS](https://learn.adafruit.com/adafruit-ultimate-gps/)
+- [SparkFun LSM9DS1 IMU](https://learn.sparkfun.com/tutorials/lsm9ds1-breakout-hookup-guide/all)

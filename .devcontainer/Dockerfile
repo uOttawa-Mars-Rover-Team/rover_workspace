@@ -2,7 +2,7 @@ FROM osrf/ros:jazzy-desktop-full
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1. Base tools, X11/VNC fallback, build accelerators, and Foxglove Bridge
+# Base tools, X11/VNC fallback, build accelerators, and utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     && add-apt-repository universe \
@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tigervnc-tools \
     websockify \
     wget \
+    x11-utils \
     x11-xserver-utils \
     xauth \
     xfonts-base \
@@ -49,7 +50,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PATH="/usr/lib/ccache:$PATH"
 ENV CCACHE_DIR="/workspace/.ccache"
 
-# 4. User Configuration: Setup 'rover' and remove Ubuntu 24.04 UID 1000 conflict
+# User Configuration: Setup 'rover' and handle Ubuntu 24.04 UID 1000 conflict
 ARG USERNAME=rover
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -65,7 +66,7 @@ RUN if getent passwd $USER_UID >/dev/null 2>&1; then \
     && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-# 5. Native Xvnc Display Pipeline (Mac/Browser fallback)
+# Native Xvnc Display Pipeline (Mac/Browser fallback on DISPLAY=:1)
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
     && echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf \
     && echo "nodaemon=false" >> /etc/supervisor/conf.d/supervisord.conf \
@@ -90,12 +91,26 @@ RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
     && echo "autorestart=true" >> /etc/supervisor/conf.d/supervisord.conf \
     && echo "priority=200" >> /etc/supervisor/conf.d/supervisord.conf
 
-# 6. Desktop Initialization Script (Cleans stale locks & fixes volume ownership on container boot)
+# Intelligent Display & GPU Detection Script
+RUN echo '#!/bin/bash' > /etc/profile.d/00-display-detect.sh \
+    && echo '# If native host X11 is responding on :0, use it (WSLg / Linux host)' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'if xdpyinfo -display :0 >/dev/null 2>&1; then' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    export DISPLAY=:0' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'else' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    # Fallback to internal noVNC/Openbox session (macOS / Headless)' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    export DISPLAY=:1' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'fi' >> /etc/profile.d/00-display-detect.sh \
+    && echo '# Fallback to software rasterizer if no hardware DRI is available (macOS)' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'if [ ! -e /dev/dri ] && [ ! -d /usr/lib/wsl ]; then' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    export LIBGL_ALWAYS_SOFTWARE=1' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'fi' >> /etc/profile.d/00-display-detect.sh \
+    && chmod +x /etc/profile.d/00-display-detect.sh
+
+# Desktop Initialization Script (Cleans stale locks & starts supervisor)
 RUN echo '#!/bin/bash' > /usr/local/bin/init-desktop.sh \
     && echo 'rm -f /tmp/.X1-lock /tmp/.X11-unix/X1' >> /usr/local/bin/init-desktop.sh \
-    && echo 'mkdir -p /tmp/.X11-unix' >> /usr/local/bin/init-desktop.sh \
+    && echo 'mkdir -p /tmp/.X11-unix /workspace/build /workspace/install /workspace/log /workspace/.ccache' >> /usr/local/bin/init-desktop.sh \
     && echo 'chmod 1777 /tmp/.X11-unix' >> /usr/local/bin/init-desktop.sh \
-    && echo 'mkdir -p /workspace/build /workspace/install /workspace/log /workspace/.ccache' >> /usr/local/bin/init-desktop.sh \
     && echo 'chown -R rover:rover /workspace/build /workspace/install /workspace/log /workspace/.ccache' >> /usr/local/bin/init-desktop.sh \
     && echo 'if ! pgrep -x "supervisord" > /dev/null; then' >> /usr/local/bin/init-desktop.sh \
     && echo '    /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /usr/local/bin/init-desktop.sh \
@@ -104,12 +119,10 @@ RUN echo '#!/bin/bash' > /usr/local/bin/init-desktop.sh \
     && echo 'fi' >> /usr/local/bin/init-desktop.sh \
     && chmod +x /usr/local/bin/init-desktop.sh
 
-# 7. Environment Auto-Sourcing
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
+# 8. Environment Auto-Sourcing
+RUN echo "source /etc/profile.d/00-display-detect.sh" >> /home/$USERNAME/.bashrc \
+    && echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /workspace/install/setup.bash ]; then source /workspace/install/setup.bash; fi" >> /home/$USERNAME/.bashrc
-
-ENV LIBGL_ALWAYS_SOFTWARE=0
-ENV MESA_GL_VERSION_OVERRIDE=3.3
 
 WORKDIR /workspace
 USER $USERNAME

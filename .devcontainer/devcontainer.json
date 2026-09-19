@@ -14,9 +14,9 @@
     "source=rover-install-vol,target=/workspace/install,type=volume",
     "source=rover-log-vol,target=/workspace/log,type=volume",
     "source=rover-ccache-vol,target=/workspace/.ccache,type=volume",
-    // WSLg / X11 sockets for native Windows/Linux windows
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
-    "source=/mnt/wslg,target=/mnt/wslg,type=bind"
+    
+    // Shared X11 socket. Safe across all systems (Docker creates an empty dir if missing on macOS)
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
   ],
 
   "runArgs": [
@@ -30,7 +30,7 @@
     },
     "6080": {
       "label": "Web Desktop (noVNC)",
-      "onAutoForward": "silent"
+      "onAutoForward": "openBrowser"
     },
     "3000": {
       "label": "Dashboard (Port 3000)"
@@ -41,7 +41,6 @@
   },
 
   "containerEnv": {
-    "DISPLAY": ":0",
     "ROS_DOMAIN_ID": "0",
     "RCUTILS_COLORIZED_OUTPUT": "1"
   },

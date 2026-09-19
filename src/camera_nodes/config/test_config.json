@@ -1,9 +1,0 @@
-{
-  "title": "Camera Controls - Test Config.",
-  "cameras": {
-    "camera_1": "params1.yaml",
-    "camera_2": "params2.yaml",
-    "camera_3": "params3.yaml",
-    "camera_4": "params4.yaml"
-  }
-}

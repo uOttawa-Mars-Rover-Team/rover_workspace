@@ -18,7 +18,7 @@
     "source=rover-ccache-vol,target=/workspace/.ccache,type=volume",
     
     // Shared X11 socket. Safe across all systems (Docker creates an empty dir if missing on macOS)
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix-host,type=bind"
   ],
 
   "runArgs": [
@@ -60,7 +60,19 @@
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/bin/python3",
-        "ros.rosDistro": "jazzy"
+        "ros.rosDistro": "jazzy",
+        "files.watcherExclude": {
+          "**/build/**": true,
+          "**/install/**": true,
+          "**/log/**": true,
+          "**/.ccache/**": true
+        },
+        "C_Cpp.files.exclude": {
+          "**/build/**": true,
+          "**/install/**": true,
+          "**/log/**": true,
+          "**/.ccache/**": true
+        }
       }
     }
   },

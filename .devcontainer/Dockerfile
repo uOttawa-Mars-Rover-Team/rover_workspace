@@ -8,6 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && add-apt-repository universe \
     && apt-get update && apt-get install -y --no-install-recommends \
     ros-jazzy-desktop-full \
+    fonts-dejavu \
+    fonts-liberation \
+    libxcb-cursor0 \
+    libxcb-xinerama0 \
+    qt6-qpa-plugins \
     bash-completion \
     build-essential \
     ccache \
@@ -67,6 +72,11 @@ RUN if getent passwd $USER_UID >/dev/null 2>&1; then \
     && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
+# Create writable X11 directory and link host X0 from staging mount
+RUN mkdir -p /tmp/.X11-unix /tmp/.X11-unix-host \
+    && ln -sf /tmp/.X11-unix-host/X0 /tmp/.X11-unix/X0 \
+    && chmod 1777 /tmp/.X11-unix
+
 # Native Xvnc Display Pipeline (Mac/Browser fallback on DISPLAY=:1)
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
     && echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf \
@@ -101,21 +111,24 @@ RUN echo '#!/bin/bash' > /etc/profile.d/00-display-detect.sh \
     && echo '    # Fallback to internal noVNC/Openbox session (macOS / Headless)' >> /etc/profile.d/00-display-detect.sh \
     && echo '    export DISPLAY=:1' >> /etc/profile.d/00-display-detect.sh \
     && echo 'fi' >> /etc/profile.d/00-display-detect.sh \
-    && echo '# Fallback to software rasterizer if no hardware DRI is available (macOS)' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'export QT_QPA_PLATFORM=xcb' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'export LIBGL_DRI3_DISABLE=1' >> /etc/profile.d/00-display-detect.sh \
     && echo 'if [ ! -e /dev/dri ] && [ ! -d /usr/lib/wsl ]; then' >> /etc/profile.d/00-display-detect.sh \
     && echo '    export LIBGL_ALWAYS_SOFTWARE=1' >> /etc/profile.d/00-display-detect.sh \
-    && echo '    export MESA_GL_VERSION_OVERRIDE=3.3' >> /etc/profile.d/00-display-detect.sh \
-    && echo '    export MESA_GLSL_VERSION_OVERRIDE=330' >> /etc/profile.d/00-display-detect.sh \
     && echo 'fi' >> /etc/profile.d/00-display-detect.sh \
-    && echo 'export XDG_RUNTIME_DIR=/tmp/runtime-$USER' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'export XDG_RUNTIME_DIR=/tmp/runtime-${USER:-rover}' >> /etc/profile.d/00-display-detect.sh \
     && echo 'mkdir -p $XDG_RUNTIME_DIR && chmod 0700 $XDG_RUNTIME_DIR' >> /etc/profile.d/00-display-detect.sh \
     && chmod +x /etc/profile.d/00-display-detect.sh
 
 # Desktop Initialization Script (Cleans stale locks & starts supervisor)
 RUN echo '#!/bin/bash' > /usr/local/bin/init-desktop.sh \
-    && echo 'rm -f /tmp/.X1-lock /tmp/.X11-unix/X1' >> /usr/local/bin/init-desktop.sh \
     && echo 'mkdir -p /tmp/.X11-unix /workspace/build /workspace/install /workspace/log /workspace/.ccache' >> /usr/local/bin/init-desktop.sh \
     && echo 'chmod 1777 /tmp/.X11-unix' >> /usr/local/bin/init-desktop.sh \
+    && echo '# Restore symlink to host WSLg X0 if available' >> /usr/local/bin/init-desktop.sh \
+    && echo 'if [ -S /tmp/.X11-unix-host/X0 ] && [ ! -e /tmp/.X11-unix/X0 ]; then' >> /usr/local/bin/init-desktop.sh \
+    && echo '    ln -sf /tmp/.X11-unix-host/X0 /tmp/.X11-unix/X0' >> /usr/local/bin/init-desktop.sh \
+    && echo 'fi' >> /usr/local/bin/init-desktop.sh \
+    && echo 'rm -f /tmp/.X1-lock /tmp/.X11-unix/X1' >> /usr/local/bin/init-desktop.sh \
     && echo 'chown -R rover:rover /workspace/build /workspace/install /workspace/log /workspace/.ccache' >> /usr/local/bin/init-desktop.sh \
     && echo 'if ! pgrep -x "supervisord" > /dev/null; then' >> /usr/local/bin/init-desktop.sh \
     && echo '    /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /usr/local/bin/init-desktop.sh \

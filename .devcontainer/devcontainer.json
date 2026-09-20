@@ -7,11 +7,11 @@
     }
   },
   "workspaceFolder": "/workspace",
-
-  "initializeCommand": "mkdir -p /tmp/.X11-unix",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   
+  "initializeCommand": "mkdir -p /tmp/.X11-unix",
+
   "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind",
     "source=rover-build-vol,target=/workspace/build,type=volume",
     "source=rover-install-vol,target=/workspace/install,type=volume",
     "source=rover-log-vol,target=/workspace/log,type=volume",

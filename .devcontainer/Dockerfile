@@ -1,4 +1,4 @@
-FROM osrf/ros:jazzy-desktop-full
+FROM ros:jazzy-ros-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     && add-apt-repository universe \
     && apt-get update && apt-get install -y --no-install-recommends \
+    ros-jazzy-desktop-full \
     bash-completion \
     build-essential \
     ccache \
@@ -93,8 +94,8 @@ RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
 
 # Intelligent Display & GPU Detection Script
 RUN echo '#!/bin/bash' > /etc/profile.d/00-display-detect.sh \
-    && echo '# If native host X11 is responding on :0, use it (WSLg / Linux host)' >> /etc/profile.d/00-display-detect.sh \
-    && echo 'if xdpyinfo -display :0 >/dev/null 2>&1; then' >> /etc/profile.d/00-display-detect.sh \
+    && echo '# Timeout after 1 second if :0 is unresponsive (prevents Mac hangs)' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'if timeout 1s xdpyinfo -display :0 >/dev/null 2>&1; then' >> /etc/profile.d/00-display-detect.sh \
     && echo '    export DISPLAY=:0' >> /etc/profile.d/00-display-detect.sh \
     && echo 'else' >> /etc/profile.d/00-display-detect.sh \
     && echo '    # Fallback to internal noVNC/Openbox session (macOS / Headless)' >> /etc/profile.d/00-display-detect.sh \
@@ -103,7 +104,11 @@ RUN echo '#!/bin/bash' > /etc/profile.d/00-display-detect.sh \
     && echo '# Fallback to software rasterizer if no hardware DRI is available (macOS)' >> /etc/profile.d/00-display-detect.sh \
     && echo 'if [ ! -e /dev/dri ] && [ ! -d /usr/lib/wsl ]; then' >> /etc/profile.d/00-display-detect.sh \
     && echo '    export LIBGL_ALWAYS_SOFTWARE=1' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    export MESA_GL_VERSION_OVERRIDE=3.3' >> /etc/profile.d/00-display-detect.sh \
+    && echo '    export MESA_GLSL_VERSION_OVERRIDE=330' >> /etc/profile.d/00-display-detect.sh \
     && echo 'fi' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'export XDG_RUNTIME_DIR=/tmp/runtime-$USER' >> /etc/profile.d/00-display-detect.sh \
+    && echo 'mkdir -p $XDG_RUNTIME_DIR && chmod 0700 $XDG_RUNTIME_DIR' >> /etc/profile.d/00-display-detect.sh \
     && chmod +x /etc/profile.d/00-display-detect.sh
 
 # Desktop Initialization Script (Cleans stale locks & starts supervisor)

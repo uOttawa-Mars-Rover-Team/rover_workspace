@@ -6,23 +6,9 @@ This is the node the arm actually runs on. It publishes a command string on
 microcontroller:
 
     S;<TW>;<L1>;<L2>;<WP>;<WR>;<EE>;!
-
-The arm is flown with two controllers at once -- a flight stick for the tower
-and the two links, an Xbox pad for the wrist and the peripherals. Which
-controller a message came from is worked out from the message itself, not from
-the device index ``joy_node`` happened to open it with, so they can be plugged
-in in any order. See ``joy_cb``.
-
-The ``mode`` parameter selects between that ("M", the default) and an
-inverse-kinematics path ("I") that publishes ``TwistStamped`` on
-``/servo_node/delta_twist_cmds`` and ``GripperControl`` on
-``/gripper_control/gripper_velocities`` for MoveIt Servo. There is no IK stack
-in this workspace at the moment -- the MoveIt config lives in an
-``arm_controls`` package that is not in ``src/`` -- so "I" currently publishes
-into the void. It is kept working so the arm side does not have to be
-rewritten when IK comes back.
 """
 
+import time
 from typing import TypeVar
 
 import rclpy
@@ -43,12 +29,6 @@ JOINT_COUNT = 6
 
 
 # --- Telling the controllers apart -----------------------------------------
-# The number of buttons a controller reports is a property of the hardware, so
-# unlike a device index it does not change when things are plugged in in a
-# different order or enumerate differently on boot.
-#
-# To support a new controller: add its button count here, add its axis and
-# button numbers below, and add a read_* method.
 VELOCITYONE = "velocityone"   # Turtle Beach VelocityOne Flightstick
 LOGITECH = "logitech"         # Logitech Extreme 3D Pro, the older stick
 GAMEPAD = "gamepad"           # Xbox pad
@@ -61,10 +41,6 @@ LAYOUT_BY_BUTTON_COUNT = {
     2: SPACEMOUSE,
 }
 
-# Input topics, each with the controller to assume when the button count is
-# not one we recognise. The topic is only a fallback -- a recognised controller
-# is read as itself whichever topic it turns up on. The arm_cmd_* names are
-# what the launch files used before the stick and the pad had their own topics.
 JOY_TOPICS = (
     ("/joy/arm_stick", VELOCITYONE),
     ("/joy/arm_pad", GAMEPAD),
@@ -98,46 +74,26 @@ LG_BTN_VERBOSE = 11
 # --- Xbox pad (11 buttons) --------------------------------------------------
 PAD_AXIS_CAM = 2              # left trigger -> shoulder camera servo down
 PAD_BTN_CAM_UP = 4
-PAD_BTN_STEPPER1 = 2          # TW
-PAD_BTN_STEPPER2 = 3          # WP
-PAD_BTN_STEPPER3 = 1          # WR
-PAD_BTN_STEPPER4 = 0          # EE
+PAD_BTN_STEPPER1 = 2          # X button -> TW
+PAD_BTN_STEPPER2 = 3          # Y button -> WP
+PAD_BTN_STEPPER3 = 1          # B button -> WR
+PAD_BTN_STEPPER4 = 0          # A button -> EE
 
 # --- SpaceMouse (2 buttons), IK mode only ----------------------------------
 SM_BTN_EE_CLOSE = 0
 SM_BTN_EE_OPEN = 1
 
 
-# Every joint at rest. Sent once at startup so the microcontroller is holding
-# still rather than repeating whatever it was doing before this node came up.
 STOP_CMD = "S;0.0;0.0;0.0;0.0;0.0;0.0;!"
 
 
 def joint_field(value: float) -> str:
-    """Format one joint of the command string.
-
-    Adding 0.0 folds -0.0 into 0.0, so a joint that is not moving always
-    serialises as "0.0" whether or not its direction is flipped -- otherwise a
-    standing-still arm alternates between "0.0" and "-0.0" and every stop looks
-    like a new command.
-    """
+    """Format one joint of the command string."""
     return str(round(value, 2) + 0.0)
 
 
 class JoySource:
-    """One physical controller, with every untouched input held at neutral.
-
-    ``joy_node`` reports the state of every axis the moment it opens a device,
-    and an axis nobody has touched yet does not necessarily read 0.0 -- a
-    trigger or a throttle commonly sits at -1.0 or +1.0 until it is first
-    moved. Feeding those values straight into a joint command is what made the
-    arm take off the instant the launch file came up and only settle once the
-    operator wiggled the sticks.
-
-    So every axis starts out "not ready" and reads as 0.0; it only reports real
-    values once it has been seen to move. Buttons work the same way: one that
-    is already down in the very first message is ignored until it is released.
-    """
+    """One physical controller, with every untouched input held at neutral."""
 
     AXIS_EPS = 1e-3
 
@@ -173,29 +129,24 @@ class JoySource:
         self._buttons = list(message.buttons)
 
     def axis(self, index: int) -> float:
-        """Axis value, or 0.0 while that axis has not been moved yet."""
         if index >= len(self._axes) or not self._axis_ready[index]:
             return 0.0
         return self._axes[index]
 
     def button(self, index: int) -> int:
-        """Button state, or 0 while that button has not been released yet."""
         if index >= len(self._buttons) or not self._btn_ready[index]:
             return 0
         return self._buttons[index]
 
     def prev_button(self, index: int) -> int:
-        """Button state in the previous message from this controller."""
         if index >= len(self._prev_buttons):
             return 0
         return self._prev_buttons[index]
 
     def pressed(self, index: int) -> bool:
-        """True on the message where the button goes down."""
         return bool(self.button(index)) and not self.prev_button(index)
 
     def released(self, index: int) -> bool:
-        """True on the message where the button comes back up."""
         return not self.button(index) and bool(self.prev_button(index))
 
     def _reset(self, message: Joy) -> None:
@@ -226,21 +177,19 @@ class JoyControls(Node):
         self.dirWP = self.get_param("dirWP", rclpy.Parameter.Type.INTEGER, 1)
         self.dirWR = self.get_param("dirWR", rclpy.Parameter.Type.INTEGER, 1)
 
-        # The pad's two wrist axes are swapped between the two modes.
         if self.mode == "I":
             self.pad_axis_wp, self.pad_axis_wr = 0, 1
         else:
             self.pad_axis_wp, self.pad_axis_wr = 1, 0
 
         # --- Speed ----------------------------------------------------------
-        # max_vel:    global scalar [0.4, 1.0], set by the throttle dial or by
-        #             the keyboard node, applied to ALL joints.
-        # max_vel_tw: tower-only scalar [0.1, 1.0], multiplied ON TOP of
-        #             max_vel for the tower only.
-        # Tower effective speed = max_vel * max_vel_tw
         self.max_vel = 1.0
         self.max_vel_tw = 1.0
         self.dial_raw = 0.0
+
+        # --- Debounce -------------------------------------------------------
+        self.last_toggle_time: dict[str, float] = {}
+        self.toggle_debounce_sec = 0.35
 
         # --- Inputs ---------------------------------------------------------
         self.sources = {
@@ -256,8 +205,6 @@ class JoyControls(Node):
             SPACEMOUSE: lambda: None,
         }
 
-        # Latest raw (un-deadbanded, un-scaled) value per joint slot. Each
-        # controller writes only the slots it owns.
         self.raw_axes = [0.0] * JOINT_COUNT
 
         # --- Publishers ------------------------------------------------------
@@ -293,10 +240,8 @@ class JoyControls(Node):
         self.cam_down = False
         self.prev_cam_down = False
         self.prev_cam_up = 0
-        self.identified: dict[str, str] = {}   # layout -> topic that claimed it
+        self.identified: dict[str, str] = {}
 
-        # Hold the arm still on startup. Delayed so m_router has had time to
-        # come up and subscribe, then cancelled -- this fires exactly once.
         if self.mode != "I":
             self.startup_timer = self.create_timer(1.0, self.send_startup_stop)
 
@@ -308,32 +253,15 @@ class JoyControls(Node):
         return lambda message: self.joy_cb(message, topic, fallback)
 
     def joy_cb(self, message: Joy, topic: str, fallback: str) -> None:
-        """Route a Joy message to the controller it actually came from.
-
-        The button count identifies the controller, which is what makes this
-        immune to the two of them swapping device ids: a flight stick opened as
-        device 1 instead of device 0 still drives the tower, and a pad that
-        lands on the stick's topic is still read as a pad.
-
-        A controller reporting a button count we have no layout for falls back
-        to whatever that topic normally carries, so unfamiliar hardware still
-        works as long as it is wired to the right topic.
-        """
         layout = LAYOUT_BY_BUTTON_COUNT.get(len(message.buttons), fallback)
         self.note_identity(topic, layout, len(message.buttons))
 
         self.sources[layout].update(message)
         self.readers[layout]()
+        self.handle_buttons_for_source(layout)  # Only process buttons for this controller!
         self.publish_commands()
 
     def note_identity(self, topic: str, layout: str, buttons: int) -> None:
-        """Log what each topic turned out to be carrying, once.
-
-        Also catches the one case button counts cannot resolve: two different
-        controllers that report the same number of buttons. They would both be
-        read as the same device and fight over the same joints, so say so
-        loudly rather than behaving strangely.
-        """
         claimed = self.identified.get(layout)
         if claimed == topic:
             return
@@ -347,9 +275,7 @@ class JoyControls(Node):
             return
         self.get_logger().error(
             f"{topic} and {claimed} both look like a {layout} ({buttons} buttons). "
-            "They will fight over the same joints. Pin the controllers by name "
-            "with the joy_a_name / joy_b_name launch arguments "
-            "(ros2 run joy joy_enumerate_devices lists them)."
+            "They will fight over the same joints."
         )
 
     def read_velocityone(self) -> None:
@@ -370,9 +296,6 @@ class JoyControls(Node):
         pad = self.sources[GAMEPAD]
         self.raw_axes[WP] = pad.axis(self.pad_axis_wp)
         self.raw_axes[WR] = pad.axis(self.pad_axis_wr)
-        # Trigger: released sits at +1.0, fully pressed at -1.0. JoySource
-        # holds it at 0.0 until it is first moved, so an untouched trigger
-        # cannot read as "held down" at startup.
         self.cam_down = pad.axis(PAD_AXIS_CAM) < 0
 
     # ------------------------------------------------------------------
@@ -380,30 +303,12 @@ class JoyControls(Node):
     # ------------------------------------------------------------------
 
     def update_speed_from_dial(self) -> None:
-        """Map the throttle dial onto the global speed scalar.
-
-            raw -1.0  ->  max_vel 0.4  (slowest, at the motor stall floor)
-            raw  0.0  ->  max_vel 0.7  (where an untouched dial sits)
-            raw +1.0  ->  max_vel 1.0  (full speed)
-        """
         new_speed = round(0.4 + 0.3 * (1.0 + self.dial_raw), 3)
-        new_speed = max(0.4, min(1.0, new_speed))  # clamp to [0.4, 1.0]
+        new_speed = max(0.4, min(1.0, new_speed))
 
         if abs(new_speed - self.max_vel) > 0.01:
             self.max_vel = new_speed
             self.get_logger().info(f"Max vel: {self.max_vel}")
-
-    def update_tower_speed_buttons(self) -> None:
-        """Logitech buttons 4/5 trim the tower-only speed scalar.
-
-        Nothing equivalent is bound on the VelocityOne -- use the keyboard
-        node's { and } keys there.
-        """
-        stick = self.sources[LOGITECH]
-        if stick.pressed(LG_BTN_TW_FASTER):
-            self.set_tower_scalar(round(self.max_vel_tw + 0.1, 1))
-        elif stick.pressed(LG_BTN_TW_SLOWER):
-            self.set_tower_scalar(round(self.max_vel_tw - 0.1, 1))
 
     def set_tower_scalar(self, value: float) -> None:
         if 0.1 <= value <= 1.0:
@@ -414,11 +319,6 @@ class JoyControls(Node):
             )
 
     def scaled_axes(self) -> list[float]:
-        """Snap each joint to 0 or +/- its speed, using the deadband.
-
-        Every joint runs at ``max_vel``; the tower additionally gets the
-        ``max_vel_tw`` trim, so its effective speed is max_vel * max_vel_tw.
-        """
         scaled = []
         for slot, value in enumerate(self.raw_axes):
             speed = self.max_vel * self.max_vel_tw if slot == TW else self.max_vel
@@ -437,6 +337,95 @@ class JoyControls(Node):
         self.max_vel_tw = round(message.data, 1)
 
     # ------------------------------------------------------------------
+    # Button dispatcher
+    # ------------------------------------------------------------------
+
+    def handle_buttons_for_source(self, layout: str) -> None:
+        """Route button events strictly to the controller that triggered them."""
+        if self.mode == "I":
+            return
+
+        if layout == GAMEPAD:
+            self.handle_camera_servo()
+            self.handle_stepper_toggles()
+        elif layout == VELOCITYONE:
+            self.handle_stick_buttons()
+        elif layout == LOGITECH:
+            self.update_tower_speed_buttons()
+            self.handle_verbose_button()
+
+    def update_tower_speed_buttons(self) -> None:
+        stick = self.sources[LOGITECH]
+        if stick.pressed(LG_BTN_TW_FASTER):
+            self.set_tower_scalar(round(self.max_vel_tw + 0.1, 1))
+        elif stick.pressed(LG_BTN_TW_SLOWER):
+            self.set_tower_scalar(round(self.max_vel_tw - 0.1, 1))
+
+    def handle_verbose_button(self) -> None:
+        if self.sources[LOGITECH].pressed(LG_BTN_VERBOSE):
+            self.toggle_verbose()
+
+    def handle_camera_servo(self) -> None:
+        cam_up = self.sources[GAMEPAD].button(PAD_BTN_CAM_UP)
+
+        if cam_up:
+            self.send_servo_command("SV;C;1", "Shoulder camera servo: up")
+        elif self.cam_down:
+            self.send_servo_command("SV;C;-1", "Shoulder camera servo: down")
+        elif self.prev_cam_down or self.prev_cam_up:
+            self.servo_cmd_sent = False
+            self.send_command("SV;C;0", "Stop shoulder camera servo")
+
+        self.prev_cam_down = self.cam_down
+        self.prev_cam_up = cam_up
+
+    def handle_stepper_toggles(self) -> None:
+        pad = self.sources[GAMEPAD]
+        if pad.pressed(PAD_BTN_STEPPER1):
+            self.toggle_gpio("stepper1_en", "TW", "RA;stepper1")
+        if pad.pressed(PAD_BTN_STEPPER2):
+            self.toggle_gpio("stepper2_en", "WP", "RA;stepper2")
+        if pad.pressed(PAD_BTN_STEPPER3):
+            self.toggle_gpio("stepper3_en", "WR", "RA;stepper3")
+        if pad.pressed(PAD_BTN_STEPPER4):
+            self.toggle_gpio("stepper4_en", "EE", "RA;stepper4")
+
+    def handle_stick_buttons(self) -> None:
+        stick = self.sources[VELOCITYONE]
+
+        if stick.pressed(VO_BTN_SERVO):
+            self.send_raw_command("RA;svT!", "RA button: tap")
+        elif stick.button(VO_BTN_SERVO) and stick.prev_button(VO_BTN_SERVO):
+            self.send_raw_command("RA;svH!", "RA button: held")
+        elif stick.released(VO_BTN_SERVO):
+            self.send_raw_command("RA;svR!", "RA button: released")
+
+        if stick.pressed(VO_BTN_VERBOSE):
+            self.send_raw_command("RA;VBS!", "Verbosity Toggled")
+        if stick.pressed(VO_BTN_ENCODER_RESET):
+            self.send_raw_command("RA;SET0!", "All encoders reset")
+
+    def toggle_gpio(self, attr: str, label: str, cmd_str: str) -> None:
+        now = time.monotonic()
+        if now - self.last_toggle_time.get(attr, 0.0) < self.toggle_debounce_sec:
+            return
+
+        self.last_toggle_time[attr] = now
+        current = getattr(self.gpio_cmd, attr)
+        setattr(self.gpio_cmd, attr, not current)
+
+        self.get_logger().info(f"{label} toggled: {not current}")
+        if self.mode == "M":
+            self.send_raw_command(f"{cmd_str}!", f"{label} stepper toggled")
+        else:
+            self.gpio_pub.publish(self.gpio_cmd)
+
+    def toggle_verbose(self) -> None:
+        self.get_logger().info("Verbose toggled")
+        if self.mode == "M":
+            self.command_pub("v;!")
+
+    # ------------------------------------------------------------------
     # Output
     # ------------------------------------------------------------------
 
@@ -448,7 +437,6 @@ class JoyControls(Node):
             self.publish_manual()
 
     def publish_ik(self) -> None:
-        """IK mode: hand the axes to MoveIt Servo as a twist."""
         axes = self.scaled_axes()
 
         self.twist_stamped_msg.header.stamp = self.get_clock().now().to_msg()
@@ -473,13 +461,6 @@ class JoyControls(Node):
         self.vel_control_pub.publish(self.vel_control_msg)
 
     def publish_manual(self) -> None:
-        """Manual mode: build and send the S;...;! joint command string."""
-        self.update_tower_speed_buttons()
-        self.handle_verbose_button()
-        self.handle_camera_servo()
-        self.handle_stepper_toggles()
-        self.handle_stick_buttons()
-
         stick = self.sources[VELOCITYONE]
         axes = self.scaled_axes()
         cmd = "S;"
@@ -502,95 +483,23 @@ class JoyControls(Node):
             self.command_pub(cmd)
 
     def send_startup_stop(self) -> None:
-        """One-shot: tell the arm to hold still before anyone touches a stick."""
         self.startup_timer.cancel()
         self.command_pub(STOP_CMD)
-
-    # ------------------------------------------------------------------
-    # Manual-mode buttons
-    # ------------------------------------------------------------------
-
-    def handle_verbose_button(self) -> None:
-        if self.sources[LOGITECH].pressed(LG_BTN_VERBOSE):
-            self.toggle_verbose()
-
-    def handle_camera_servo(self) -> None:
-        """Pad button 4 raises the shoulder camera, the trigger lowers it."""
-        cam_up = self.sources[GAMEPAD].button(PAD_BTN_CAM_UP)
-
-        if cam_up:
-            self.send_servo_command("SV;C;1", "Shoulder camera servo: up")
-        elif self.cam_down:
-            self.send_servo_command("SV;C;-1", "Shoulder camera servo: down")
-        elif self.prev_cam_down or self.prev_cam_up:
-            self.servo_cmd_sent = False
-            self.send_command("SV;C;0", "Stop shoulder camera servo")
-
-        self.prev_cam_down = self.cam_down
-        self.prev_cam_up = cam_up
-
-    def handle_stepper_toggles(self) -> None:
-        """Pad face buttons enable/disable each stepper driver."""
-        pad = self.sources[GAMEPAD]
-        if pad.pressed(PAD_BTN_STEPPER1):
-            self.toggle_gpio("stepper1_en", "TW", "RA;stepper1")
-        if pad.pressed(PAD_BTN_STEPPER2):
-            self.toggle_gpio("stepper2_en", "WP", "RA;stepper2")
-        if pad.pressed(PAD_BTN_STEPPER3):
-            self.toggle_gpio("stepper3_en", "WR", "RA;stepper3")
-        if pad.pressed(PAD_BTN_STEPPER4):
-            self.toggle_gpio("stepper4_en", "EE", "RA;stepper4")
-
-    def handle_stick_buttons(self) -> None:
-        """VelocityOne buttons that are not joints or the gripper."""
-        stick = self.sources[VELOCITYONE]
-
-        # Servo button: tap -> svT, held -> svH (repeats), release -> svR
-        if stick.pressed(VO_BTN_SERVO):
-            self.send_raw_command("RA;svT!", "RA button: tap")
-        elif stick.button(VO_BTN_SERVO) and stick.prev_button(VO_BTN_SERVO):
-            self.send_raw_command("RA;svH!", "RA button: held")
-        elif stick.released(VO_BTN_SERVO):
-            self.send_raw_command("RA;svR!", "RA button: released")
-
-        if stick.pressed(VO_BTN_VERBOSE):
-            self.send_raw_command("RA;VBS!", "Verbosity Toggled")
-        if stick.pressed(VO_BTN_ENCODER_RESET):
-            self.send_raw_command("RA;SET0!", "All encoders reset")
-
-    def toggle_gpio(self, attr: str, label: str, cmd_str: str) -> None:
-        current = getattr(self.gpio_cmd, attr)
-        setattr(self.gpio_cmd, attr, not current)
-
-        self.get_logger().info(f"{label} toggled: {not current}")
-        if self.mode == "M":
-            self.send_raw_command(f"{cmd_str}!", f"{label} stepper toggled")
-        else:
-            self.gpio_pub.publish(self.gpio_cmd)
-
-    def toggle_verbose(self) -> None:
-        self.get_logger().info("Verbose toggled")
-        if self.mode == "M":
-            self.command_pub("v;!")
 
     # ------------------------------------------------------------------
     # /arm_cmd helpers
     # ------------------------------------------------------------------
 
     def send_servo_command(self, data: str, label: str) -> None:
-        """Send once per press, not once per Joy message."""
         if not self.servo_cmd_sent:
             self.send_command(data, label)
             self.servo_cmd_sent = True
 
     def send_command(self, data: str, label: str) -> None:
-        """Publish ``data`` with the ';!' terminator appended."""
         self.get_logger().info(label)
         self.command_pub(f"{data};!")
 
     def send_raw_command(self, data: str, label: str) -> None:
-        """Publish ``data`` exactly as given, for commands that already carry
-        their own terminator (e.g. 'RA;svT!')."""
         self.get_logger().info(label)
         self.command_pub(data)
 

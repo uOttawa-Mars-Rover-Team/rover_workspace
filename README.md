@@ -69,7 +69,7 @@ ros2 launch chassis_controls rover.launch.py              # drive the real rover
 ros2 launch chassis_controls controller.launch.py         # operator teleop TUI
 ros2 launch autonomous_navigation drive_sim.launch.py     # Gazebo simulation
 ros2 launch autonomous_navigation waypoints.launch.py     # Nav2 autonomy demo
-ros2 launch robotic_arm_controls integrative_ctrl.launch.py  # arm + drive control
+ros2 launch robotic_arm_controls manual.launch.py          # robotic arm
 ros2 launch gps_node rover.launch.py                      # GPS receiver
 ```
 

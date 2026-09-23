@@ -14,9 +14,9 @@ from std_srvs.srv import Trigger
 T = TypeVar("T")
 
 
-class KeyboardListener(Node):
+class KeyboardControls(Node):
     def __init__(self):
-        super().__init__('keyboard_listener')
+        super().__init__('keyboard_controls')
 
         self.mode = self.get_param("mode", rclpy.Parameter.Type.STRING, "I")  # Get operational mode parameter: 'I' for IK mode or 'M' for manual
         
@@ -34,6 +34,10 @@ class KeyboardListener(Node):
         # Initialize messages
         self.vel = Float32()
         self.vel.data = 1.0
+        # Tower-only speed scalar, tracked separately from the global one so
+        # trimming the tower does not drag every other joint with it.
+        self.vel_tw = Float32()
+        self.vel_tw.data = 1.0
         self.gpio_cmd = ArmGpio()
         self.arm_cmd = String()
 
@@ -148,11 +152,11 @@ class KeyboardListener(Node):
             self.get_logger().info(f'Max vel: {str(self.vel.data)}')
 
     def adjust_tw_vel(self, delta):
-        new_tw_vel = round(self.vel.data + delta, 1)
+        new_tw_vel = round(self.vel_tw.data + delta, 1)
         if 0.1 <= new_tw_vel < 1.0:
-            self.vel.data = new_tw_vel
-            self.joy_vel_tw_pub.publish(self.vel)
-            self.get_logger().info(f'Max tw vel: {str(self.vel.data)}')   
+            self.vel_tw.data = new_tw_vel
+            self.joy_vel_tw_pub.publish(self.vel_tw)
+            self.get_logger().info(f'Max tw vel: {str(self.vel_tw.data)}')
 
 
     """
@@ -208,7 +212,7 @@ class KeyboardListener(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = KeyboardListener()
+    node = KeyboardControls()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

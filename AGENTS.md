@@ -91,6 +91,10 @@ reformatting it.
 
 ## Conventions
 
+- **`robotic_arm_controls` names its Python module `arm_nodes`**, not after
+  the package, so the package root is not `robotic_arm_controls/robotic_arm_controls/`.
+  This is deliberate; import from `arm_nodes` inside that package and leave the
+  ROS package name (from `package.xml`) alone.
 - **Nodes and launch files.** Python packages register executables in
   `setup.py` → `entry_points.console_scripts`; `ament_cmake` packages register
   them via `install(TARGETS ...)` / `install(PROGRAMS ...)` in `CMakeLists.txt`.
@@ -101,9 +105,11 @@ reformatting it.
   `autonomous_navigation` globs `launch/*.py`.
 - **Custom messages go in `general_interfaces`**, not in the consuming package,
   and must be added to `rosidl_generate_interfaces()` in its `CMakeLists.txt`.
-- **Launch file naming** in `robotic_arm_controls` is
-  `<where-it-runs>_<control-mode>.launch.py` (`development_`, `basestation_`,
-  `roverpc_`).
+- **`robotic_arm_controls` has four launch files** — `manual`,
+  `basestation_arm` and `rover_arm` for arm-only control (the last two being
+  the halves of a split setup), plus `integrative` for combined drive + arm on
+  Xbox pads. Variants within those are launch arguments; do not add a fifth
+  file.
 - **Velocity command topics** are arbitrated by `twist_mux`. Publish to a named
   source topic (`/cmd_vel_teleop`, `/cmd_vel_keyboard`, …) and let `twist_mux`
   forward the winner to `/diff_cont/cmd_vel_unstamped`. Do not publish directly
@@ -113,9 +119,9 @@ reformatting it.
 
 Do not "discover" these as bugs — they are already known:
 
-- `robotic_arm_controls` launch files ending in `_ik_servo` / `_ik_gui` include
-  launch files from an `arm_controls` package that is not in `src/`. They fail
-  with `PackageNotFoundError`.
+- `robotic_arm_controls` IK mode (`mode:=I`) publishes for MoveIt Servo, but
+  the MoveIt config, servo launch files and RViz config live in an
+  `arm_controls` package that is not in `src/`, so nothing consumes it.
 - `gps_node`'s `setup.py` declares a `gps_node` executable whose module
   (`gps_node/gps_node.py`) is missing.
 - `general_interfaces` has `DriveSensor.msg` and `ReferencePositions.msg` on

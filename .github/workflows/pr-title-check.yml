@@ -1,0 +1,48 @@
+name: "PR Title & Issue Existence Check"
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  issues: read
+
+jobs:
+  validate-and-link:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Title and Verify Issue Exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            
+            // Validate the '#10: Issue name' regex format
+            const match = title.match(/^#([0-9]+):\s+.+/);
+            
+            if (!match) {
+              core.setFailed(`❌ PR title invalid! Found: "${title}". Must match format: "#10: Issue name"`);
+              return;
+            }
+            
+            // Extract just the numerical ID (e.g., 10)
+            const issueNumber = parseInt(match[1], 10);
+            
+            // Check if the issue actually exists in this repository
+            try {
+              core.info(`Checking if Issue #${issueNumber} exists...`);
+              await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+              });
+              core.info(`✅ Success: Issue #${issueNumber} exists!`);
+            } catch (error) {
+              if (error.status === 404) {
+                core.setFailed(`❌ Validation Failed: Issue #${issueNumber} does not exist in this repository.`);
+              } else {
+                core.setFailed(`❌ API Error while checking issue: ${error.message}`);
+              }
+              return;
+            }

@@ -1,0 +1,8 @@
+[Unit]
+Description=Starts the CAN network
+
+[Service]
+ExecStart=/usr/local/bin/can-start.sh
+
+[Install]
+WantedBy=multi-user.target

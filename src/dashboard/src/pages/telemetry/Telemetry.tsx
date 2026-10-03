@@ -25,6 +25,7 @@ const telemetry: React.FC = () => {
       <Layout title="Telemetry" menuKey="telemetry">
         <Header title="Navigation" icon={<CompassOutlined />} />
         <Navigation />
+        <Header title="IMU Data" icon={<InfoCircleOutlined />} style={{marginTop: 80}}/>
         <IMUTelemetry />
         <Header title="Telemetry Data" icon={<InfoCircleOutlined />} />
         <PowerTelemetry />

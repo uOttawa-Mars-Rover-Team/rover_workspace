@@ -11,6 +11,7 @@
 
   <depend>rclpy</depend>
   <depend>ublox_dgnss</depend>
+  <depend>sbg_driver</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

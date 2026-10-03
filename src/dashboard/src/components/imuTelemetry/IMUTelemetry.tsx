@@ -2,64 +2,78 @@ import * as config from "../../dashboardConfig.json";
 import { RosContext } from "../../contexts";
 import ROSLIB from "roslib";
 import { useContext, useEffect, useState } from "react";
-
-// Components
 import TelemetryContainer from "../telemetryContainer/TelemetryContainer";
-import TelemetryBox from "../telemetryItem/TelemetryItem";
-
-// Icons
-// Roll pitch yaw
-import Pitch from "/digitalcrown.arrow.clockwise.fill.svg";
-import Yaw from "/digitalcrown.horizontal.arrow.counterclockwise.fill.svg";
-import Roll from "/arrow.triangle.2.circlepath.svg";
+import { Row, Col, Space } from "antd";
+import ArtificialHorizon from "./ArtificialHorizon.tsx";
+import AccelBars from "./AccelBars.tsx";
+import Compass from "./Compass.tsx";
 
 type ImuMessage = {
   roll: number;
   pitch: number;
   yaw: number;
+  accel_x: number;
+  accel_y: number;
+  accel_z: number;
+  accel_norm: number;
 };
+
+const SAMPLE_DATA: ImuMessage = {
+  roll: 23,
+  pitch: 12,
+  yaw: 0,
+  accel_x: 3.2,
+  accel_y: 7.8,
+  accel_z: 9,
+  accel_norm: 3.6,
+};
+
+const roundTo3 = (value: number): number => Math.round(value * 1000) / 1000;
 
 export default function IMUTelemetry() {
   const { rosClient } = useContext(RosContext);
-  const [imuData, setImuData] = useState<ImuMessage>();
-  const roundPrecision = 2;
+  const [imuData, setImuData] = useState<ImuMessage>(SAMPLE_DATA);
 
   useEffect(() => {
-    if (rosClient) {
-      const imuDataTopic = new ROSLIB.Topic({
-        ros: rosClient!,
-        name: config.overview.telemetry.imuTopicName,
-        messageType: "general_interfaces/msg/IMU",
+    if (!rosClient) return;
+    const topic = new ROSLIB.Topic({
+      ros: rosClient,
+      name: config.overview.telemetry.imuTopicName,
+      messageType: "general_interfaces/msg/IMU",
+    });
+    topic.subscribe((msg) => {
+      const raw = msg as ImuMessage;
+      setImuData({
+        roll: (-1)*(roundTo3(raw.roll)),
+        pitch: roundTo3(raw.pitch),
+        yaw: roundTo3(raw.yaw),
+        accel_x: roundTo3(raw.accel_x / 9.80665),
+        accel_y: roundTo3(raw.accel_y / 9.80665),
+        accel_z: roundTo3(raw.accel_z / 9.80665),
+        accel_norm: roundTo3(raw.accel_norm / 9.80665),
       });
-
-      imuDataTopic.subscribe((msg) => {
-        const message = msg as ImuMessage;
-        setImuData(message);
-      });
-
-      return () => {
-        imuDataTopic.unsubscribe();
-      };
-    }
+    });
+    return () => topic.unsubscribe();
   }, [rosClient]);
 
   return (
-    <TelemetryContainer style={{ marginTop: 20 }}>
-      <TelemetryBox
-        name="Roll"
-        data={imuData?.roll.toFixed(roundPrecision) + "°"}
-        image={Roll}
-      ></TelemetryBox>
-      <TelemetryBox
-        name="Pitch"
-        data={imuData?.pitch.toFixed(roundPrecision) + "°"}
-        image={Pitch}
-      ></TelemetryBox>
-      <TelemetryBox
-        name="Yaw"
-        data={imuData?.yaw.toFixed(roundPrecision) + "°"}
-        image={Yaw}
-      ></TelemetryBox>
+    <TelemetryContainer >
+      <Row justify="center" align="middle" style={{ width: "100%", height: "100%"}}>
+        <Col >
+          <Compass yaw={imuData.yaw} />
+        </Col>
+        <Col >
+          <ArtificialHorizon roll={imuData.roll} pitch={imuData.pitch} />
+        </Col>
+         <Col flex="620px">
+          <AccelBars
+            ax={imuData.accel_x}
+            ay={imuData.accel_y}
+            az={imuData.accel_z}
+            norm={imuData.accel_norm}
+          />
+        </Col>
+      </Row>
     </TelemetryContainer>
   );
 }

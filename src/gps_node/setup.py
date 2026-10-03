@@ -41,6 +41,7 @@ setup(
         "console_scripts": [
             "gps_node = gps_node.gps_node:main",
             "gps_dummy_node = gps_node.gps_dummy_node:main",
+            "imu_node = gps_node.imu_node:main",
             "imu_dummy_node = gps_node.imu_dummy_node:main",
         ],
     },

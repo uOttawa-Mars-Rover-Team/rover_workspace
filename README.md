@@ -2,7 +2,7 @@
   <img src="docs/logo.png">
 </div>
 
-# uOttawa Rover Workspace [![](https://gitlab.com/uorover/rover_workspace/badges/master/pipeline.svg)](https://gitlab.com/uorover/rover_workspace/pipelines)
+# uOttawa Rover Workspace [![CI Pipeline](https://github.com/uOttawa-Mars-Rover-Team/rover_workspace/actions/workflows/ci.yml/badge.svg)](https://github.com/uOttawa-Mars-Rover-Team/rover_workspace/actions/workflows/ci.yml)
 
 uORover development workspace. Currently using ROS2 Jazzy 
 

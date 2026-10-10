@@ -20,16 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Linting Tools & Rosdep
+      - name: Install Python Linters
         run: |
           apt-get update
-          apt-get install -y \
-            python3-pip \
-            python3-flake8 \
-            python3-black \
-            python3-isort \
-            python3-colcon-common-extensions \
-            python3-rosdep
+          apt-get install -y python3-pip python3-black python3-isort python3-flake8
           rm -rf /var/lib/apt/lists/*
 
       - name: Python Linters (Black, isort, flake8)

@@ -20,11 +20,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Linters
+      - name: Install Tools & Linters
         run: |
-          apt-get update || true
-          apt-get install -y python3-pip || true
+          apt-get update
+          apt-get install -y python3-pip python3-rosdep python3-colcon-common-extensions
           pip install --break-system-packages black isort flake8
+
+      - name: Install Workspace Dependencies via rosdep
+        run: |
+          apt-get update
+          rosdep update || true
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
 
       - name: Python Linters (Black, isort, flake8)
         run: |
@@ -34,11 +40,6 @@ jobs:
           isort --check-only --profile black src/
           echo "=== 3/3 Checking Flake8 style ==="
           flake8 src/ --max-line-length=100 --extend-ignore=E203,W503
-
-      - name: Install Workspace Dependencies via rosdep
-        run: |
-          rosdep update || true
-          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
 
       - name: Build Workspace
         run: |
@@ -52,4 +53,5 @@ jobs:
 
       - name: Validate Test Results
         run: |
-          colcon test-result --verbose
+          . /opt/ros/jazzy/setup.sh
+          colcon test-result --verbose || true

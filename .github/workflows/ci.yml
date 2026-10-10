@@ -20,13 +20,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Enable Ubuntu Universe & Install Linters
+      - name: Install Linters
         run: |
-          sed -i 's/Components: main/Components: main universe/' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
-          sed -i 's/main/main universe/g' /etc/apt/sources.list 2>/dev/null || true
-          apt-get update
-          apt-get install -y python3-black python3-isort python3-flake8
-          rm -rf /var/lib/apt/lists/*
+          apt-get update || true
+          apt-get install -y python3-pip || true
+          pip install --break-system-packages black isort flake8
 
       - name: Python Linters (Black, isort, flake8)
         run: |

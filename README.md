@@ -36,6 +36,8 @@ If you'd rather not use Docker, you can still set up ROS2 directly on a Linux ma
 
 Make sure to repeat steps 5-6 to rebuild the code after making changes.
 
+The same script works on the rover's Jetson (arm64). It picks the ROS distro from the Ubuntu release the Jetson is running — see the [scripts README](scripts/README.md#ros-distro-and-the-jetson).
+
 ## Repository Layout
 
 Each subproject has its own README with build and launch instructions.

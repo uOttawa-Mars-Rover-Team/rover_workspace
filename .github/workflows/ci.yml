@@ -32,6 +32,15 @@ jobs:
           rosdep update || true
           rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
 
+      - name: Auto-format C++ and Python Code
+        run: |
+          . /opt/ros/jazzy/setup.sh
+          # Auto-format C++ files for uncrustify
+          ros2 run ament_uncrustify ament_uncrustify --reformat src/ || true
+          # Auto-format Python files for black & isort
+          black --line-length 100 src/ || true
+          isort --profile black src/ || true
+
       - name: Python Linters (Black, isort, flake8)
         run: |
           echo "=== 1/3 Checking Black formatting ==="

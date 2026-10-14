@@ -166,7 +166,7 @@ Commands are only sent on state change to reduce topic spam.
 
 | Topic | Type | Purpose |
 | --- | --- | --- |
-| `/cmd_vel_teleop` | `geometry_msgs/Twist` | Drive commands (consumed by `twist_mux`) |
+| `/cmd_vel_controller` | `geometry_msgs/Twist` | Controller drive commands (consumed by `twist_mux`) |
 | `/arm_cmd` | `std_msgs/String` | Arm servo commands |
 
 ---
@@ -199,15 +199,25 @@ ros2 topic info /joy --verbose
 # Publisher count should be 1 (your laptop only)
 ```
 
-### Long-Term Fix (planned, not yet implemented)
+### Twist Mux Priority
 
-Namespace the two `joy_node`s (`/laptop/joy` and `/jetson/joy`) and configure `twist_mux` priorities so both can coexist:
+Drive commands are arbitrated by `twist_mux` using these inputs:
 
-- Laptop teleop → `cmd_vel_teleop`, priority **100**, timeout **0.5 s**
-- Jetson-local pad → `cmd_vel_local`, priority **90**, timeout **0.5 s**
+- Controller TUI → `cmd_vel_controller`, priority **100**, timeout **1.5 s**
+- Joystick teleop → `cmd_vel_joystick`, priority **90**, timeout **1.5 s**
+- Keyboard → `cmd_vel_keyboard`, priority **80**, timeout **1.5 s**
 - Autonomous → `cmd_vel_autonomous`, priority **20**, timeout **2.0 s**
 
-This gives automatic failover: if Wi-Fi drops, the laptop times out after 0.5 s and the Jetson-plugged pad takes over. If neither is active, the rover stops.
+The Controller sends drive commands while LB is held. Releasing LB sends one
+zero command and then stops publishing; after the 1.5-second input timeout, an
+active lower-priority source can take over. With no active mux input, the mux
+does not publish, and the drive controller's 0.5-second command timeout stops
+the rover.
+
+The `/joy` topic collision described above is a separate issue: assigning drive
+commands to distinct mux inputs does not isolate the raw joystick messages.
+The workaround of stopping the phantom Jetson joystick nodes is still needed
+until those joystick topics are namespaced.
 
 ---
 

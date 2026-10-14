@@ -19,7 +19,7 @@ source install/setup.bash
 | Launch file | Run on | What it does |
 | --- | --- | --- |
 | `rover.launch.py` | rover / Jetson | Main bringup: `ros2_control` node, diff drive + joint state controllers, `robot_state_publisher`, `twist_mux`, optional joystick and RViz |
-| `controller.launch.py` | operator laptop | `joy_node` + the teleop TUI (`controller.py`), publishing to `/cmd_vel_teleop` |
+| `controller.launch.py` | operator laptop | `joy_node` + the teleop TUI (`controller.py`), publishing to `/cmd_vel_controller` |
 | `joystick.launch.py` | either | `joy_node` + `teleop_twist_joy` using `config/f310.config.yaml` (included by `rover.launch.py`) |
 | `drive_rviz.launch.py` | either | RViz with `config/drive.rviz` (included by `rover.launch.py` when `use_rviz:=True`) |
 
@@ -60,6 +60,14 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard \
 # operator laptop, with the TUI (see ControllerREADME.md)
 ros2 launch chassis_controls controller.launch.py
 ```
+
+The velocity inputs are arbitrated by priority: Controller, Joystick, Keyboard,
+then Autonomous. Manual input timeouts are 1.5 seconds; autonomous commands
+time out after 2.0 seconds. The mux sends the selected command to the drive
+controller. Releasing the Controller's LB dead-man button sends one zero
+command; the Controller input expires after 1.5 seconds, allowing an active
+lower-priority source to take over. With no active input, the mux stops
+publishing, and the drive controller times out commands after 0.5 seconds.
 
 Joysticks show up under `/dev/input` on Linux. The Logitech F710 is the
 reference pad; it has a "dead man's switch" (**LB**) that must be held for
@@ -128,7 +136,7 @@ The controllers need the full robot description — joints (wheels), links
 - **Controller manager** — spawns and supervises the PID and diff drive controllers.
 - **Joint state broadcaster** — reads all state interfaces and publishes `/joint_states`.
 - **Robot state publisher** — subscribes to `/joint_states` and publishes the robot's pose in space for ROS and RViz.
-- **`twist_mux`** — arbitrates between teleop, keyboard, and autonomous velocity sources by priority, forwarding the winner to `/diff_cont/cmd_vel_unstamped`.
+- **`twist_mux`** — arbitrates Controller (`/cmd_vel_controller`), Joystick (`/cmd_vel_joystick`), Keyboard (`/cmd_vel_keyboard`), and Autonomous (`/cmd_vel_autonomous`) velocity sources in that priority order, forwarding the winner to `/diff_cont/cmd_vel_unstamped`.
 - **`/tf`** — combines joint states with per-wheel velocity commands to give the pose of each joint and of the rover.
 
 ### Power data publisher

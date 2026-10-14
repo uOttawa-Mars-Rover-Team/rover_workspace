@@ -51,7 +51,7 @@ jobs:
       - name: Run Tests
         run: |
           . /opt/ros/jazzy/setup.sh
-          colcon test --event-handlers console_direct+
+          colcon test --event-handlers console_direct+ || true
 
       - name: Validate Test Results
         run: |

@@ -30,18 +30,18 @@ jobs:
         run: |
           apt-get update
           rosdep update || true
-          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy || true
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
 
       - name: Python Linters (Black, isort, flake8)
         run: |
           echo "=== 1/3 Checking Black formatting ==="
-          black --check --line-length 100 src/ || echo "Black check completed"
+          black --check --line-length 100 src/
           
           echo "=== 2/3 Checking isort imports ==="
-          isort --check-only --profile black src/ || echo "isort check completed"
+          isort --check-only --profile black src/
           
           echo "=== 3/3 Checking Flake8 style ==="
-          flake8 src/ --max-line-length=100 --extend-ignore=E203,W503 || echo "Flake8 check completed"
+          flake8 src/ --max-line-length=100 --extend-ignore=E203,W503
 
       - name: Build Workspace
         run: |
@@ -56,4 +56,4 @@ jobs:
       - name: Validate Test Results
         run: |
           . /opt/ros/jazzy/setup.sh
-          colcon test-result --verbose || true
+          colcon test-result --verbose

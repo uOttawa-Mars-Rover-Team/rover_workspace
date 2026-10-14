@@ -112,7 +112,7 @@ class CombinedTeleop(Node):
         # Right stick deadzone
         self.rstick_deadzone = float(os.environ.get("RSTICK_DEADZONE", "0.3"))
 
-        drive_topic    = os.environ.get("OUTPUT_TOPIC",  "cmd_vel_teleop")
+        drive_topic    = os.environ.get("OUTPUT_TOPIC",  "cmd_vel_controller")
         arm_topic      = os.environ.get("ARM_CMD_TOPIC", "/arm_cmd")
         self.jetson_ip = os.environ.get("JETSON_IP",     "192.168.1.201")
 
@@ -123,6 +123,7 @@ class CombinedTeleop(Node):
         self.buttons          = []
         self.prev_buttons     = []
         self.cmd              = Twist()
+        self.drive_enabled    = False
         self.last_action      = ""
         self.last_action_time = 0
         self.started          = False
@@ -306,13 +307,16 @@ class CombinedTeleop(Node):
 
     def _send_drive(self):
         m = Twist()
-        if self.btn(self.enable_btn):
+        enabled = bool(self.btn(self.enable_btn))
+        if enabled:
             rt = self.trig_pct(self.axis_rt)
             lt = self.trig_pct(self.axis_lt)
             m.linear.x  = ((rt - lt) / 100.0) * self.speed
             m.angular.z = self.axis(self.axis_lx) * self.turn
         self.cmd = m
-        self.drive_pub.publish(m)
+        if enabled or self.drive_enabled:
+            self.drive_pub.publish(m)
+        self.drive_enabled = enabled
 
     def draw(self):
         t = self.tui
@@ -353,7 +357,7 @@ class CombinedTeleop(Node):
         t.row(f"  {icon} {status}")
         t.hline("╠", "╣")
         t.row(f"Speed: {self.speed:.2f} m/s  |  Turn: {self.turn:.2f} rad/s")
-        t.row(f"Drive topic : /{os.environ.get('OUTPUT_TOPIC', 'cmd_vel_teleop')}")
+        t.row(f"Drive topic : /{os.environ.get('OUTPUT_TOPIC', 'cmd_vel_controller')}")
         t.row(f"Arm topic   : {os.environ.get('ARM_CMD_TOPIC', '/arm_cmd')}")
         t.row(
             f"Linear: {self.cmd.linear.x:>+6.2f} m/s  |"

@@ -30,7 +30,7 @@ def generate_launch_description():
 
     # ------------------------------------------------------------------
     # Integrative control node
-    #   Hold LB → drive mode  (publishes Twist  on /cmd_vel_teleop)
+    #   Hold LB → drive mode  (publishes Twist  on /cmd_vel_controller)
     #   Hold RB → arm   mode  (publishes String on /arm_cmd)
     #
     # Arm string format:  S;<TW>;<L1>;<L2>;<WP>;<WR>;<EE>;!

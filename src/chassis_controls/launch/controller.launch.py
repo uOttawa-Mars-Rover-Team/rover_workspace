@@ -18,7 +18,7 @@ def generate_launch_description():
     env_vars = [
         SetEnvironmentVariable('ROS_DOMAIN_ID',   '0'),
         SetEnvironmentVariable('JETSON_IP',       '192.168.1.201'),
-        SetEnvironmentVariable('OUTPUT_TOPIC',    'cmd_vel_teleop'),
+        SetEnvironmentVariable('OUTPUT_TOPIC',    'cmd_vel_controller'),
         SetEnvironmentVariable('ARM_CMD_TOPIC',   '/arm_cmd'),
         SetEnvironmentVariable('ENABLE_BUTTON',   '4'),
         SetEnvironmentVariable('SPEED_BUTTON',    '0'),

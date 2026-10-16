@@ -39,7 +39,7 @@ jobs:
         run: |
           apt-get update
           rosdep update || true
-          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzyjazzy
 
       - name: Python Linters (Black, isort, flake8)
         run: |

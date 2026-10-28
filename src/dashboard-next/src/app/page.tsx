@@ -1,3 +1,4 @@
+import CameraPanel from "@/components/CameraPanel"
 import Card from "@/components/Card"
 
 export default function Home() {
@@ -7,10 +8,10 @@ export default function Home() {
         <Card title="Map" className="flex-1" />
         <Card title="Autonomy Mission"/>
       </div>
-      <Card title="Camera 1" className="col-span-3 row-span-3" />
-      <Card title="Camera 2" className="col-span-3 row-span-3" />
-      <Card title="Camera 3" className="col-span-3 row-span-3" />
-      <Card title="Camera 4" className="col-span-3 row-span-3" />
+      <CameraPanel title="Camera 1" status="live" className="col-span-3 row-span-3" />
+      <CameraPanel title="Camera 2" status="no-signal" className="col-span-3 row-span-3" />
+      <CameraPanel title="Camera 3" status="live" className="col-span-3 row-span-3" />
+      <CameraPanel title="Camera 4" status="no-signal" className="col-span-3 row-span-3" />
       <Card title="Compass" className="col-span-3 row-span-3" />
       <Card title="Power & Jetson" className="col-span-3 row-span-3" />
       <Card title="IMU Attitude" className="col-span-3 row-span-3" />

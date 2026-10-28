@@ -8,6 +8,9 @@
   --color-ink: #F2F0EC;
   --color-muted: #A3A09A;
   --color-accent: #E8912A;
+  --color-bar: #101012;
+  --color-ok: #4CC38A; 
+  --color-danger: #C0302F;
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 }

@@ -10,21 +10,21 @@ import MapPanel from "@/components/MapPanel"
 export default function Home() {
   return (
     <>
-    <main className="grid flex-1 grid-cols-12 auto-rows-[100px] gap-2.5 p-3">
-      <div className="col-span-6 row-span-6 flex flex-col gap-2.5">
-        <MapPanel className="flex-1" />
-        <AutonomyPanel />
-      </div>
-      <CameraPanel title="Camera 1" status="live" className="col-span-3 row-span-3" />
-      <CameraPanel title="Camera 2" status="no-signal" className="col-span-3 row-span-3" />
-      <CameraPanel title="Camera 3" status="live" className="col-span-3 row-span-3" />
-      <CameraPanel title="Camera 4" status="no-signal" className="col-span-3 row-span-3" />
-      <Card title="Compass" className="col-span-3 row-span-3" />
-      <PowerPanel className="col-span-3 row-span-3" />
-      <ImuAttitude className="col-span-3 row-span-3" />
-      <CameraControls className="col-span-3 row-span-3" />
-    </main>
-    <CommandConsole />
+      <main className="grid flex-1 grid-cols-1 auto-rows-[100px] gap-2.5 p-3 lg:grid-cols-12">
+        <div className="row-span-6 flex flex-col gap-2.5 lg:col-span-6">
+          <MapPanel className="flex-1" />
+          <AutonomyPanel />
+        </div>
+        <CameraPanel title="Camera 1" status="live" className="lg:col-span-3 row-span-3" />
+        <CameraPanel title="Camera 2" status="no-signal" className="lg:col-span-3 row-span-3" />
+        <CameraPanel title="Camera 3" status="live" className="lg:col-span-3 row-span-3" />
+        <CameraPanel title="Camera 4" status="no-signal" className="lg:col-span-3 row-span-3" />
+        <Card title="Compass" className="lg:col-span-3 row-span-3" />
+        <PowerPanel className="lg:col-span-3 row-span-3" />
+        <ImuAttitude className="lg:col-span-3 row-span-3" />
+        <CameraControls className="lg:col-span-3 row-span-3" />
+      </main>
+      <CommandConsole />
     </>
   )
 }

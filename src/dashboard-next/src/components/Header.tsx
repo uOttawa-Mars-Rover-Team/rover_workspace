@@ -1,18 +1,21 @@
 import StatusPill from "./StatusPill";
+import Image from "next/image";
 
 
 export default function Header() {
     return (
         <header className="bg-bar border-b border-line flex items-center gap-4 px-4 py-2 flex-wrap">
+            <Image src="/logo192.png" alt="uORover logo" width={40} height={40} />
             <div className="flex flex-col">
                 <span className="text-xs text-muted">uORover</span>
                 <span className="text-lg font-bold">Dashboard</span>
             </div>
             <div className="flex gap-2">
-                <StatusPill label="Bridge" value="Connected" valueClassName="text-ok" dot/>
+                <StatusPill label="Bridge" value="Connected" valueClassName="text-ok" dot />
                 <StatusPill label="Latency" value="42 ms" valueClassName="font-mono" />
                 <StatusPill label="Packet health" value="98%" valueClassName="font-mono text-ok" />
-                <div className="flex items-center gap-2">
+            </div>
+            <div className="flex items-center gap-2">
                 <input
                     type="text"
                     aria-label="ROS bridge address"
@@ -25,7 +28,6 @@ export default function Header() {
                 >
                     Connect to ROS
                 </button>
-                </div>
             </div>
             <div className="flex-1" />
             <nav className="flex gap-1 rounded-xl border border-line bg-panel p-1">

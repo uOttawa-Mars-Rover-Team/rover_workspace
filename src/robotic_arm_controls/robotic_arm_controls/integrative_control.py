@@ -67,7 +67,7 @@ class IntegrativeControl(Node):
     Dual-mode Xbox One controller node.
 
     Hold LB  →  DRIVE mode
-                  Publishes geometry_msgs/Twist on /cmd_vel_teleop
+                  Publishes geometry_msgs/Twist on /cmd_vel_controller
                   Left stick Y = linear.x   (forward / back)
                   Left stick X = angular.z  (turn)
                   Hold Y       = Turbo multiplier applied
@@ -117,7 +117,7 @@ class IntegrativeControl(Node):
         self.max_vel_tw = 1.0
 
         # ---- publishers -----------------------------------------------
-        self.drive_pub = self.create_publisher(Twist,  "/cmd_vel_teleop", 10)
+        self.drive_pub = self.create_publisher(Twist,  "/cmd_vel_controller", 10)
         self.cmd_pub   = self.create_publisher(String, "/arm_cmd",        10)
 
         # ---- subscribers ----------------------------------------------

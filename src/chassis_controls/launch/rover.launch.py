@@ -158,5 +158,5 @@ def generate_launch_description():
             start_joystick_control_cmd,
             twist_mux,
         ]
-        # ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/diff_cont/cmd_vel_unstamped
+        # ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/cmd_vel_keyboard
     )

@@ -74,6 +74,7 @@ def generate_launch_description():
             "use_sim_time": LaunchConfiguration("use_sim_time"),
             "params_file": configured_params,
             "autostart": "True",
+            "cmd_vel_topic": "diff_cont/cmd_vel_unstamped",
         }.items(),
     )
     rviz_cmd = IncludeLaunchDescription(

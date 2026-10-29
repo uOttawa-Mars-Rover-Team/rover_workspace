@@ -29,6 +29,8 @@ diff_cont:
     open_loop: false
     enable_odom_tf: true
     use_stamped_vel: false
+    # Stop when twist_mux stops publishing (no active input).
+    cmd_vel_timeout: 0.5
 
     # Using a multiplier allows for more accurate turning odometry
     wheel_separation_multiplier: 1.45

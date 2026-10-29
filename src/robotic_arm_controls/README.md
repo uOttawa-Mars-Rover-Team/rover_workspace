@@ -55,7 +55,7 @@ ros2 launch robotic_arm_controls basestation_manual.launch.py
 
 | Executable | Purpose |
 | --- | --- |
-| `integrative_control` | Single gamepad node for **both** driving and the arm. Hold **LB** for drive mode (`/cmd_vel_teleop`), **RB** for arm mode (`/arm_cmd`) |
+| `integrative_control` | Single gamepad node for **both** driving and the arm. Hold **LB** for drive mode (`/cmd_vel_controller`), **RB** for arm mode (`/arm_cmd`) |
 | `ik_joy_controls` | Maps gamepad/spacemouse axes to arm motion (manual or IK mode) |
 | `ik_keyboard_controls` | Keyboard control / velocity override |
 | `m_router` | Serial router — forwards `/arm_cmd` strings to the microcontroller |
@@ -86,7 +86,7 @@ Set these with `--ros-args -p name:=value`, or edit the launch file.
 | --- | --- | --- |
 | `/joy/...` | `sensor_msgs/Joy` | in — raw gamepad input (remapped per device) |
 | `/arm_cmd` | `std_msgs/String` | out — arm command string, consumed by `m_router` |
-| `/cmd_vel_teleop` | `geometry_msgs/Twist` | out — drive commands from `integrative_control` |
+| `/cmd_vel_controller` | `geometry_msgs/Twist` | out — drive commands from `integrative_control`, arbitrated by `twist_mux` |
 
 Arm command string format:
 

@@ -17,7 +17,7 @@ source install/setup.bash
 | `launch.py` | RViz + `robot_state_publisher` + `joint_state_publisher` — just view the robot model, no simulation |
 | `drive_sim.launch.py` | Gazebo world (`smalltown.world`) with the rover, `ros2_control` diff drive, and joystick teleop |
 | `waypoints.launch.py` | Gazebo (`obstacles.world`) + Nav2 + RViz — full autonomous navigation demo |
-| `navigation.launch.py` | Nav2 planner/controller/behaviour nodes. **Include-only** — not useful on its own |
+| `navigation.launch.py` | Nav2 planner/controller/behaviour nodes. **Include-only** — not useful on its own; velocity output defaults to `/cmd_vel_autonomous` |
 | `localization_launch.py` | Nav2 `map_server` + `amcl`. **Include-only** |
 | `gps_navsat.launch.py` | Dual-EKF + `navsat_transform` for GPS-based localisation on the real rover |
 
@@ -74,6 +74,11 @@ ros2 launch autonomous_navigation gps_navsat.launch.py use_sim_time:=false
 Runs two EKF nodes (`odom` and `map` frames) plus `navsat_transform`, publishing
 `odometry/local` and `odometry/global`. Needs GPS and IMU data — see
 [`gps_node`](../gps_node).
+
+For rover bring-up, Nav2's final velocity output is `/cmd_vel_autonomous` so
+`twist_mux` can arbitrate it against manual commands. The Gazebo waypoint launch
+overrides this with `/diff_cont/cmd_vel_unstamped` to preserve its existing
+simulation path.
 
 ## Layout
 

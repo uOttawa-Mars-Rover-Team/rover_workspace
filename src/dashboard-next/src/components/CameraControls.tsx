@@ -4,6 +4,7 @@ type CameraControlsProps = {
     className?: string;
 }
 
+//Mock Data for now, will be replaced with actual data in task 2
 const controls = [
     { label: "Picture Node"},
     { label: "Panorama Node"},

@@ -11,6 +11,7 @@
   --color-bar: #101012;
   --color-ok: #4CC38A; 
   --color-danger: #C0302F;
+  --color-danger-soft: #F08A88;
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 }

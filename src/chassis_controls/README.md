@@ -15,6 +15,16 @@ source install/setup.bash
 ```
 
 ## Launch files
+| `rover_gazebo.launch.py` | simulation | Launches the 3D Gazebo Harmonic simulation with differential drive, IMU, 3D LiDAR, and camera sensors |
+
+## Gazebo 3D Simulation
+
+### How to Launch
+
+```bash
+ros2 launch chassis_controls rover_gazebo.launch.py
+
+ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.2}}"
 
 | Launch file | Run on | What it does |
 | --- | --- | --- |

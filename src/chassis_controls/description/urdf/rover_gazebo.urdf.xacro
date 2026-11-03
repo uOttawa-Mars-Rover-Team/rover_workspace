@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
+
+    <!-- Base Link (Chassis Box) -->
+    <link name="base_link">
+        <inertial>
+            <origin xyz="0 0 0.2" rpy="0 0 0" />
+            <mass value="20.0" />
+            <inertia ixx="0.5" ixy="0" ixz="0" iyy="0.5" iyz="0" izz="0.5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0.2" rpy="0 0 0" />
+            <geometry>
+                <box size="0.8 0.6 0.25" />
+            </geometry>
+            <material name="chassis_mat">
+                <color rgba="0.2 0.2 0.8 1.0" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.2" rpy="0 0 0" />
+            <geometry>
+                <box size="0.8 0.6 0.25" />
+            </geometry>
+        </collision>
+    </link>
+
+    <link name="base_footprint" />
+    <joint name="base_footprint_joint" type="fixed">
+        <parent link="base_footprint" />
+        <child link="base_link" />
+        <origin xyz="0 0 0.1" rpy="0 0 0" />
+    </joint>
+
+    <!-- Wheels Macro -->
+    <xacro:macro name="wheel" params="prefix x_reflect y_joint_name">
+        <link name="${prefix}_wheel">
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <mass value="5.0" />
+                <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <cylinder radius="0.2" length="0.1" />
+                </geometry>
+                <material name="wheel_mat">
+                    <color rgba="0.1 0.1 0.1 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <cylinder radius="0.2" length="0.1" />
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${y_joint_name}" type="continuous">
+            <parent link="base_link" />
+            <child link="${prefix}_wheel" />
+            <origin xyz="${x_reflect*0.35} ${x_reflect*0.35} 0.1" rpy="1.5708 0 0" />
+            <axis xyz="0 0 -1" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:wheel prefix="FL" x_reflect="1" y_joint_name="q1" />
+    <xacro:wheel prefix="FR" x_reflect="1" y_joint_name="q2" />
+    <xacro:wheel prefix="RR" x_reflect="-1" y_joint_name="q3" />
+    <xacro:wheel prefix="RL" x_reflect="-1" y_joint_name="q4" />
+
+    <!-- Gazebo Harmonic System Plugins -->
+    <gazebo>
+        <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+            <left_joint>q1</left_joint>
+            <left_joint>q4</left_joint>
+            <right_joint>q2</right_joint>
+            <right_joint>q3</right_joint>
+            <wheel_separation>0.7</wheel_separation>
+            <wheel_radius>0.2</wheel_radius>
+            <topic>/cmd_vel</topic>
+            <odom_topic>/odom</odom_topic>
+            <tf_topic>/tf</tf_topic>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
+        </plugin>
+
+        <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+            <render_engine>ogre2</render_engine>
+        </plugin>
+        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu" />
+    </gazebo>
+
+    <!-- Sensors -->
+    <link name="imu_link" />
+    <joint name="imu_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="imu_link" />
+        <origin xyz="0 0 0.3" rpy="0 0 0" />
+    </joint>
+    <gazebo reference="imu_link">
+        <sensor name="imu_sensor" type="imu">
+            <always_on>1</always_on>
+            <update_rate>100</update_rate>
+            <topic>/imu/data</topic>
+        </sensor>
+    </gazebo>
+
+    <link name="lidar_link" />
+    <joint name="lidar_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="lidar_link" />
+        <origin xyz="0.2 0 0.4" rpy="0 0 0" />
+    </joint>
+    <gazebo reference="lidar_link">
+        <sensor name="ouster_lidar" type="gpu_lidar">
+            <always_on>1</always_on>
+            <update_rate>10</update_rate>
+            <topic>/scan/points</topic>
+            <lidar>
+                <scan>
+                    <horizontal>
+                        <samples>512</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.2897</min_angle>
+                        <max_angle>0.2897</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.8</min>
+                    <max>50.0</max>
+                </range>
+            </lidar>
+        </sensor>
+    </gazebo>
+
+</robot>

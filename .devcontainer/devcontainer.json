@@ -22,7 +22,7 @@
   ],
 
   "runArgs": [
-    "--ipc=host"
+    "--network=host"
   ],
 
   "forwardPorts": [8765, 6080, 3000, 5173],

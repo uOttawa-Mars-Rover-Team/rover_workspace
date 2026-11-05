@@ -6,9 +6,9 @@ type ImuAttitudeProps = {
 
 //Mock Data for now, will be replaced with actual data in task 2
 const imuAttitude = [
-    { label: "Roll", value: "0.0°" },
-    { label: "Pitch", value: "0.0°" },
-    { label: "Yaw", value: "0.0°" },
+    { label: "Roll", value: "-2.1°" },
+    { label: "Pitch", value: "4.8°" },
+    { label: "Yaw", value: "-37°" },
 ];
 
 export default function ImuAttitude({

@@ -2,29 +2,76 @@ import Card from "./Card";
 
 type PowerPanelProps = {
     className?: string;
-}
+};
 
-//Mock Data for now, will be replaced with actual data in task 2
-const rows = [
-            { label: "Battery voltage", value: "24.8 V" },
-            { label: "Total current", value: "12.4 A" },
-            { label: "Jetson CPU", value: "38%" },
-            { label: "Jetson GPU", value: "21%" },
-            { label: "CPU temp", value: "54 °C" },
-            { label: "GPU temp", value: "49 °C" },
+const SEGMENTS = 20;
+
+// Mock data for now, will be replaced with actual data in task 2
+const power = [
+    { label: "Battery Voltage", value: "24.6", unit: "V" },
+    { label: "Current", value: "8.4", unit: "A" },
 ];
 
+const jetson = [
+    { label: "Jetson CPU", usage: 46, temp: 58 },
+    { label: "Jetson GPU", usage: 31, temp: 54 },
+];
 
-export default function PowerPanel({
-    className
-}: PowerPanelProps) {
+export default function PowerPanel({ className }: PowerPanelProps) {
     return (
         <Card title="Power & Jetson" className={className}>
-        {rows.map((row) => (
-            <div key={row.label} className="flex items-center justify-between border-t border-line py-2">
-                <span className="text-sm text-muted">{row.label}</span>
-                <span className="font-mono font-semibold">{row.value}</span>
+            <div className="flex flex-1 flex-wrap items-center gap-6">
+                <div className="flex gap-6">
+                    {power.map((item) => (
+                        <div key={item.label} className="flex flex-col">
+                            <div className="flex items-baseline gap-1">
+                                <span className="font-mono text-3xl font-semibold">
+                                    {item.value}
+                                </span>
+                                <span className="font-mono text-sm text-muted">
+                                    {item.unit}
+                                </span>
+                            </div>
+                            <span className="text-xs text-muted">{item.label}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex min-w-48 flex-1 flex-col gap-4">
+                    {jetson.map((item) => {
+                        const filled = Math.round((item.usage / 100) * SEGMENTS);
+
+                        return (
+                            <div key={item.label}>
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-muted">{item.label}</span>
+                                    <span className="font-mono">
+                                        {item.usage}% · {item.temp} °C
+                                    </span>
+                                </div>
+                                <div
+                                    role="meter"
+                                    aria-label={`${item.label} usage`}
+                                    aria-valuenow={item.usage}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    className="mt-1 flex gap-0.5"
+                                >
+                                    {Array.from({ length: SEGMENTS }, (_, i) => (
+                                        <span
+                                            key={i}
+                                            aria-hidden="true"
+                                            className={`h-2 flex-1 rounded-sm ${
+                                                i < filled ? "bg-accent" : "bg-line"
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
-        ))}
         </Card>
-    )}              
+    );
+}

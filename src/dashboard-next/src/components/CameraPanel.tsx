@@ -1,3 +1,5 @@
+import CameraToolbar from "./CameraToolbar";
+
 type propsCameraPanel = {
     title: string;
     status: "live" | "no-signal"; 
@@ -21,6 +23,7 @@ export default function CameraPanel({
             <div className="flex flex-1 items-center justify-center bg-line text-sm text-muted">
                 {status === "live" ? "Feed placeholder" : "No signal"}
             </div>
+            <CameraToolbar cameraName={title} />
         </section>
     )
 }

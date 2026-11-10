@@ -177,7 +177,7 @@ fi
 #
 # The sensor bursts a whole frame at once. Default buffers are far too small
 # and the kernel silently drops packets, which shows up as a low
-# /ouster/points rate (e.g. 4.7 Hz instead of 10).
+# /sensor_msgs/PointCloud2 rate (e.g. 4.7 Hz instead of 10).
 # ===========================================================================
 CUR_RMEM=$(cat /proc/sys/net/core/rmem_max 2>/dev/null || echo 0)
 if [ "$CUR_RMEM" -lt "$RMEM_TARGET" ]; then
@@ -316,9 +316,9 @@ if [ "$mode" = "--bench" ]; then
     # They then discover the publisher the moment it appears. Starting them
     # after the driver means racing DDS discovery, which intermittently
     # reports "topic does not appear to be published yet".
-    ros2 topic hz /ouster/points > /tmp/lidar_bench_hz.log 2>&1 &
+    ros2 topic hz /sensor_msgs/PointCloud2 > /tmp/lidar_bench_hz.log 2>&1 &
     HZ_PID=$!
-    ros2 topic bw /ouster/points > /tmp/lidar_bench_bw.log 2>&1 &
+    ros2 topic bw /sensor_msgs/PointCloud2 > /tmp/lidar_bench_bw.log 2>&1 &
     BW_PID=$!
 
     ros2 launch ouster_ros sensor.launch.xml "${LAUNCH_ARGS[@]}" \

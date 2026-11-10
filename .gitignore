@@ -20,6 +20,7 @@ src/chassis_controls/bin/
 # Cache and IDE directories
 .cache/
 .ccache/
+__pycache__
 .ipynb_checkpoints/
 .virtual_documents/
 **/.vscode/

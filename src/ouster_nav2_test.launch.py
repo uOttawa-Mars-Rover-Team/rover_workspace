@@ -49,7 +49,7 @@ def generate_launch_description():
         package='ouster_ros',
         executable='os_driver',
         name='os_driver',
-        namespace='ouster',   # topics come out as /ouster/points etc.
+        namespace='sensor_msgs',   # topics come out as /sensor_msgs/PointCloud2 etc.
         output='screen',
         parameters=[{
             'sensor_hostname': sensor_hostname,
@@ -67,7 +67,7 @@ def generate_launch_description():
             # Only run the point-cloud processor. The extra processors
             # (2D images / laser scan / telemetry) expect a 'WINDOW' packet
             # field that this sensor's firmware (2.5.3) doesn't send, and
-            # they crash the driver. We only need /ouster/points anyway.
+            # they crash the driver. We only need /sensor_msgs/PointCloud2 anyway.
             'proc_mask': 'PCL',
             'viz': False,
         }],
@@ -112,7 +112,7 @@ def generate_launch_description():
         ),
 
         # ------------------------------------------------------------------
-        # 1) Ouster driver - publishes /ouster/points (3D cloud) + TF
+        # 1) Ouster driver - publishes /sensor_msgs/PointCloud2 (3D cloud) + TF
         #    os_sensor -> os_lidar.  TIME_FROM_ROS_TIME avoids clock-mismatch
         #    TF errors on a fresh setup (no PTP sync needed).
         #
@@ -152,6 +152,15 @@ def generate_launch_description():
             ),
         ),
 
+        # Duplicate the PointCloud2 stream for consumers using this topic.
+        Node(
+            package='topic_tools',
+            executable='relay',
+            name='pointcloud_relay',
+            arguments=['/sensor_msgs/PointCloud2', '/foxglove_msgs/msg/LaserScan'],
+            output='screen',
+        ),
+
         # ------------------------------------------------------------------
         # 2) 3D cloud -> 2D /scan  (takes a horizontal slice of the cloud)
         # ------------------------------------------------------------------
@@ -161,7 +170,7 @@ def generate_launch_description():
             name='pc_to_scan',
             output='screen',
             remappings=[
-                ('cloud_in', '/ouster/points'),
+                ('cloud_in', '/sensor_msgs/PointCloud2'),
                 ('scan', '/scan'),
             ],
             parameters=[{

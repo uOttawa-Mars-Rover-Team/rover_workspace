@@ -1,3 +1,9 @@
+"""Standalone 3-DoF IK sketch. Not a ROS node and not installed.
+
+Kept as a reference for whenever the IK stack is rebuilt. Opens a serial
+port at import time, so do not import it from anything.
+"""
+
 import numpy as np
 import serial
 

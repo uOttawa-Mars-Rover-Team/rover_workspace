@@ -23,7 +23,7 @@ package_url = package_info.find("url").text
 setup(
     name=package_name,
     version=package_version,
-    packages=find_packages(exclude=["test"]),
+    packages=find_packages(exclude=["test", "scratch"]),
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
@@ -42,12 +42,12 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            'integrative_control = robotic_arm_controls.integrative_control:main',
-            "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
-            "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
-            "m_router = robotic_arm_controls.m_router:main",
-            "arm_gui_term = robotic_arm_controls.arm_gui_term:main",
-            "template_pub_sub = robotic_arm_controls.template_pub_sub:main",
+            "joy_controls = arm_nodes.joy_controls:main",
+            "keyboard_controls = arm_nodes.keyboard_controls:main",
+            "m_router = arm_nodes.m_router:main",
+            "integrative_control = arm_nodes.integrative_control:main",
+            "arm_gui_term = arm_nodes.arm_gui_term:main",
+            "template_pub_sub = arm_nodes.template_pub_sub:main",
         ],
     },
 )

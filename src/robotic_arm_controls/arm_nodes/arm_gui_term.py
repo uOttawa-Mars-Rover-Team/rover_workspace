@@ -36,7 +36,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from robotic_arm_controls import arm_translation as proto
+from arm_nodes import arm_translation as proto
 
 W = 54
 

@@ -1,8 +1,28 @@
+"use client";
+
 import StatusPill from "./StatusPill";
 import Image from "next/image";
+import { useRos } from "@/providers/RosProvider";
+import { useState } from "react";
 
+const statusLabel = {
+    disconnected: "Disconnected",
+    connecting: "Connecting…",
+    connected: "Connected",
+    error: "Error",
+};
+
+const statusColor = {
+    disconnected: "text-muted",
+    connecting: "text-muted",
+    connected: "text-ok",
+    error: "text-danger-soft",
+};
 
 export default function Header() {
+    const { status, url, connect } = useRos();
+    const [address, setAddress] = useState(url);
+
     return (
         <header className="bg-bar border-b border-line flex items-center gap-4 px-4 py-2 flex-wrap">
             <Image src="/logo192.png" alt="uORover logo" width={40} height={40} />
@@ -11,7 +31,12 @@ export default function Header() {
                 <span className="text-lg font-bold">Dashboard</span>
             </div>
             <div className="flex gap-2">
-                <StatusPill label="Bridge" value="Connected" valueClassName="text-ok" dot />
+                <StatusPill
+                    label="Bridge"
+                    value={statusLabel[status]}
+                    valueClassName={statusColor[status]}
+                    dot
+                />
                 <StatusPill label="Latency" value="42 ms" valueClassName="font-mono" />
                 <StatusPill label="Packet health" value="98%" valueClassName="font-mono text-ok" />
             </div>
@@ -19,11 +44,13 @@ export default function Header() {
                 <input
                     type="text"
                     aria-label="ROS bridge address"
-                    defaultValue="ws://localhost:9090"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
                     className="min-h-11 w-56 rounded-lg border border-line bg-page px-3 font-mono text-sm text-ink"
                 />
                 <button
                     type="button"
+                    onClick={() => connect(address)}
                     className="cursor-pointer min-h-11 rounded-lg border border-line px-3.5 text-sm text-ink"
                 >
                     Connect to ROS

@@ -48,14 +48,19 @@ def generate_launch_description():
         output="screen",
     )
 
+    # Bridge both /cmd_vel and /cmd_vel_teleop so controller.launch.py works with Gazebo
     ros_gz_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
             "/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist",
+            "/cmd_vel_teleop@geometry_msgs/msg/Twist]gz.msgs.Twist",
             "/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry",
             "/imu/data@sensor_msgs/msg/Imu@gz.msgs.IMU",
             "/scan/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked",
+        ],
+        remappings=[
+            ("/cmd_vel_teleop", "/cmd_vel"),
         ],
         output="screen",
     )

@@ -2,46 +2,25 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
 
     <xacro:arg name="use_gazebo" default="false"/>
+    <!-- Unused since the move to moteus: the velocity loop gains now live on
+    the controllers. Kept so existing launch commands still work. -->
     <xacro:arg name="sport_mode" default="true"/>
 
-    <xacro:property name="FL_id" value="20"/>
-    <xacro:property name="FR_id" value="40"/>
-    <xacro:property name="RR_id" value="10"/>
-    <xacro:property name="RL_id" value="30"/>
+    <!-- moteus r4.11 CAN ids -->
+    <xacro:property name="FL_id" value="1"/>
+    <xacro:property name="FR_id" value="2"/>
+    <xacro:property name="RR_id" value="3"/>
+    <xacro:property name="RL_id" value="4"/>
 
-    <!-- Allow for different PID gains to be used to select between
-    acceleration/responsivness and power usage -->
-    <xacro:if value="$(arg sport_mode)">
-        <xacro:property name="Kp_FL" value="0.8"/>
-        <xacro:property name="Ki_FL" value="0.008"/>
-        <xacro:property name="Kd_FL" value="220.0"/>
-        <xacro:property name="Kp_FR" value="0.8"/>
-        <xacro:property name="Ki_FR" value="0.008"/>
-        <xacro:property name="Kd_FR" value="220.0"/>
-        <xacro:property name="Kp_RR" value="0.8"/>
-        <xacro:property name="Ki_RR" value="0.008"/>
-        <xacro:property name="Kd_RR" value="220.0"/>
-        <xacro:property name="Kp_RL" value="0.8"/>
-        <xacro:property name="Ki_RL" value="0.008"/>
-        <xacro:property name="Kd_RL" value="220.0"/>
-    </xacro:if>
-    <xacro:unless value="$(arg sport_mode)">
-        <xacro:property name="Kp_FL" value="0.4"/>
-        <xacro:property name="Ki_FL" value="0.002"/>
-        <xacro:property name="Kd_FL" value="160.0"/>
-        <xacro:property name="Kp_FR" value="0.4"/>
-        <xacro:property name="Ki_FR" value="0.002"/>
-        <xacro:property name="Kd_FR" value="160.0"/>
-        <xacro:property name="Kp_RR" value="0.4"/>
-        <xacro:property name="Ki_RR" value="0.002"/>
-        <xacro:property name="Kd_RR" value="160.0"/>
-        <xacro:property name="Kp_RL" value="0.4"/>
-        <xacro:property name="Ki_RL" value="0.002"/>
-        <xacro:property name="Kd_RL" value="160.0"/>
-    </xacro:unless>
-
-    <xacro:property name="wheel_diameter" value="0.40601"/>
-    <xacro:property name="wheel_encoder_counts_per_revolution" value="4096"/>
+    <!-- Motor revolutions per wheel revolution -->
+    <xacro:property name="gear_ratio" value="100.0"/>
+    <!-- Largest velocity sent to a moteus [motor rev/s] -->
+    <xacro:property name="max_velocity" value="40.0"/>
+    <!-- Torque limit sent with every velocity command [Nm] -->
+    <xacro:property name="max_torque" value="0.3"/>
+    <!-- Extra moteus transport arguments, e.g. "--socketcan-iface can0" or
+    "--fdcanusb /dev/ttyACM0". "auto" detects the adapter. -->
+    <xacro:property name="transport_args" value="auto"/>
 
     <xacro:include filename="drive_urdf.urdf" />
 

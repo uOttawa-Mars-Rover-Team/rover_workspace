@@ -40,7 +40,7 @@ def generate_launch_description():
     declare_sport_mode_cmd = DeclareLaunchArgument(
         "sport_mode",
         default_value="true",
-        description="Whether to use more responsive PID gains",
+        description="Unused: PID gains now live on the moteus controllers",
     )
     declare_use_joystick_cmd = DeclareLaunchArgument(
         "use_joystick",

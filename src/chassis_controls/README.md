@@ -1,8 +1,9 @@
 # chassis_controls
 
 Drive system for the rover. Provides a `ros2_control` hardware interface that
-talks to our CTRE Talon SRX motor controllers and PDP over CAN (via the Phoenix
-API), plus the operator-side teleop controller.
+drives four NEO v1.1 motors through moteus r4.11 controllers in velocity control
+over CAN-FD (via the [moteus C++ library](https://github.com/mjbots/moteus)),
+plus the operator-side teleop controller.
 
 - Controller / operator guide: [`ControllerREADME.md`](ControllerREADME.md)
 - Hardware bring-up test nodes: [`README_testing.md`](README_testing.md)
@@ -35,13 +36,24 @@ ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angul
 
 ### Bring up the rover
 
-The CAN bus must be up **before** launching — the controllers cannot initialise
-without a working network:
+A CAN-FD adapter must be connected **before** launching — the hardware interface
+cannot activate without one. With an mjbots fdcanusb nothing else is needed, it
+is detected automatically:
 
 ```bash
-ros2 run chassis_controls can_start.sh
 ros2 launch chassis_controls rover.launch.py
 ```
+
+With a socketcan adapter, bring the interface up in CAN-FD mode first (moteus
+uses 1 Mbit/s nominal, 5 Mbit/s data) and set `transport_args` in
+`description/urdf/rover.urdf.xacro` to `--socketcan-iface can0`:
+
+```bash
+sudo ip link set can0 up type can bitrate 1000000 dbitrate 5000000 fd on
+```
+
+`scripts/can_start.sh` brings the bus up as classic CAN, which only suits the
+old Talon SRX `drive_test` node.
 
 Arguments for `rover.launch.py`:
 
@@ -49,7 +61,7 @@ Arguments for `rover.launch.py`:
 | --- | --- | --- |
 | `use_robot_state_pub` | `True` | Start `robot_state_publisher` |
 | `use_rviz` | `False` | Also open RViz |
-| `sport_mode` | `true` | Use the more responsive PID gains |
+| `sport_mode` | `true` | Unused since the move to moteus (gains live on the controllers) |
 | `use_joystick` | `true` | Start the onboard joystick teleop nodes |
 
 ```bash
@@ -79,7 +91,45 @@ commands to be sent, with the left stick steering.
 > Jetson, you must kill the Jetson's phantom `joy_node` first. See
 > [`ControllerREADME.md`](ControllerREADME.md#known-issue-phantom-joystick-on-jetson).
 
+## moteus configuration
+
+Set in `description/urdf/rover.urdf.xacro`:
+
+| Property | Default | Meaning |
+| --- | --- | --- |
+| `FL_id`, `FR_id`, `RR_id`, `RL_id` | `1`, `2`, `3`, `4` | CAN id of each wheel's moteus |
+| `gear_ratio` | `100.0` | Motor revolutions per wheel revolution |
+| `max_velocity` | `40.0` | Largest velocity sent to a moteus [motor rev/s] |
+| `max_torque` | `0.3` | Torque limit sent with every command [Nm] |
+| `transport_args` | `auto` | moteus transport arguments, `auto` detects the adapter |
+
+The velocity loop runs on each moteus, so its PID gains are tuned and stored on
+the controller (with `tview`), not in this package. The hardware interface
+assumes `motor_position.rotor_to_output_ratio` is left at 1 on the moteus and
+applies `gear_ratio` itself.
+
+### Command echo
+
+Every command sent to the controllers is published on `/moteus_cmd_echo`
+(`sensor_msgs/JointState`), one entry per wheel joint (`q1` FL, `q2` FR, `q3`
+RR, `q4` RL):
+
+```bash
+ros2 topic echo /moteus_cmd_echo
+```
+
+- `position` — always `NaN` (velocity control)
+- `velocity` — commanded motor velocity [rev/s], after gear ratio, direction
+  and the `max_velocity` limit
+- `effort` — torque limit sent with the command [Nm]; `0` on the cycle where a
+  stop is sent instead of a velocity
+
 ## Prerequisites
+
+The moteus C++ library is fetched by CMake at build time, so the first build
+needs internet access.
+
+The rest of this section only applies to the Talon SRX `drive_test` node.
 
 The Phoenix shared libraries in `lib/` must be on the linker path. Add this to
 the end of your `~/.bashrc`:
@@ -109,8 +159,8 @@ Use `arm64` on the Jetson, `arm32` on 32-bit ARM, or `x86-64` on a desktop —
 
 | Path | Contents |
 | --- | --- |
-| `src/drive_hardware.cpp` | `ros2_control` `SystemInterface` plugin for the Talons |
-| `src/drive_test.cpp` | Standalone wheel spin/encoder test node |
+| `src/drive_hardware.cpp` | `ros2_control` `SystemInterface` plugin for the moteus controllers |
+| `src/drive_test.cpp` | Standalone Talon SRX wheel spin/encoder test node |
 | `scripts/controller.py` | Operator teleop TUI |
 | `scripts/can_start.sh` | Brings up the CAN interface |
 | `config/` | Controller gains, `twist_mux` priorities, joystick mapping, RViz config |
@@ -123,8 +173,8 @@ Use `arm64` on the Jetson, `arm32` on 32-bit ARM, or `x86-64` on a desktop —
 
 - Steering is differential: wheels on one side turn faster than the other, scaled
   by a turning coefficient.
-- Each motor runs a PID loop that shapes the wheel's response to step commands.
-- Both the PID and diff drive controllers are spawned by `controller_manager`.
+- Each moteus runs the velocity loop that shapes its wheel's response to step commands.
+- The diff drive controller is spawned by `controller_manager`.
 
 **Subscribes** `/cmd_vel` — desired linear and angular velocity.
 **Publishes** `/odom` (position/velocity estimate) and `/tf` (joint frames).
@@ -150,6 +200,7 @@ monitoring at the base station. Current draw readings are still unstable.
 ## Resources
 
 - [ROS 2 Control](https://control.ros.org/jazzy/index.html) — how the control nodes operate
+- [moteus reference](https://mjbots.github.io/moteus/) — controller configuration, CAN-FD protocol, C++ client
 - [CTRE CAN bring-up](https://v5.docs.ctr-electronics.com/en/stable/ch08_BringUpCAN.html) — CAN bus setup and Linux integration
 - [CTRE C++ API](https://api.ctr-electronics.com/phoenix/release/cpp/classctre_1_1phoenix_1_1motorcontrol_1_1can_1_1_talon_s_r_x.html) — Phoenix classes used here
 - [Intro to URDF](https://docs.ros.org/en/jazzy/Tutorials/Intermediate/URDF/Building-a-Visual-Robot-Model-with-URDF-from-Scratch.html)

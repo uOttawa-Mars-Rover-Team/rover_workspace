@@ -15,6 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(xacro REQUIRED)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l") # 32 bit Arm Linux
@@ -28,6 +29,18 @@ else()
   message(FATAL_ERROR "Unsupported system.")
 endif()
 
+# moteus C++ client library (header only), used by the drive hardware plugin.
+# Pinned to a commit for a reproducible build.
+include(FetchContent)
+FetchContent_Declare(
+  moteus
+  GIT_REPOSITORY https://github.com/mjbots/moteus.git
+  GIT_TAG        d38a25326b47077e0e5645492e9b7cb1b84d5f8e  # cpp/v1.0.0
+  SYSTEM
+)
+FetchContent_MakeAvailable(moteus)
+
+# CTRE Phoenix libraries, only used by the Talon SRX drive_test node.
 add_library(phoenix_core SHARED IMPORTED)
 set_target_properties(phoenix_core PROPERTIES
   IMPORTED_LOCATION "${PHOENIX_LIBS_DIR}/libCTRE_Phoenix.so"
@@ -83,13 +96,13 @@ ament_target_dependencies(${PROJECT_NAME}
     pluginlib
     rclcpp
     rclcpp_lifecycle
+    sensor_msgs
 )
+# PRIVATE keeps the fetched (non-installed) moteus target out of the export set
 target_link_libraries(
     ${PROJECT_NAME}
-    PUBLIC # PUBLIC is correct here
-    phoenix_core
-    phoenix_tools
-    phoenix_cci
+    PRIVATE
+    moteus::cpp
 )
 pluginlib_export_plugin_description_file(hardware_interface chassis_controls.xml)
 
@@ -154,6 +167,7 @@ ament_export_dependencies(
     pluginlib
     hardware_interface
     rclcpp_lifecycle
+    sensor_msgs
     xacro
 )
 ament_package()

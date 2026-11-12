@@ -3,7 +3,7 @@
 <package format="3">
 	<name>chassis_controls</name>
 	<version>1.0.0</version>
-	<description>Implements Phoenix API to control drive motors and PDP over CAN</description>
+	<description>Drive system: ros2_control hardware interface for moteus motor controllers over CAN-FD, plus teleop</description>
 	<maintainer email="luka@todo.todo">luka</maintainer>
 	<license>MIT</license>
 
@@ -16,6 +16,7 @@
 	<depend>hardware_interface</depend>
 	<depend>pluginlib</depend>
 	<depend>rclcpp_lifecycle</depend>
+	<depend>sensor_msgs</depend>
 	<depend>ros2_control</depend>
 	<depend>diff_drive_controller</depend>
 
@@ -26,7 +27,6 @@
 	<exec_depend>xacro</exec_depend>
 	<exec_depend>twist_mux</exec_depend>
 	<exec_depend>joy</exec_depend>
-	<exec_depend>sensor_msgs</exec_depend>
 	<exec_depend>std_msgs</exec_depend>
 
 	<test_depend>ament_lint_auto</test_depend>

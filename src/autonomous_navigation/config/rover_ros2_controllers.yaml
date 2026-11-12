@@ -22,4 +22,3 @@ diff_cont:
 
     open_loop: false
     enable_odom_tf: false
-    use_stamped_vel: false

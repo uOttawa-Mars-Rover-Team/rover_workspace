@@ -4,7 +4,7 @@
     <ros2_control name="GazeboSystem" type="system">
 
         <hardware>
-            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
         </hardware>
 
         <joint name="q1"> <!-- FL_wheel -->
@@ -46,7 +46,7 @@
     </ros2_control>
 
     <gazebo>
-        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+        <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="gz_ros2_control-system">
             <parameters>$(find autonomous_navigation)/config/rover_ros2_controllers.yaml</parameters>
         </plugin>
     </gazebo>

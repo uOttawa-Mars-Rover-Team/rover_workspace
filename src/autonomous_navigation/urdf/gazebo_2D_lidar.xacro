@@ -33,11 +33,13 @@
     </joint>
 
     <gazebo reference="lidar_link">
-        <sensor name="lidar" type="ray">
+        <sensor name="lidar" type="gpu_lidar">
+            <topic>/scan</topic>
+            <gz_frame_id>lidar_link</gz_frame_id>
             <always_on>true</always_on>
             <visualize>true</visualize>
             <update_rate>5</update_rate>
-            <ray>
+            <lidar>
                 <scan>
                     <horizontal>
                         <samples>360</samples>
@@ -56,14 +58,7 @@
                     <mean>0.0</mean>
                     <stddev>0.01</stddev>
                 </noise>
-            </ray>
-            <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
-                <ros>
-                    <remapping>~/out:=scan</remapping>
-                </ros>
-                <output_type>sensor_msgs/LaserScan</output_type>
-                <frame_name>lidar_link</frame_name>
-            </plugin>
+            </lidar>
         </sensor>
     </gazebo>
 </robot>

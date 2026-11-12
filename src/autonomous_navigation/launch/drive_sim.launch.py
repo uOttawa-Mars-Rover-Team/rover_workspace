@@ -3,12 +3,14 @@ import os
 import xacro
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import (
+    AppendEnvironmentVariable,
+    DeclareLaunchArgument,
+    ExecuteProcess,
+)
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
@@ -23,6 +25,7 @@ def generate_launch_description():
         "f310.config.yaml",
     )
     ekf_config_file = os.path.join(pkg_path, "config/ekf.yaml")
+    gz_bridge_config_file = os.path.join(pkg_path, "config/gz_bridge.yaml")
     rviz_config_file = os.path.join(pkg_path, "rviz/urdf_config.rviz")
     gazebo_world_file = os.path.join(pkg_path, "world/smalltown.world")
 
@@ -60,12 +63,45 @@ def generate_launch_description():
         ],
     )
 
-    # Run the spawner node from the gazebo_ros package. The entity name doesn't really matter if you only have a single robot.
+    # Spawn the robot into Gazebo from the robot_description topic. The entity
+    # name doesn't really matter if you only have a single robot.
     gazebo_spawn_entity_node = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=["-topic", "robot_description", "-entity", "rover"],
+        package="ros_gz_sim",
+        executable="create",
+        arguments=["-topic", "robot_description", "-name", "rover", "-z", "0.3"],
         output="screen",
+    )
+
+    # Bridge the Gazebo clock and the simulated sensors into ROS topics.
+    gz_bridge_node = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        parameters=[
+            {
+                "config_file": gz_bridge_config_file,
+                "use_sim_time": LaunchConfiguration("use_sim_time"),
+            }
+        ],
+        output="screen",
+    )
+
+    # Gazebo (gz sim) finds meshes via GZ_SIM_RESOURCE_PATH and the
+    # gz_ros2_control system plugin via GZ_SIM_SYSTEM_PLUGIN_PATH.
+    ament_share_paths = os.pathsep.join(
+        os.path.join(prefix, "share")
+        for prefix in os.environ.get("AMENT_PREFIX_PATH", "").split(os.pathsep)
+        if prefix
+    )
+    resource_path_action = AppendEnvironmentVariable(
+        "GZ_SIM_RESOURCE_PATH", ament_share_paths
+    )
+    plugin_path_action = AppendEnvironmentVariable(
+        "GZ_SIM_SYSTEM_PLUGIN_PATH",
+        os.path.join(os.environ.get("CONDA_PREFIX", "/usr"), "lib"),
+    )
+    ogre_path_action = AppendEnvironmentVariable(
+        "OGRE2_RESOURCE_PATH",
+        os.path.join(os.environ.get("CONDA_PREFIX", "/usr"), "lib", "OGRE-Next"),
     )
 
     diff_drive_spawner = Node(
@@ -89,8 +125,15 @@ def generate_launch_description():
         package="teleop_twist_joy",
         executable="teleop_node",
         name="teleop_twist_joy",
-        parameters=[joy_config_file, {"max_speed": 1, "speed_levels": 3}],
-        remappings=[("cmd_vel", "diff_cont/cmd_vel_unstamped")],
+        parameters=[
+            joy_config_file,
+            {
+                "max_speed": 1,
+                "speed_levels": 3,
+                "publish_stamped_twist": True,
+            },
+        ],
+        remappings=[("cmd_vel", "diff_cont/cmd_vel")],
     )
 
     robot_localization_node = Node(
@@ -118,35 +161,21 @@ def generate_launch_description():
             joy_device_arg,
             use_sim_time_arg,
             rviz_config_arg,
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    [
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("gazebo_ros"),
-                                "launch",
-                                "gzserver.launch.py",
-                            ]
-                        )
-                    ]
-                ),
-                launch_arguments={
-                    "world": gazebo_world_file,
-                }.items(),
+            resource_path_action,
+            plugin_path_action,
+            ogre_path_action,
+            # macOS cannot run the gz server and GUI in one process
+            # (https://github.com/gazebosim/gz-sim/issues/44), so start them
+            # separately; this also works on Linux.
+            ExecuteProcess(
+                cmd=["gz", "sim", "-s", "-r", gazebo_world_file],
+                output="screen",
             ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    [
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("gazebo_ros"),
-                                "launch",
-                                "gzclient.launch.py",
-                            ]
-                        )
-                    ]
-                )
+            ExecuteProcess(
+                cmd=["gz", "sim", "-g"],
+                output="screen",
             ),
+            gz_bridge_node,
             robot_state_publisher_node,
             gazebo_spawn_entity_node,
             diff_drive_spawner,

@@ -104,5 +104,51 @@ S;<TW>;<L1>;<L2>;<WP>;<WR>;<EE>;!
 
 ## TODO
 
+## Simulation command bridge (model integration pending)
+
+`sim_command_bridge` translates the existing `/arm_cmd` `std_msgs/String`
+velocity frames to `/arm_velocity_controller/commands`
+(`std_msgs/Float64MultiArray`). It does not start the serial router or connect
+to the physical arm. This bridge alone does **not** spawn an arm in Gazebo.
+The arm meshes, joint frames, limits, inertias, controller YAML and Gazebo
+launch remain to be integrated.
+
+The receiving `velocity_controllers/JointGroupVelocityController` must list
+its six joints in the exact wire order: **TW, EL, SL, WP, WR, EE**. This order
+is a command ordering, not a declaration of the arm's physical link tree.
+The EE joint type and its conversion require confirmation from CAD/mechanical
+information. For revolute joints the output units are radians per second;
+for prismatic joints they are metres per second.
+
+```bash
+ros2 run robotic_arm_controls sim_command_bridge
+```
+
+In a second sourced terminal, check the output without a simulator:
+
+```bash
+ros2 topic echo /arm_velocity_controller/commands
+```
+
+In a third sourced terminal, send a single test command:
+
+```bash
+ros2 topic pub --once /arm_cmd std_msgs/msg/String '{data: "S;1;0;0;0;0;0;!"}'
+```
+
+Expected: `[0.25, 0, 0, 0, 0, 0]`, then all zeros after 0.3 seconds.
+The bridge publishes at 50 Hz. `velocity_scales` defaults to six **provisional**
+values of 0.25 output units per second at full input. Input multipliers are
+clamped to [-1, 1]. Tune and verify each scale before judging simulated speed.
+`command_timeout` is configurable; the watchdog uses monotonic wall time.
+Malformed frames and unsupported commands stop the simulated command, including
+`set0;!`, which does not teleport or recalibrate the simulated model.
+
+Only run one command source during this test. Do not run `m_router` for
+simulation. If the bridge process itself dies, its watchdog cannot send zeros;
+the receiving controller requires its own stop strategy for that case.
+
+Reference: https://control.ros.org/jazzy/doc/ros2_controllers/velocity_controllers/doc/userdoc.html
+
 - Restore or remove the dependency on the missing `arm_controls` package.
 - Document the IK implementation under `robotic_arm_controls/InverseKinematics/`.

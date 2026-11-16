@@ -1,3 +1,20 @@
+"use client";
+
+import { useTopic } from "@/hooks/useTopic";
+
+type GPSMessage = {
+    fix: number; 
+    satellites: number; 
+    latitude: number;
+    longitude: number;
+};
+
+const GPS_TOPIC = "/GPS";
+const GPS_TYPE = "general_interfaces/msg/GPS";
+const ROUND_PRECISION = 5;
+
+const marker = { latitude: 45.41799, longitude: -75.68222 }; // Mock data for now, will be replaced with actual data in task 3
+
 const inputClass =
     "min-h-11 rounded-lg border border-line bg-page px-3 font-mono text-sm text-ink";
 
@@ -5,10 +22,15 @@ const buttonClass =
     "cursor-pointer min-h-11 rounded-lg border border-line bg-page px-4 text-sm";
 
 // Mock data for now, will be replaced with actual data in task 3
-const marker = { latitude: "45.42032", longitude: "-75.68039" };
-const mapInfo = { center: "45.41799, -75.68222", rover: "45.42032, -75.68039" };
+const mapInfo = { center: "45.41799, -75.68222"};
 
 export default function MapControls() {
+    const gps = useTopic<GPSMessage>(GPS_TOPIC, GPS_TYPE);
+    const roverText =
+        gps === null || gps.fix === 0
+            ? "—"
+            : `${gps.latitude.toFixed(ROUND_PRECISION)}, ${gps.longitude.toFixed(ROUND_PRECISION)}`;
+
     return (
         <section className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -41,7 +63,7 @@ export default function MapControls() {
                     Map Center: {mapInfo.center}
                 </span>
                 <span className="font-mono text-xs text-muted">
-                    Rover Position: {mapInfo.rover}
+                    Rover Position: {roverText}
                 </span>
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-muted">Use terrain map</span>

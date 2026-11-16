@@ -32,9 +32,9 @@ const DEFAULT_URL = "ws://localhost:9090";
 const BASE_DELAY_MS = 1000;
 const MAX_DELAY_MS = 10000;
 
-const RosContext = createContext<RosContextValue | null>(null);
+export const RosContext = createContext<RosContextValue | null>(null);
 
-const subscribe = () => () => {};
+const subscribe = () => () => { };
 
 function readSavedUrl() {
     try {
@@ -51,6 +51,7 @@ export function RosProvider({ children }: { children: ReactNode }) {
     const url = connectedUrl ?? savedUrl ?? DEFAULT_URL;
     const [status, setStatus] = useState<RosStatus>("disconnected");
     const [activeRos, setActiveRos] = useState<ROSLIB.Ros | null>(null);
+
 
     const rosRef = useRef<ROSLIB.Ros | null>(null);
     const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,6 +79,7 @@ export function RosProvider({ children }: { children: ReactNode }) {
             everConnectedRef.current = true;
             setActiveRos(ros);
             setStatus("connected");
+
         });
 
         ros.on("error", () => {
@@ -164,3 +166,4 @@ export function useRos() {
     }
     return context;
 }
+

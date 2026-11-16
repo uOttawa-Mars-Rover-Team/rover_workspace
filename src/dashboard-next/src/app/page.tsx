@@ -7,6 +7,7 @@ import CommandConsole from "@/components/CommandConsole"
 import AutonomyPanel from "@/components/AutonomyPanel"
 import MapPanel from "@/components/MapPanel"
 import MapControls from "@/components/MapControls"
+import { Topic } from "roslib"
 
 export default function Home() {
   return (

@@ -13,18 +13,12 @@ def generate_launch_description():
     share = get_package_share_directory("robotic_arm_description")
     gazebo_share = get_package_share_directory("ros_gz_sim")
 
-    description = xacro.process_file(
-        os.path.join(share, "urdf", "arm.urdf.xacro")
-    ).toxml()
+    description = xacro.process_file(os.path.join(share, "urdf", "arm.urdf.xacro")).toxml()
 
     gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(gazebo_share, "launch", "gz_sim.launch.py")
-        ),
+        PythonLaunchDescriptionSource(os.path.join(gazebo_share, "launch", "gz_sim.launch.py")),
         launch_arguments={
-            "gz_args": "-r -v 3 " + os.path.join(
-                share, "config", "arm_world.sdf"
-            )
+            "gz_args": "-r -v 3 " + os.path.join(share, "config", "arm_world.sdf")
         }.items(),
     )
 
@@ -32,10 +26,12 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="screen",
-        parameters=[{
-            "robot_description": description,
-            "use_sim_time": True,
-        }],
+        parameters=[
+            {
+                "robot_description": description,
+                "use_sim_time": True,
+            }
+        ],
     )
 
     clock = Node(
@@ -50,9 +46,12 @@ def generate_launch_description():
         executable="create",
         output="screen",
         arguments=[
-            "-world", "arm_world",
-            "-name", "rover_arm",
-            "-topic", "/robot_description",
+            "-world",
+            "arm_world",
+            "-name",
+            "rover_arm",
+            "-topic",
+            "/robot_description",
         ],
     )
 
@@ -62,7 +61,8 @@ def generate_launch_description():
         output="screen",
         arguments=[
             "joint_state_broadcaster",
-            "--controller-manager-timeout", "120",
+            "--controller-manager-timeout",
+            "120",
         ],
     )
 
@@ -72,22 +72,23 @@ def generate_launch_description():
         output="screen",
         arguments=[
             "arm_velocity_controller",
-            "--controller-manager-timeout", "120",
+            "--controller-manager-timeout",
+            "120",
         ],
     )
 
-    return LaunchDescription([
-        gazebo,
-        robot_state,
-        clock,
-        RegisterEventHandler(
-            OnProcessExit(target_action=spawn, on_exit=[joint_states])
-        ),
-        RegisterEventHandler(
-            OnProcessExit(
-                target_action=joint_states,
-                on_exit=[velocity_controller],
-            )
-        ),
-        spawn,
-    ])
+    return LaunchDescription(
+        [
+            gazebo,
+            robot_state,
+            clock,
+            RegisterEventHandler(OnProcessExit(target_action=spawn, on_exit=[joint_states])),
+            RegisterEventHandler(
+                OnProcessExit(
+                    target_action=joint_states,
+                    on_exit=[velocity_controller],
+                )
+            ),
+            spawn,
+        ]
+    )

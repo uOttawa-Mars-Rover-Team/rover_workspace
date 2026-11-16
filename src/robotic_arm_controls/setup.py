@@ -11,9 +11,7 @@ package_name = package_info.find("name").text
 package_version = package_info.find("version").text
 package_description = package_info.find("description").text
 package_license = package_info.find("license").text
-package_maintainers = ", ".join(
-    [element.text for element in package_info.findall("maintainer")]
-)
+package_maintainers = ", ".join([element.text for element in package_info.findall("maintainer")])
 package_maintainer_emails = ", ".join(
     [element.attrib["email"] for element in package_info.findall("maintainer")]
 )
@@ -43,7 +41,7 @@ setup(
     entry_points={
         "console_scripts": [
             "sim_command_bridge = robotic_arm_controls.sim_command_bridge:main",
-            'integrative_control = robotic_arm_controls.integrative_control:main',
+            "integrative_control = robotic_arm_controls.integrative_control:main",
             "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",
             "m_router = robotic_arm_controls.m_router:main",

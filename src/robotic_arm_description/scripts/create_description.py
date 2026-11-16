@@ -1,6 +1,6 @@
 import json
-from pathlib import Path
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 package = Path.cwd() / "src/robotic_arm_description"
 data = json.loads((package / "config/cad_geometry.json").read_text())
@@ -13,9 +13,7 @@ ET.register_namespace("xacro", XACRO)
 
 
 def element(parent, tag, **attributes):
-    return ET.SubElement(
-        parent, tag, {key: str(value) for key, value in attributes.items()}
-    )
+    return ET.SubElement(parent, tag, {key: str(value) for key, value in attributes.items()})
 
 
 def numbers(values):
@@ -25,22 +23,18 @@ def numbers(values):
 robot = ET.Element("robot", name="rover_arm")
 
 element(
-    robot, f"{{{XACRO}}}arg", name="mesh_root",
-    default="$(find robotic_arm_description)/meshes"
+    robot, f"{{{XACRO}}}arg", name="mesh_root", default="$(find robotic_arm_description)/meshes"
 )
 element(
-    robot, f"{{{XACRO}}}arg", name="controllers_file",
-    default="$(find robotic_arm_description)/config/controllers.yaml"
+    robot,
+    f"{{{XACRO}}}arg",
+    name="controllers_file",
+    default="$(find robotic_arm_description)/config/controllers.yaml",
 )
 
-robot.append(ET.Comment(
-    "Prototype: limits, masses and inertias are provisional."
-))
+robot.append(ET.Comment("Prototype: limits, masses and inertias are provisional."))
 
-link_names = {
-    name: "arm_" + name.lower() + "_link"
-    for name in data["links"]
-}
+link_names = {name: "arm_" + name.lower() + "_link" for name in data["links"]}
 
 element(robot, "link", name="world")
 anchor = element(robot, "joint", name="world_to_arm_base", type="fixed")
@@ -62,39 +56,24 @@ for (name, info), color in zip(data["links"].items(), colors):
 
     visual = element(link, "visual")
     geometry = element(visual, "geometry")
-    element(
-        geometry, "mesh",
-        filename=f"file://$(arg mesh_root)/visual/{name}.stl"
-    )
+    element(geometry, "mesh", filename=f"file://$(arg mesh_root)/visual/{name}.stl")
     material = element(visual, "material", name=name + "_color")
     element(material, "color", rgba=color)
 
     collision = element(link, "collision")
     geometry = element(collision, "geometry")
-    element(
-        geometry, "mesh",
-        filename=f"file://$(arg mesh_root)/collision/{name}.stl"
-    )
+    element(geometry, "mesh", filename=f"file://$(arg mesh_root)/collision/{name}.stl")
 
     inertial = element(link, "inertial")
-    element(
-        inertial, "origin",
-        xyz=numbers(info["provisional_com_m"]), rpy="0 0 0"
-    )
+    element(inertial, "origin", xyz=numbers(info["provisional_com_m"]), rpy="0 0 0")
     element(inertial, "mass", value=info["provisional_mass_kg"])
     ixx, iyy, izz = info["provisional_box_inertia"]
-    element(
-        inertial, "inertia",
-        ixx=ixx, iyy=iyy, izz=izz,
-        ixy=0, ixz=0, iyz=0
-    )
+    element(inertial, "inertia", ixx=ixx, iyy=iyy, izz=izz, ixy=0, ixz=0, iyz=0)
 
 controlled_joints = []
 
 for info in data["joints"]:
-    joint = element(
-        robot, "joint", name=info["name"], type=info["type"]
-    )
+    joint = element(robot, "joint", name=info["name"], type=info["type"])
     element(joint, "parent", link=link_names[info["parent"]])
     element(joint, "child", link=link_names[info["child"]])
     element(joint, "origin", xyz=numbers(info["origin_m"]), rpy="0 0 0")
@@ -102,13 +81,11 @@ for info in data["joints"]:
     if info["type"] == "revolute":
         controlled_joints.append(info["name"])
         element(joint, "axis", xyz=numbers(info["axis"]))
-        joint.append(ET.Comment(
-            "Temporary: +/-90 degrees from exported CAD pose, not hardware limits."
-        ))
+        joint.append(
+            ET.Comment("Temporary: +/-90 degrees from exported CAD pose, not hardware limits.")
+        )
         element(
-            joint, "limit",
-            lower=-1.57079632679, upper=1.57079632679,
-            velocity=0.25, effort=10.0
+            joint, "limit", lower=-1.57079632679, upper=1.57079632679, velocity=0.25, effort=10.0
         )
         element(joint, "dynamics", damping=0.1, friction=0.0)
 
@@ -127,17 +104,15 @@ for name in controlled_joints:
 
 gazebo = element(robot, "gazebo")
 plugin = element(
-    gazebo, "plugin",
+    gazebo,
+    "plugin",
     filename="libgz_ros2_control-system.so",
-    name="gz_ros2_control::GazeboSimROS2ControlPlugin"
+    name="gz_ros2_control::GazeboSimROS2ControlPlugin",
 )
 element(plugin, "parameters").text = "$(arg controllers_file)"
 
 ET.indent(robot, space="  ")
-ET.ElementTree(robot).write(
-    package / "urdf/arm.urdf.xacro",
-    encoding="utf-8", xml_declaration=True
-)
+ET.ElementTree(robot).write(package / "urdf/arm.urdf.xacro", encoding="utf-8", xml_declaration=True)
 
 controller_yaml = """controller_manager:
   ros__parameters:
@@ -152,9 +127,7 @@ arm_velocity_controller:
   ros__parameters:
     joints:
 """
-controller_yaml += "".join(
-    f"      - {name}\n" for name in controlled_joints
-)
+controller_yaml += "".join(f"      - {name}\n" for name in controlled_joints)
 (package / "config/controllers.yaml").write_text(controller_yaml)
 
 (package / "CMakeLists.txt").write_text("""cmake_minimum_required(VERSION 3.8)
@@ -228,6 +201,4 @@ config_path.write_text(config)
 print("Applied provisional mount, torque limits, and command-limit enforcement.")
 
 # Strip trailing whitespace from generated Xacro.
-arm_path.write_text(
-    "\n".join(line.rstrip() for line in arm_path.read_text().splitlines()) + "\n"
-)
+arm_path.write_text("\n".join(line.rstrip() for line in arm_path.read_text().splitlines()) + "\n")

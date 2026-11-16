@@ -15,5 +15,4 @@ def velocity_command(frame, scales):
     values = [float(value) for value in fields[1:-1]]
     if not all(math.isfinite(value) for value in values):
         raise ValueError("velocity multipliers must be finite")
-    return [max(-1.0, min(1.0, value)) * scale
-            for value, scale in zip(values, scales)]
+    return [max(-1.0, min(1.0, value)) * scale for value, scale in zip(values, scales)]

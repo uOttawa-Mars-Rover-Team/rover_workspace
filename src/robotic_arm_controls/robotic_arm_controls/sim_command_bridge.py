@@ -18,9 +18,11 @@ class SimCommandBridge(Node):
         self.declare_parameter("velocity_scales", [0.25] * 6)
         self.declare_parameter("output_indices", [0, 1, 2, 3, 4, 5])
         self.indices = list(self.get_parameter("output_indices").value)
-        if not self.indices or any(
-            type(i) is not int or i < 0 or i > 5 for i in self.indices
-        ) or len(set(self.indices)) != len(self.indices):
+        if (
+            not self.indices
+            or any(type(i) is not int or i < 0 or i > 5 for i in self.indices)
+            or len(set(self.indices)) != len(self.indices)
+        ):
             raise ValueError("output_indices must contain unique indices from 0 to 5")
         self.get_logger().warning(
             f"Simulation output channel indices: {self.indices}. "
@@ -34,14 +36,16 @@ class SimCommandBridge(Node):
         if not math.isfinite(self.timeout) or self.timeout <= 0:
             raise ValueError("command_timeout must be positive and finite")
         self.publisher = self.create_publisher(
-            Float64MultiArray, self.get_parameter("output_topic").value, 10)
+            Float64MultiArray, self.get_parameter("output_topic").value, 10
+        )
         self.values = [0.0] * 6
         self.last_command = float("-inf")
         self.create_subscription(String, "/arm_cmd", self.on_command, 10)
         self.create_timer(0.02, self.publish_command)
         self.get_logger().warning(
             "SIMULATION ONLY: scales are provisional; joint order must match "
-            "input channel order: TW, L1/EL, L2/SL, WP, WR, EE.")
+            "input channel order: TW, L1/EL, L2/SL, WP, WR, EE."
+        )
 
     def on_command(self, message):
         try:

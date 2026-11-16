@@ -35,20 +35,20 @@ for line in report.read_text().splitlines():
     elif current is not None:
         current[key] = values
 
-dtype = np.dtype([
-    ("normal", "<f4", 3),
-    ("vertices", "<f4", (3, 3)),
-    ("attribute", "<u2"),
-])
+dtype = np.dtype(
+    [
+        ("normal", "<f4", 3),
+        ("vertices", "<f4", (3, 3)),
+        ("attribute", "<u2"),
+    ]
+)
 
 
 def read_stl(data):
     count = struct.unpack_from("<I", data, 80)[0]
     if len(data) != 84 + 50 * count:
         raise ValueError("Expected a binary STL file")
-    triangles = np.frombuffer(
-        data, dtype=dtype, offset=84
-    )["vertices"].astype(float)
+    triangles = np.frombuffer(data, dtype=dtype, offset=84)["vertices"].astype(float)
     if not np.isfinite(triangles).all():
         raise ValueError("Invalid mesh coordinates")
     return triangles
@@ -67,18 +67,18 @@ def write_stl(path, triangles):
     output["vertices"] = triangles
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(
-        b"Arm mesh: metres".ljust(80, b"\0")
-        + struct.pack("<I", len(output))
-        + output.tobytes()
+        b"Arm mesh: metres".ljust(80, b"\0") + struct.pack("<I", len(output)) + output.tobytes()
     )
 
 
 # Rotate CAD Y-up coordinates into ROS Z-up coordinates.
-cad_to_ros = np.array([
-    [1, 0, 0],
-    [0, 0, -1],
-    [0, 1, 0],
-])
+cad_to_ros = np.array(
+    [
+        [1, 0, 0],
+        [0, 0, -1],
+        [0, 1, 0],
+    ]
+)
 
 points = {}
 axes = {}
@@ -98,24 +98,18 @@ for index in range(1, 7):
     ]
     direction = first[3:6] / np.linalg.norm(first[3:6])
 
-    if np.linalg.norm(
-        np.cross(second[:3] - first[:3], direction)
-    ) > 1e-6:
+    if np.linalg.norm(np.cross(second[:3] - first[:3], direction)) > 1e-6:
         raise ValueError(f"Misaligned centres in {name}")
 
     points[index] = cad_to_ros @ first[:3]
     axes[index] = cad_to_ros @ direction
 
-names = ["Base", "Hip", "Arm", "Forearm",
-         "Wrist_B", "Wrist_A", "EE"]
+names = ["Base", "Hip", "Arm", "Forearm", "Wrist_B", "Wrist_A", "EE"]
 shapes = {}
 
 with zipfile.ZipFile(archive) as source:
     for name in names:
-        matches = [
-            key for key in components
-            if key.endswith("_" + name + "-1")
-        ]
+        matches = [key for key in components if key.endswith("_" + name + "-1")]
         if len(matches) != 1:
             raise ValueError(f"Cannot identify component: {name}")
 
@@ -125,18 +119,16 @@ with zipfile.ZipFile(archive) as source:
         )
         rotation = raw[:9].reshape(3, 3).T
 
-        if not np.allclose(
-            rotation.T @ rotation, np.eye(3), atol=1e-7
-        ) or not np.isclose(np.linalg.det(rotation), 1):
+        if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-7) or not np.isclose(
+            np.linalg.det(rotation), 1
+        ):
             raise ValueError(f"Invalid rotation: {name}")
 
         if not np.isclose(raw[12], 1):
             raise ValueError(f"Unsupported component scale: {name}")
 
         triangles = read_stl(source.read(name + ".STL")) / 1000
-        shapes[name] = (
-            triangles @ rotation.T + raw[9:12]
-        ) @ cad_to_ros.T
+        shapes[name] = (triangles @ rotation.T + raw[9:12]) @ cad_to_ros.T
 
 base_origin = points[1].copy()
 base_origin[2] = shapes["Base"][:, :, 2].min()
@@ -168,9 +160,7 @@ for name in names:
         collision[:, 1] - collision[:, 0],
         collision[:, 2] - collision[:, 0],
     )
-    reverse = np.sum(
-        normals * hull.equations[:, :3], axis=1
-    ) < 0
+    reverse = np.sum(normals * hull.equations[:, :3], axis=1) < 0
     collision[reverse] = collision[reverse][:, [0, 2, 1]]
 
     write_stl(
@@ -181,21 +171,18 @@ for name in names:
     low, high = cloud.min(0), cloud.max(0)
     size = high - low
     metadata["links"][name] = {
-        "origin_from_base_m": (
-            origins[name] - base_origin
-        ).tolist(),
+        "origin_from_base_m": (origins[name] - base_origin).tolist(),
         "provisional_mass_kg": 1.0,
         "provisional_com_m": ((low + high) / 2).tolist(),
         "provisional_box_inertia": [
-            (size[1]**2 + size[2]**2) / 12,
-            (size[0]**2 + size[2]**2) / 12,
-            (size[0]**2 + size[1]**2) / 12,
+            (size[1] ** 2 + size[2] ** 2) / 12,
+            (size[0] ** 2 + size[2] ** 2) / 12,
+            (size[0] ** 2 + size[1] ** 2) / 12,
         ],
     }
 
     print(
-        f"{name}: {len(triangles)} visual triangles, "
-        f"{len(collision)} collision triangles",
+        f"{name}: {len(triangles)} visual triangles, " f"{len(collision)} collision triangles",
         flush=True,
     )
 
@@ -209,19 +196,19 @@ chain = [
 ]
 
 for name, parent, child, index, kind in chain:
-    metadata["joints"].append({
-        "name": name,
-        "parent": parent,
-        "child": child,
-        "type": kind,
-        "origin_m": (origins[child] - origins[parent]).tolist(),
-        "axis": axes[index].tolist(),
-    })
+    metadata["joints"].append(
+        {
+            "name": name,
+            "parent": parent,
+            "child": child,
+            "type": kind,
+            "origin_m": (origins[child] - origins[parent]).tolist(),
+            "axis": axes[index].tolist(),
+        }
+    )
 
 (package / "config").mkdir(exist_ok=True)
-(package / "config/cad_geometry.json").write_text(
-    json.dumps(metadata, indent=2) + "\n"
-)
+(package / "config/cad_geometry.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
 print("\nDONE: seven visual meshes and seven collision meshes.")
 print("Mass and inertia values are placeholders.")

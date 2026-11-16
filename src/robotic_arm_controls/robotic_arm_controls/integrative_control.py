@@ -50,7 +50,7 @@ AXIS_LS_X   = 0   # WR  wrist roll
 AXIS_LS_Y   = 1   # WP  wrist pitch
 AXIS_RS_X   = 3   # TW  tower / base twist
 AXIS_RS_Y   = 4   # L1  link 1
-AXIS_DPAD_Y = 8   # L2  link 2
+AXIS_DPAD_Y = 7   # L2  link 2
 
 NUM_AXES = 8
 NUM_BTNS = 11
@@ -92,6 +92,10 @@ class IntegrativeControl(Node):
 
     def __init__(self, node_name: str = "integrative_control"):
         super().__init__(node_name)
+        self.declare_parameter("simulation_stream_commands", False)
+        self.simulation_stream = self.get_parameter(
+            "simulation_stream_commands"
+        ).value
         self.get_logger().info(f"Started node: {self.get_fully_qualified_name()}")
 
         # ---- parameters (overridable from launch file) ----------------
@@ -160,6 +164,8 @@ class IntegrativeControl(Node):
     # ------------------------------------------------------------------
 
     def _joy_cb(self, msg: Joy, cid: str):
+        if self.simulation_stream and cid != "ctrl1":
+            return
         if len(msg.axes) < NUM_AXES or len(msg.buttons) < NUM_BTNS:
             self.get_logger().warn(
                 f"[{cid}] Unexpected Joy message size "
@@ -177,6 +183,9 @@ class IntegrativeControl(Node):
 
         lb_held = bool(btns[BTN_LB])
         rb_held = bool(btns[BTN_RB])
+
+        if self.simulation_stream and not (rb_held and not lb_held):
+            self.cmd_pub.publish(String(data="stop;!"))
 
         if lb_held and not rb_held:
             self._drive_handler(axes, btns)
@@ -236,7 +245,9 @@ class IntegrativeControl(Node):
             f"{round(ee, 2)};!"
         )
 
-        if cmd != self._prev_arm_cmd[cid]:
+        if self.simulation_stream:
+            self.cmd_pub.publish(String(data=cmd))
+        elif cmd != self._prev_arm_cmd[cid]:
             self._prev_arm_cmd[cid] = cmd
             msg = String()
             msg.data = cmd

@@ -42,6 +42,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
+            "sim_command_bridge = robotic_arm_controls.sim_command_bridge:main",
             'integrative_control = robotic_arm_controls.integrative_control:main',
             "ik_joy_controls = robotic_arm_controls.ik_joy_controls:main",
             "ik_keyboard_controls = robotic_arm_controls.ik_keyboard_controls:main",

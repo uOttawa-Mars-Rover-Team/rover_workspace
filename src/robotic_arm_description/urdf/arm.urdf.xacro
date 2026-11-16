@@ -1,0 +1,261 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover_arm">
+  <xacro:arg name="mesh_root" default="$(find robotic_arm_description)/meshes" />
+  <xacro:arg name="controllers_file" default="$(find robotic_arm_description)/config/controllers.yaml" />
+
+  <link name="world" />
+  <joint name="world_to_arm_base" type="fixed">
+    <parent link="world" />
+    <child link="arm_base_link" />
+  <origin xyz="0 0 1.0" rpy="0 0 0" /></joint>
+  <link name="arm_base_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Base.stl" />
+      </geometry>
+      <material name="Base_color">
+        <color rgba="0.5 0.5 0.55 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Base.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="8.14685124917e-12 0.0484047666354 0.0566795015335" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.0061471007286761975" iyy="0.0037054957766169618" izz="0.007710885909235178" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_hip_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Hip.stl" />
+      </geometry>
+      <material name="Hip_color">
+        <color rgba="0.75 0.25 0.15 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Hip.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0138601388617 0.0206568283705 0.0697265556335" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.004850238336671764" iyy="0.004397143222393295" izz="0.006052504645000866" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_arm_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Arm.stl" />
+      </geometry>
+      <material name="Arm_color">
+        <color rgba="0.3 0.35 0.4 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Arm.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0376796055483 0.0576340744472 0.223339409093" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.024313862193283724" iyy="0.024136885986796867" izz="0.003958309151732986" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_forearm_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Forearm.stl" />
+      </geometry>
+      <material name="Forearm_color">
+        <color rgba="0.5 0.55 0.6 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Forearm.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.129378628364 -0.0938942066382 -0.100672023618" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.027155537223349995" iyy="0.019206110180108853" izz="0.0278285581343812" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_wrist_b_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Wrist_B.stl" />
+      </geometry>
+      <material name="Wrist_B_color">
+        <color rgba="0.2 0.4 0.6 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Wrist_B.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.000480726524378 -0.022477228649 -0.0582122843143" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.004504019472518546" iyy="0.004623798872897999" izz="0.006298962055870013" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_wrist_a_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/Wrist_A.stl" />
+      </geometry>
+      <material name="Wrist_A_color">
+        <color rgba="0.6 0.6 0.65 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/Wrist_A.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0352866055398 0.0178388240646 0.0154471685633" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.0028196608931860575" iyy="0.0030899648542216437" izz="0.003935295698368557" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="arm_ee_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/visual/EE.stl" />
+      </geometry>
+      <material name="EE_color">
+        <color rgba="0.3 0.3 0.35 1" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="file://$(arg mesh_root)/collision/EE.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.032725824144 -0.0594025620926 0.054932108306" rpy="0 0 0" />
+      <mass value="1.0" />
+      <inertia ixx="0.0065941952216039676" iyy="0.005404947906955751" izz="0.005720898886929488" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <joint name="tower_joint" type="revolute">
+    <parent link="arm_base_link" />
+    <child link="arm_hip_link" />
+    <origin xyz="0 0 0.0830090000153" rpy="0 0 0" />
+    <axis xyz="-2.44123524648e-15 3.77127877813e-16 1" />
+
+    <limit lower="-1.57079632679" upper="1.57079632679" velocity="0.25" effort="10.0" />
+    <dynamics damping="0.1" friction="0.0" />
+  </joint>
+  <joint name="shoulder_joint" type="revolute">
+    <parent link="arm_hip_link" />
+    <child link="arm_arm_link" />
+    <origin xyz="-0.0488308462206 -0.0410196634149 0.0555" rpy="0 0 0" />
+    <axis xyz="0.830420438442 0.557137232123 -1.71233865254e-15" />
+
+    <limit lower="-1.57079632679" upper="1.57079632679" velocity="0.25" effort="100.0" />
+    <dynamics damping="0.1" friction="0.0" />
+  </joint>
+  <joint name="elbow_joint" type="revolute">
+    <parent link="arm_arm_link" />
+    <child link="arm_forearm_link" />
+    <origin xyz="-0.0246525840725 0.0481425545086 0.44678279627" rpy="0 0 0" />
+    <axis xyz="-0.830420438442 -0.557137232123 4.64905891562e-15" />
+
+    <limit lower="-1.57079632679" upper="1.57079632679" velocity="0.25" effort="100.0" />
+    <dynamics damping="0.1" friction="0.0" />
+  </joint>
+  <joint name="wrist_mount_joint" type="fixed">
+    <parent link="arm_forearm_link" />
+    <child link="arm_wrist_b_link" />
+    <origin xyz="0.285423197757 -0.295441136461 -0.168677132694" rpy="0 0 0" />
+  </joint>
+  <joint name="wrist_pitch_joint" type="revolute">
+    <parent link="arm_wrist_b_link" />
+    <child link="arm_wrist_a_link" />
+    <origin xyz="-0.0279368537955 -0.0577474395346 -0.079899238892" rpy="0 0 0" />
+    <axis xyz="0.830420438442 0.557137232123 -1.47547059549e-15" />
+
+    <limit lower="-1.57079632679" upper="1.57079632679" velocity="0.25" effort="10.0" />
+    <dynamics damping="0.1" friction="0.0" />
+  </joint>
+  <joint name="wrist_roll_joint" type="revolute">
+    <parent link="arm_wrist_a_link" />
+    <child link="arm_ee_link" />
+    <origin xyz="0.0642563299822 -0.0242741856022 0.0468804045468" rpy="0 0 0" />
+    <axis xyz="0.427067620421 -0.636549956002 0.642197322559" />
+
+    <limit lower="-1.57079632679" upper="1.57079632679" velocity="0.25" effort="10.0" />
+    <dynamics damping="0.1" friction="0.0" />
+  </joint>
+  <ros2_control name="ArmGazeboSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+    <joint name="tower_joint">
+      <command_interface name="velocity">
+        <param name="min">-0.25</param>
+        <param name="max">0.25</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="shoulder_joint">
+      <command_interface name="velocity">
+        <param name="min">-0.25</param>
+        <param name="max">0.25</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="elbow_joint">
+      <command_interface name="velocity">
+        <param name="min">-0.25</param>
+        <param name="max">0.25</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="wrist_pitch_joint">
+      <command_interface name="velocity">
+        <param name="min">-0.25</param>
+        <param name="max">0.25</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="wrist_roll_joint">
+      <command_interface name="velocity">
+        <param name="min">-0.25</param>
+        <param name="max">0.25</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(arg controllers_file)</parameters>
+    </plugin>
+  </gazebo>
+</robot>

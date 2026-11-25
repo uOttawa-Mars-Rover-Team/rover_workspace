@@ -15,7 +15,7 @@ source install/setup.bash
 | Launch file | What it does |
 | --- | --- |
 | `launch.py` | RViz + `robot_state_publisher` + `joint_state_publisher` — just view the robot model, no simulation |
-| `drive_sim.launch.py` | Gazebo world (`smalltown.world`) with the rover, `ros2_control` diff drive, and joystick teleop |
+| `drive_sim.launch.py` | Modern Gazebo world (`smalltown.world`), rover drive, simulated 3D lidar, GPS/IMU, and joystick teleop |
 | `waypoints.launch.py` | Gazebo (`obstacles.world`) + Nav2 + RViz — full autonomous navigation demo |
 | `navigation.launch.py` | Nav2 planner/controller/behaviour nodes. **Include-only** — not useful on its own |
 | `localization_launch.py` | Nav2 `map_server` + `amcl`. **Include-only** |
@@ -38,6 +38,14 @@ Useful arguments: `use_rviz`, `use_robot_state_pub`, `use_joint_state_pub`,
 
 ```bash
 ros2 launch autonomous_navigation drive_sim.launch.py
+```
+
+The simulated 32-channel lidar publishes a `sensor_msgs/msg/PointCloud2`
+message on `/sensor_msgs/PointCloud2`. Check that data is flowing with:
+
+```bash
+ros2 topic info /sensor_msgs/PointCloud2
+ros2 topic hz /sensor_msgs/PointCloud2
 ```
 
 Then drive it with **one** of the following, in a separate terminal:
@@ -79,9 +87,9 @@ Runs two EKF nodes (`odom` and `map` frames) plus `navsat_transform`, publishing
 
 | Directory | Contents |
 | --- | --- |
-| `urdf/` | Xacro robot description, plus Gazebo plugin macros (lidar, GPS, IMU, `ros2_control`) |
+| `urdf/` | Xacro robot description and Gazebo sensor/control components |
 | `config/` | Nav2 params, EKF params (`ekf.yaml`, `dual_ekf_navsat.yaml`), joystick config |
-| `world/` | Gazebo worlds (`smalltown.world`, `obstacles.world`, `my_world*.sdf`) |
+| `world/` | Gazebo worlds (`smalltown.world`, `obstacles.world`) |
 | `rviz/` | RViz configs (`urdf_config.rviz`, `nav2_config.rviz`) |
 | `meshes/` | Visual and collision meshes |
 

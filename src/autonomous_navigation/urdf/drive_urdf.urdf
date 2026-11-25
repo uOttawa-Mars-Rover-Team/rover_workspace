@@ -3,7 +3,7 @@
 
     <xacro:include filename="gazebo_gps.xacro" />
     <xacro:include filename="gazebo_imu.xacro" />
-    <xacro:include filename="gazebo_2D_lidar.xacro" />
+    <xacro:include filename="gazebo_3D_lidar.xacro" />
     <xacro:include filename="ros2_control.xacro" />
     <xacro:include filename="inertial_macros.xacro" />
 

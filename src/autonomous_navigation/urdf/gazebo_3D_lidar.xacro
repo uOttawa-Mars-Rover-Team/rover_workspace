@@ -30,44 +30,38 @@
     </joint>
 
     <gazebo reference="lidar_link">
-        <sensor name="lidar" type="ray">
+        <sensor name="lidar" type="gpu_lidar">
+            <topic>/ouster</topic>
+            <gz_frame_id>lidar_link</gz_frame_id>
             <always_on>true</always_on>
             <visualize>true</visualize>
-            <update_rate>5</update_rate>
-            <ray>
+            <update_rate>10</update_rate>
+            <lidar>
                 <scan>
                     <horizontal>
-                        <samples>32</samples> <!-- 32 beam lidar -->
-                        <resolution>0.111111</resolution>
-                        <min_angle>0.000000</min_angle>
-                        <max_angle>6.280000</max_angle> <!-- 2pi rad for full circle scan-->
+                        <samples>1024</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.141593</min_angle>
+                        <max_angle>3.141593</max_angle>
                     </horizontal>
                     <vertical>
                         <samples>32</samples>
-                        <resolution>0.111111</resolution>
-                        <min_angle>-1.047198</min_angle> <!-- Start scanning from -pi/3 (down) -->
-                        <max_angle>1.047198</max_angle> <!-- End scanning at pi/3 (up) -->
+                        <resolution>1</resolution>
+                        <min_angle>-0.785398</min_angle>
+                        <max_angle>0.785398</max_angle>
                     </vertical>
                 </scan>
-                <range> <!-- Range of sensor in metres -->
+                <range>
                     <min>0.1</min>
-                    <max>5.0</max>
-                    <resolution>0.015000</resolution>
+                    <max>50.0</max>
+                    <resolution>0.01</resolution>
                 </range>
                 <noise>
                     <type>gaussian</type>
                     <mean>0.0</mean>
                     <stddev>0.01</stddev>
                 </noise>
-            </ray>
-
-            <plugin name="3D_scan" filename="libgazebo_ros_ouster_laser.so"> <!-- change -->
-                <!-- <ros>
-                    <remapping>os1_cloud_node/points:=points</remapping>
-                </ros> -->
-                <output_type>sensor_msgs/PointCloud2</output_type>
-                <frame_name>lidar_link</frame_name>
-            </plugin>
+            </lidar>
         </sensor>
     </gazebo>
 </robot>

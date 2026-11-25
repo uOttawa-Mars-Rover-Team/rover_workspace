@@ -41,11 +41,17 @@ ros2 launch autonomous_navigation drive_sim.launch.py
 ```
 
 The simulated 32-channel lidar publishes a `sensor_msgs/msg/PointCloud2`
-message on `/sensor_msgs/PointCloud2`. Check that data is flowing with:
+message on `/sensor_msgs/PointCloud2`. Its full 90-degree vertical field of
+view includes downward returns; the launch filters the converted horizontal
+slice above the rover body into a `sensor_msgs/msg/LaserScan` on `/scan`, the
+input expected by the current Nav2 costmap configuration. Check either topic
+with:
 
 ```bash
 ros2 topic info /sensor_msgs/PointCloud2
 ros2 topic hz /sensor_msgs/PointCloud2
+ros2 topic info /scan
+ros2 topic hz /scan
 ```
 
 Then drive it with **one** of the following, in a separate terminal:

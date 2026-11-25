@@ -85,6 +85,32 @@ def generate_launch_description():
         output="screen",
     )
 
+    pointcloud_to_scan_node = Node(
+        package="pointcloud_to_laserscan",
+        executable="pointcloud_to_laserscan_node",
+        name="pointcloud_to_scan",
+        output="screen",
+        remappings=[
+            ("cloud_in", "/sensor_msgs/PointCloud2"),
+            ("scan", "/scan"),
+        ],
+        parameters=[
+            {
+                "target_frame": "base_link",
+                "transform_tolerance": 0.1,
+                "min_height": 0.43,
+                "max_height": 0.8,
+                "angle_min": -3.14159,
+                "angle_max": 3.14159,
+                "angle_increment": 0.0087,
+                "range_min": 0.3,
+                "range_max": 30.0,
+                "use_inf": True,
+                "use_sim_time": LaunchConfiguration("use_sim_time"),
+            }
+        ],
+    )
+
     # Gazebo (gz sim) finds meshes via GZ_SIM_RESOURCE_PATH and the
     # gz_ros2_control system plugin via GZ_SIM_SYSTEM_PLUGIN_PATH.
     ament_share_paths = os.pathsep.join(
@@ -176,6 +202,7 @@ def generate_launch_description():
                 output="screen",
             ),
             gz_bridge_node,
+            pointcloud_to_scan_node,
             robot_state_publisher_node,
             gazebo_spawn_entity_node,
             diff_drive_spawner,
